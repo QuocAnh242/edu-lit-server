@@ -1,0 +1,51 @@
+# =========================
+# .NET / Visual Studio Ignore
+# =========================
+
+# Build results
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio cache
+.vs/
+*.vsidx
+*.vscode/
+
+# Logs
+*.log
+logs/
+Logs/
+
+# Configuration
+appsettings.Development.json
+appsettings.Local.json
+
+# Docker
+docker-compose.override.yml
+*.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# JetBrains Rider
+.idea/
+
+# Test results
+TestResult*/
+*.coverage
+*.coveragexml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/

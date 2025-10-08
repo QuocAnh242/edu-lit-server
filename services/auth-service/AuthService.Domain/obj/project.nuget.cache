@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "4Yl4igo7DSY=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\ad\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,210 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.infrastructure\\data\\authdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|solutionrelative:authservice.infrastructure\\data\\authdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{7AA6443B-522F-4C98-8A0F-30AF91985C85}|AuthService.Domain\\AuthService.Domain.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{7AA6443B-522F-4C98-8A0F-30AF91985C85}|AuthService.Domain\\AuthService.Domain.csproj|solutionrelative:authservice.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.application\\dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|solutionrelative:authservice.application\\dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.application\\dtos\\request\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|solutionrelative:authservice.application\\dtos\\request\\loginrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.application\\commands\\logincommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{E855A93A-B5C3-4AE4-97FF-9114F700108C}|AuthService.Application\\AuthService.Application.csproj|solutionrelative:authservice.application\\commands\\logincommand.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|c:\\users\\ad\\onedrive\\desktop\\prn232\\edu-lit-server\\services\\auth-service\\authservice.infrastructure\\dao\\authdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|solutionrelative:authservice.infrastructure\\dao\\authdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 594,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AuthDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\Data\\AuthDbContext.cs",
+              "RelativeDocumentMoniker": "AuthService.Infrastructure\\Data\\AuthDbContext.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\Data\\AuthDbContext.cs",
+              "RelativeToolTip": "AuthService.Infrastructure\\Data\\AuthDbContext.cs",
+              "ViewState": "AgIAAEEAAAAAAAAAAAAAwE8AAAAMAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T14:33:47.493Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "AuthService.Domain\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\Entities\\User.cs",
+              "RelativeToolTip": "AuthService.Domain\\Entities\\User.cs",
+              "ViewState": "AgIAAAkAAAAAAAAAAAA5wBUAAAAaAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T14:33:41.395Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\appsettings.json",
+              "RelativeDocumentMoniker": "AuthService.Api\\appsettings.json",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\appsettings.json",
+              "RelativeToolTip": "AuthService.Api\\appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABBAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2025-10-08T14:30:01.489Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Program.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Program.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Program.cs",
+              "RelativeToolTip": "AuthService.Api\\Program.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAAABEAAAAsAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T14:23:12.119Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "UserController.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Controllers\\UserController.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\UserController.cs",
+              "RelativeToolTip": "AuthService.Api\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T14:21:43.511Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "UserDto.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\DTOs\\UserDto.cs",
+              "RelativeDocumentMoniker": "AuthService.Application\\DTOs\\UserDto.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\DTOs\\UserDto.cs",
+              "RelativeToolTip": "AuthService.Application\\DTOs\\UserDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T14:20:32.464Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "LoginRequest.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\DTOs\\Request\\LoginRequest.cs",
+              "RelativeDocumentMoniker": "AuthService.Application\\DTOs\\Request\\LoginRequest.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\DTOs\\Request\\LoginRequest.cs",
+              "RelativeToolTip": "AuthService.Application\\DTOs\\Request\\LoginRequest.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T07:40:53.117Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "LoginCommand.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\Commands\\LoginCommand.cs",
+              "RelativeDocumentMoniker": "AuthService.Application\\Commands\\LoginCommand.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\Commands\\LoginCommand.cs",
+              "RelativeToolTip": "AuthService.Application\\Commands\\LoginCommand.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T07:40:47.656Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "AuthDAO.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\AuthDAO.cs",
+              "RelativeDocumentMoniker": "AuthService.Infrastructure\\DAO\\AuthDAO.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\AuthDAO.cs",
+              "RelativeToolTip": "AuthService.Infrastructure\\DAO\\AuthDAO.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T07:35:07.104Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "AuthService.Api\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABwAAAATAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-08T07:26:28.096Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedHeight": 594,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+            }
+          ]
+        },
+        {
+          "DockedHeight": 594,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
