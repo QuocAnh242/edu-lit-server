@@ -1,5 +1,6 @@
-﻿using AuthService.Infrastructure.Data;
+﻿using AuthService.Application.Enums;
 using AuthService.Domain.Entities;
+using AuthService.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity.Data;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,13 @@ namespace AuthService.Infrastructure.DAO
 
         public async Task<User> RegisterAsync(string username, string email, string password, string fullName)
         {
+            // check role exist
+            var defaultRoleName = RoleType.STUDENT.ToString();
+            var studentRole = _dbcontext.UserRoles.FirstOrDefault(r => r.Name == defaultRoleName);
+
+            if (studentRole == null)
+                throw new Exception($"Default role '{defaultRoleName}' not found.");
+            
             var user = new User
             {
                 Id = Guid.NewGuid(),
@@ -33,11 +41,19 @@ namespace AuthService.Infrastructure.DAO
                 Email = email,
                 Password = password,
                 FullName = fullName,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                RoleId = studentRole.Id
             };
             _dbcontext.Users.Add(user);
             await _dbcontext.SaveChangesAsync();
             return user;
+        }
+
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await Task.FromResult(
+                _dbcontext.Users.FirstOrDefault(u => u.Username == username)
+            );
         }
     }
 }

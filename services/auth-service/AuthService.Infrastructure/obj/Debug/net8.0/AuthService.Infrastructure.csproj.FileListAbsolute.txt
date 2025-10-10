@@ -17,13 +17,16 @@ C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthSer
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Infrastructure.runtimeconfig.json
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Infrastructure.dll
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Infrastructure.pdb
+C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Application.dll
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Domain.dll
+C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Application.pdb
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\bin\Debug\net8.0\AuthService.Domain.pdb
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.csproj.AssemblyReference.cache
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.AssemblyInfoInputs.cache
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.AssemblyInfo.cs
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.sourcelink.json
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthServ.03063B79.Up2Date
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\AuthService.Infrastructure.dll
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Infrastructure\obj\Debug\net8.0\refint\AuthService.Infrastructure.dll

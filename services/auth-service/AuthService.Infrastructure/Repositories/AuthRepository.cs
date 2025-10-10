@@ -23,5 +23,11 @@ namespace AuthService.Infrastructure.Repositories
         {
             return await _authDAO.RegisterAsync(username, email, password, fullName);
         }
+        
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            // Implement a method in AuthDAO to get user by username
+            return await _authDAO.GetByUsernameAsync(username);
+        }
     }
 }

@@ -25,6 +25,7 @@ C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthSer
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthService.Application.AssemblyInfoInputs.cache
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthService.Application.AssemblyInfo.cs
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthService.Application.csproj.CoreCompileInputs.cache
+C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthService.Application.sourcelink.json
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthServ.67992DEE.Up2Date
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\AuthService.Application.dll
 C:\Users\ad\OneDrive\Desktop\PRN232\edu-lit-server\services\auth-service\AuthService.Application\obj\Debug\net8.0\refint\AuthService.Application.dll

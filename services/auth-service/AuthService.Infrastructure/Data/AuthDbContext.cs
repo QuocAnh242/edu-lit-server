@@ -101,7 +101,6 @@ public partial class AuthDbContext : DbContext
                 .HasColumnName("id");
             entity.Property(e => e.Name).HasColumnName("name");
         });
-
         OnModelCreatingPartial(modelBuilder);
     }
 
