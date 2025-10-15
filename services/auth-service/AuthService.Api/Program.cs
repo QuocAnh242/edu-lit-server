@@ -52,9 +52,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
-
 await app.Services.InitializeDatabaseAsync();
-
+app.UseRouting();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
