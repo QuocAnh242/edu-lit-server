@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "PFkWXiwPqJo=",
+  "dgSpecHash": "AmPWIY4BWUw=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\AuthService.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\AuthService.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ad\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\ad\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",

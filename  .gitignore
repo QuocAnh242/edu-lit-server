@@ -38,6 +38,8 @@ Thumbs.db
 
 # JetBrains Rider
 .idea/
+.idea_modules/
+*.sln.iml
 
 # Test results
 TestResult*/
@@ -49,3 +51,44 @@ TestResult*/
 *.snupkg
 packages/
 .nuget/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE temporary files
+.editorconfig.user
+launchSettings.json
+
+# Build and runtime artifacts
+.netnativecompile/
+artifacts/
+
+# ReSharper
+.resharper
+.resharper.user
+_ReSharper*/
+
+# Entity Framework
+*.edmx.diagram
+
+# Code coverage
+coverage/
+*.trx
+
+# Visual Studio for Mac
+.vscode
+.vscode/
+*.app
+*.exe
+*.dll
+
+# Node modules (if using frontend tools)
+node_modules/
+npm-debug.log
+
+# Environment-specific files
+.env.local
+.env.*.local
+secrets.json

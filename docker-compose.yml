@@ -1,61 +1,70 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  lms_app:
-    image: lms2025:latest
-    container_name: lms_app
-    build:
-      context: ..
-      dockerfile: Dockerfile
-    ports:
-      - "9090:8080"
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://lms_postgres:5432/eduspark
-      - SPRING_DATASOURCE_USERNAME=eduspark
-      - SPRING_DATASOURCE_PASSWORD=postgres
-    networks:
-      - lms-network
-    depends_on:
-      - postgres  # Đảm bảo postgres được khởi động trước
-    volumes:
-      - ../src/main/resources/static/templates/material:/app/material
-    restart: always
-
   postgres:
-    image: postgres:16   # Chọn phiên bản PostgreSQL 16
-    container_name: lms_postgres
+    image: postgres:16
+    container_name: edulit-postgres
+    restart: always
     environment:
-      - POSTGRES_DB=eduspark
-      - POSTGRES_USER=lms
-      - POSTGRES_PASSWORD=postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: auth_db
     ports:
-      - "15432:5432"
+      - "5432:5432"
     volumes:
-      - ./data/postgresql:/var/lib/postgresql/data   # Mount thư mục data vào container PostgreSQL
+      - pgdata:/var/lib/postgresql/data
     networks:
-      - lms-network
-    restart: always
-  redis:
-    image: redis:latest
-    container_name: redis
+      - edulit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: AuthService.Api/Dockerfile
+    container_name: edulit-auth-service
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=auth_db;Username=postgres;Password=postgres"
+      Jwt__Key: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      Jwt__Issuer: "EduLit.Auth"
+      Jwt__Audience: "EduLit.Users"
+      Jwt__ExpiresInHours: "48"
     ports:
-      - "6379:6379"
+      - "8001:8080"
     networks:
-      - lms-network
-    restart: always
-#  nginx:
-#    image: nginx:latest
-#    container_name: nginx
-#    ports:
-#      - "80:80"
-#    volumes:
-#      - ./data/material:/usr/share/nginx/html/material
-#      - ../nginx/nginx.conf:/etc/nginx/nginx.conf
-#    networks:
-#      - lms-network
-#    depends_on:
-#      - lms_app
-#    restart: always
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until pg_isready -h postgres -p 5432 -U postgres;
+      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
+      echo 'PostgreSQL is ready!';
+      dotnet AuthService.Api.dll
+      "
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: edulit-api-gateway
+    restart: on-failure
+    depends_on:
+      - auth-service
+    ports:
+      - "8000:8080"
+    networks:
+      - edulit-network
+
+volumes:
+  pgdata:
+
 networks:
-  lms-network:
+  edulit-network:
     driver: bridge
