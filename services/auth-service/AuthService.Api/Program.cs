@@ -2,6 +2,7 @@
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.DAO;
+using AuthService.Infrastructure.DAO.Interfaces;
 using AuthService.Infrastructure.Data;
 using AuthService.Infrastructure.JWT;
 using AuthService.Infrastructure.Repositories;
@@ -21,10 +22,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 // DI Container setup
 builder.Services.AddScoped<AuthDbContext>();
-builder.Services.AddScoped<AuthDAO>();
+builder.Services.AddScoped<IAuthDAO, AuthDAO>();
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IAuthService, AuthService.Application.Services.AuthService>();
 builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+// DI Role Service
+builder.Services.AddScoped<IRoleDAO, RoleDAO>();
+builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+builder.Services.AddScoped<IRoleService, AuthService.Application.Services.RoleService>();
+//DI User Service
+builder.Services.AddScoped<IUserDAO, UserDAO>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IUserService, AuthService.Application.Services.UserService>();
 
 // PostgreSQL connection
 builder.Services.AddDbContext<AuthDbContext>(options =>

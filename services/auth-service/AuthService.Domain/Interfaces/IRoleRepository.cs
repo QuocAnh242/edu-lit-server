@@ -9,7 +9,8 @@ namespace AuthService.Domain.Interfaces
 {
     public interface IRoleRepository
     {
-        Task<UserRole?> GetDefaultRoleAsync();
-        Task<UserRole?> GetByIdAsync(Guid roleId);
+        Task<UserRole?> GetByIdAsync(Guid id);
+        Task<UserRole?> GetByNameAsync(string name);
+        Task<List<UserRole>> GetAllAsync();
     }
 }

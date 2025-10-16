@@ -1,5 +1,6 @@
 ﻿using AuthService.Application.Enums;
 using AuthService.Domain.Entities;
+using AuthService.Infrastructure.DAO.Interfaces;
 using AuthService.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity.Data;
 using System;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AuthService.Infrastructure.DAO
 {
-    public class AuthDAO
+    public class AuthDAO : IAuthDAO
     {
         private readonly AuthDbContext _dbcontext;
         public AuthDAO(AuthDbContext context)

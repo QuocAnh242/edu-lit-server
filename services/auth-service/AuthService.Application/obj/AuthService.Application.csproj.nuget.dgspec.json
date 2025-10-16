@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj": {}
+    "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj": {
+    "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj",
+        "projectUniqueName": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj",
         "projectName": "AuthService.Application",
-        "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj",
+        "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\AuthService.Application.csproj",
         "packagesPath": "C:\\Users\\ad\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Application\\obj\\",
+        "outputPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -33,8 +33,8 @@
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj": {
-                "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj"
+              "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj": {
+                "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj"
               }
             }
           }
@@ -84,14 +84,14 @@
         }
       }
     },
-    "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj": {
+    "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj",
         "projectName": "AuthService.Domain",
-        "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj",
+        "projectPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\AuthService.Domain.csproj",
         "packagesPath": "C:\\Users\\ad\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\obj\\",
+        "outputPath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\services\\auth-service\\AuthService.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
