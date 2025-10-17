@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "0S66eERt+IE=",
+  "dgSpecHash": "83J934wwXVg=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRN232\\edu-lit-server\\shared\\shared.csproj",
+  "projectFilePath": "C:\\Users\\ad\\OneDrive\\Desktop\\PRM392\\edu-lit-server\\shared\\shared.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ad\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.1.2\\microsoft.identitymodel.abstractions.7.1.2.nupkg.sha512",
     "C:\\Users\\ad\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.1.2\\microsoft.identitymodel.jsonwebtokens.7.1.2.nupkg.sha512",
