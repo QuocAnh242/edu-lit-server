@@ -2,6 +2,7 @@
 using AuthService.Application.DTOs.Response;
 using AuthService.Application.Enums;
 using AuthService.Application.Exceptions;
+using AuthService.Application.Queries;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -28,15 +29,10 @@ namespace AuthService.Application.Services
                 var user = await _authRepository.GetByUsernameAsync(command.Username);
                 if (user == null || !BCrypt.Net.BCrypt.Verify(command.Password, user.Password))
                     throw new AuthException(AuthErrorCode.InvalidCredentials, "Invalid username or password!");
-                var token = _jwtTokenGenerator.GenerateToken(user);
 
-                var userDto = new UserDto
+                var token = _jwtTokenGenerator.GenerateToken(user);
+                var userDto = new UserDto(user)
                 {
-                    Id = user.Id,
-                    Username = user.Username,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    RoleName = user.Role?.Name ?? "User",
                     Token = token
                 };
 
@@ -69,13 +65,8 @@ namespace AuthService.Application.Services
                     throw new AuthException(AuthErrorCode.RegistrationFailed, "Failed to register user!");
 
                 var token = _jwtTokenGenerator.GenerateToken(user);
-                var userDto = new UserDto
+                var userDto = new UserDto(user)
                 {
-                    Id = user.Id,
-                    Username = user.Username,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    RoleName = user.Role?.Name ?? "User",
                     Token = token
                 };
 

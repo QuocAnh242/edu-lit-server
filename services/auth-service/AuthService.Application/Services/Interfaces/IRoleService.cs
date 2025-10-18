@@ -1,4 +1,6 @@
-﻿using AuthService.Domain.Entities;
+﻿using AuthService.Application.DTOs;
+using AuthService.Application.DTOs.Response;
+using AuthService.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +11,8 @@ namespace AuthService.Application.Services.Interfaces
 {
     public interface IRoleService
     {
-        Task<UserRole?> GetDefaultRoleAsync();
-        Task<UserRole?> GetByIdAsync(Guid roleId);
+        Task<ApiResponse<RoleDto>> GetByIdAsync(Guid id);
+        Task<ApiResponse<RoleDto>> GetByNameAsync(string name);
+        Task<ApiResponse<List<RoleDto>>> GetAllAsync();
     }
 }
