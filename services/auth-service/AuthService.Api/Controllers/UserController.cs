@@ -1,7 +1,10 @@
 ﻿using AuthService.Application.DTOs;
+using AuthService.Application.DTOs.Response;
 using AuthService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace AuthService.Api.Controllers
 {
@@ -16,6 +19,17 @@ namespace AuthService.Api.Controllers
         public async Task<IActionResult> GetAll()
         {
             var res = await _service.GetAllAsync();
+            return Ok(res);
+        }
+
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged([FromQuery] int page = 1, [FromQuery] int size = 20)
+        {
+            if (page < 1) page = 1;
+            if (size < 1) size = 20;
+            if (size > 100) size = 100;
+
+            var res = await _service.GetPagedAsync(page, size);
             return Ok(res);
         }
 

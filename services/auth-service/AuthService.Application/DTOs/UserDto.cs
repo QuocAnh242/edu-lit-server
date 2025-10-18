@@ -20,7 +20,8 @@ namespace AuthService.Application.DTOs
             Username = user.Username;
             Email = user.Email;
             FullName = user.FullName;
-            RoleName = user.Role?.Name;
+            RoleId = user.RoleId;               // FIX: populate RoleId
+            RoleName = user.Role?.Name;         // Requires Role to be loaded
             CreatedAt = user.CreatedAt;
         }
         public User ToEntity() => new User

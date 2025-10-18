@@ -19,20 +19,20 @@ namespace AuthService.Application.Services
         {
             var role = await _repo.GetByIdAsync(id);
             if (role == null) return ApiResponse<RoleDto>.FailureResponse("Not found", 404);
-            return ApiResponse<RoleDto>.SuccessResponse(new RoleDto(role));
+            return ApiResponse<RoleDto>.SuccessResponse(new RoleDto(role), "Get Role By Id Successfully!");
         }
 
         public async Task<ApiResponse<List<RoleDto>>> GetAllAsync()
         {
             var roles = await _repo.GetAllAsync();
-            return ApiResponse<List<RoleDto>>.SuccessResponse(roles.Select(r => new RoleDto(r)).ToList());
+            return ApiResponse<List<RoleDto>>.SuccessResponse(roles.Select(r => new RoleDto(r)).ToList(), "Get All Roles Successfully!");
         }
 
         public async Task<ApiResponse<RoleDto>> GetByNameAsync(string name)
         {
             var role = await _repo.GetByNameAsync(name);
             if (role == null) return ApiResponse<RoleDto>.FailureResponse("Not found", 404);
-            return ApiResponse<RoleDto>.SuccessResponse(new RoleDto(role));
+            return ApiResponse<RoleDto>.SuccessResponse(new RoleDto(role), "Get Role By Name Successfully!");
         }
     }
 }

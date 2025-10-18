@@ -11,6 +11,7 @@ namespace AuthService.Infrastructure.DAO.Interfaces
     {
         Task<User> GetByIdAsync(Guid id);
         Task<List<User>> GetAllAsync();
+        Task<(List<User> Items, int TotalCount)> GetPagedAsync(int page, int size);
         Task AddAsync(User user);
         Task UpdateAsync(User user);
         Task DeleteAsync(Guid id);
