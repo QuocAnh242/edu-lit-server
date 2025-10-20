@@ -4,11 +4,12 @@ using AuthService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using AuthService.Application.DTOs.Response;
 
 namespace AuthService.Api.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -21,6 +22,9 @@ namespace AuthService.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
+
             var response = await _authService.LoginAsync(
                 new LoginCommand
                 {
@@ -37,6 +41,9 @@ namespace AuthService.Api.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
+
             var command = new RegisterCommand
             {
                 Username = request.Username,

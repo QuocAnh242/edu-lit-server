@@ -1,10 +1,6 @@
 ﻿using AuthService.Application.Enums;
 using AuthService.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace AuthService.Infrastructure.Data
 {
@@ -12,17 +8,24 @@ namespace AuthService.Infrastructure.Data
     {
         public static void Seed(AuthDbContext context)
         {
-            if (!context.UserRoles.Any())
+            try
             {
-                var roles = new[]   
+                if (!context.UserRoles.Any())
                 {
-                    new UserRole { Id = Guid.NewGuid(), Name = RoleType.STUDENT.ToString() },
-                    new UserRole { Id = Guid.NewGuid(), Name = RoleType.TEACHER.ToString() },
-                    new UserRole { Id = Guid.NewGuid(), Name = RoleType.ADMIN.ToString() }
-                };
+                    var roles = new[]
+                    {
+                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.STUDENT.ToString() },
+                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.TEACHER.ToString() },
+                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.ADMIN.ToString() }
+                    };
 
-                context.UserRoles.AddRange(roles);
-                context.SaveChanges();
+                    context.UserRoles.AddRange(roles);
+                    context.SaveChanges();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DBInitializer] Seeding failed: {ex.Message}");
             }
         }
     }

@@ -1,35 +1,44 @@
 ﻿using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-
 namespace AuthService.Api.Extensions
 {
     public static class DatabaseInitializerExtensions
     {
-        /// <summary>
-        /// Tự động migrate và seed database khi khởi động service.
-        /// </summary>
         public static async Task InitializeDatabaseAsync(this IServiceProvider services)
         {
             using var scope = services.CreateScope();
             var scopedProvider = scope.ServiceProvider;
-
             var logger = scopedProvider.GetRequiredService<ILoggerFactory>()
                                        .CreateLogger("DatabaseInitializer");
             var dbContext = scopedProvider.GetRequiredService<AuthDbContext>();
 
-            try
-            {
-                logger.LogInformation("Running database migration...");
-                await dbContext.Database.MigrateAsync(); // Apply migrations
+            const int maxRetries = 10;
+            const int delayMs = 3000;
 
-                logger.LogInformation("Seeding initial data...");
-                DBInitializer.Seed(dbContext); // Seed mặc định
-                logger.LogInformation("Database initialization complete.");
-            }
-            catch (Exception ex)
+            for (int attempt = 1; attempt <= maxRetries; attempt++)
             {
-                logger.LogError(ex, "Error while initializing database.");
-                throw;
+                try
+                {
+                    logger.LogInformation($"Ensuring database is created... (Attempt {attempt}/{maxRetries})");
+                    await dbContext.Database.EnsureCreatedAsync();
+
+                    logger.LogInformation("Seeding initial data...");
+                    DBInitializer.Seed(dbContext);
+
+                    logger.LogInformation("Database initialization complete.");
+                    return; 
+                }
+                catch (Exception ex)
+                {
+                    if (attempt == maxRetries)
+                    {
+                        logger.LogError(ex, "Database initialization failed after {maxRetries} attempts. Service will continue running.", maxRetries);
+                        return; // Give up, but don't crash
+                    }
+
+                    logger.LogWarning(ex, "Database connection failed (Attempt {attempt}/{maxRetries}). Retrying in {delayMs}ms...", attempt, maxRetries, delayMs);
+                    await Task.Delay(delayMs);
+                }
             }
         }
     }
