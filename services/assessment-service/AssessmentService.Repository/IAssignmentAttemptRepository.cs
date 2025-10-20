@@ -1,4 +1,4 @@
-﻿using AssessmentService.Db.Models;
+﻿using AssessmentService.Database.Models;
 
 namespace AssessmentService.Repository
 {

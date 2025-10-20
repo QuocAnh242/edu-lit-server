@@ -1,4 +1,4 @@
-﻿using AssessmentService.Db.Models;
+﻿using AssessmentService.Database.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 

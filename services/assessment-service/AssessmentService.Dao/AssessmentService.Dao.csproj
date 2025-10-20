@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AssessmentService.Db\AssessmentService.Db.csproj" />
+    <ProjectReference Include="..\AssessmentService.Database\AssessmentService.Database.csproj" />
+    <ProjectReference Include="..\AssessmentService.Db\AssessmentService.Database.csproj" />
   </ItemGroup>
 
 </Project>

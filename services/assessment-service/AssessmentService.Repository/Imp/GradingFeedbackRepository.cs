@@ -1,10 +1,5 @@
 ﻿using AssessmentService.Dao.DAOs;
-using AssessmentService.Db.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using AssessmentService.Database.Models;
 
 namespace AssessmentService.Repository.Imp
 {
