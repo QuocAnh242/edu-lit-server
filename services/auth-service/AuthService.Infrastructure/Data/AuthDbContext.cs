@@ -1,7 +1,6 @@
 ﻿using AuthService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
 
 namespace AuthService.Infrastructure.Data
 {
