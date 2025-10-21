@@ -2,15 +2,29 @@
 {
     public class ObjectResponse<T>
     {
-        public bool Success { get; set; }
-        public string? Message { get; set; }
+        public string ErrorCode { get; set; }
+        public string Message { get; set; }
         public T? Data { get; set; }
-        public int? ErrorCode { get; set; }
-
-        public static ObjectResponse<T> SuccessResponse(T data, string? message = null)
-            => new ObjectResponse<T> { Success = true, Data = data, Message = message };
-
-        public static ObjectResponse<T> FailureResponse(string message, int? errorCode = null)
-            => new ObjectResponse<T> { Success = false, Message = message, ErrorCode = errorCode };
+        public static ObjectResponse<T> Response(string errorCode, string message, T? data)
+            => new ObjectResponse<T>
+            {
+                ErrorCode = errorCode,
+                Message = message,
+                Data = data
+            };
+        public static ObjectResponse<T> SuccessResponse(T data)
+            => new ObjectResponse<T>
+            {
+                ErrorCode = "200",
+                Message = "success",
+                Data = data
+            };
+        public static ObjectResponse<T> FailureResponse(Exception e)
+            => new ObjectResponse<T>
+            {
+                ErrorCode = "500",
+                Message = "Internal server error: " + e,
+                Data = default
+            };    
     }
 }
