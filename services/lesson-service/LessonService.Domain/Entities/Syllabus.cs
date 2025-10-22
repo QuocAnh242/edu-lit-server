@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using LessonService.Domain.Enums;
 
 namespace LessonService.Domain.Entities;
 
@@ -11,7 +12,7 @@ public partial class Syllabus
 
     public string AcademicYear { get; set; } = null!;
 
-    public string Semester { get; set; } = null!;
+    public Semester Semester { get; set; }
 
     public string OwnerId { get; set; } = null!;
 

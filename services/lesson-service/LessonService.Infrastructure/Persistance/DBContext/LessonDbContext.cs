@@ -1,7 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
 using LessonService.Domain.Entities;
+using LessonService.Domain.Enums;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace LessonService.Infrastructure;
+namespace LessonService.Infrastructure.Persistance.DBContext;
 
 public partial class LessonDbContext : DbContext
 {
@@ -23,11 +27,7 @@ public partial class LessonDbContext : DbContext
     public virtual DbSet<Session> Sessions { get; set; }
 
     public virtual DbSet<Syllabus> Syllabi { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=lesson_db;Username=postgres;Password=postgres;TrustServerCertificate=True");
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasPostgresExtension("uuid-ossp");
@@ -212,9 +212,29 @@ public partial class LessonDbContext : DbContext
             entity.Property(e => e.OwnerId)
                 .HasMaxLength(36)
                 .HasColumnName("owner_id");
+
+            // Map Semester enum <-> exact Vietnamese strings used in DB CHECK constraint
+            var semesterToString = new Dictionary<Semester, string>
+            {
+                { Semester.HocKiI, "Học kì I" },
+                { Semester.HocKiII, "Học kì II" },
+                { Semester.GiuaHocKiI, "Giữa học kì I" },
+                { Semester.GiuaHocKiII, "Giữa học kì II" },
+                { Semester.CuoiHocKiI, "Cuối học kì I" },
+                { Semester.CuoiHocKiII, "Cuối học kì II" }
+            };
+            var stringToSemester = semesterToString.ToDictionary(kv => kv.Value, kv => kv.Key);
+
+            var semesterConverter = new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<Semester, string>(
+                v => semesterToString[v],
+                v => stringToSemester[v]
+            );
+
             entity.Property(e => e.Semester)
+                .HasConversion(semesterConverter)
                 .HasMaxLength(30)
                 .HasColumnName("semester");
+
             entity.Property(e => e.Title)
                 .HasMaxLength(255)
                 .HasColumnName("title");

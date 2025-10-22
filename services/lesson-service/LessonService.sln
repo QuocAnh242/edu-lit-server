@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36603.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.APi", "LessonService.APi.csproj", "{C5054F87-0328-462C-B34F-65FEEC8E0FB0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.APi", "LessonService.APi\LessonService.APi.csproj", "{C5054F87-0328-462C-B34F-65FEEC8E0FB0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Application", "..\LessonService.Application\LessonService.Application.csproj", "{5FF4FD5A-EBF7-42FC-AE1E-680E6E63FD3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Application", "LessonService.Application\LessonService.Application.csproj", "{5FF4FD5A-EBF7-42FC-AE1E-680E6E63FD3D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Domain", "..\LessonService.Domain\LessonService.Domain.csproj", "{A6EA4410-8FFE-420A-A3BC-C7F4DD460DD3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Domain", "LessonService.Domain\LessonService.Domain.csproj", "{A6EA4410-8FFE-420A-A3BC-C7F4DD460DD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Infrastructure", "..\LessonService.Infrastructure\LessonService.Infrastructure.csproj", "{064F0990-0490-4ACC-AA04-59A3F38F380C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LessonService.Infrastructure", "LessonService.Infrastructure\LessonService.Infrastructure.csproj", "{064F0990-0490-4ACC-AA04-59A3F38F380C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

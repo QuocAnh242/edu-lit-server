@@ -2,6 +2,7 @@
 using LessonService.Domain.IDAOs;
 using LessonService.Domain.Interfaces;
 using LessonService.Infrastructure.Persistance.DAOs;
+using LessonService.Infrastructure.Persistance.DBContext;
 
 namespace LessonService.Infrastructure.Persistance.Repositories
 {

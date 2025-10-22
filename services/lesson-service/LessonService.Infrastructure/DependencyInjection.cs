@@ -1,7 +1,9 @@
 ﻿using LessonService.Domain.IDAOs;
 using LessonService.Domain.Interfaces;
 using LessonService.Infrastructure.Persistance.DAOs;
+using LessonService.Infrastructure.Persistance.DBContext;
 using LessonService.Infrastructure.Persistance.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,8 +23,9 @@ namespace LessonService.Infrastructure
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // register db context
-            //service.AddDbContext<MotoBikeWashingBookingContext>(option =>
-            //    option.UseNpgsql(configuration.GetConnectionString("DefaultConnectionStringDB")));
+            services.AddDbContext<LessonDbContext>(option =>
+            option.UseNpgsql(configuration.GetConnectionString("DefaultConnectionStringDB")));
+            
             return services;
         }
     }

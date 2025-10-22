@@ -14,9 +14,7 @@
     <Folder Include="Features\Sessions\" />
     <Folder Include="Features\Syllabus\Delete\" />
     <Folder Include="Features\Syllabus\GetPagination\" />
-    <Folder Include="Features\Syllabus\GetById\" />
     <Folder Include="Features\Syllabus\Update\" />
-    <Folder Include="Mappers\" />
     <Folder Include="IServices\" />
   </ItemGroup>
 
