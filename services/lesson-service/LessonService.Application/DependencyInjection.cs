@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
-using LessonService.Application.Features.Syllabus.Create;
+using LessonService.Application.Features.Syllabus.CreateSyllabus;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -18,7 +18,7 @@ namespace LessonService.Application
         {
             // Register application services, handlers, and other dependencies here
             //E.g
-            services.AddScoped<ICommandHandler<CreateCommand, Guid>, CreateCommandHandler>();
+            services.AddScoped<ICommandHandler<CreateSyllabusCommand, Guid>, CreateSyllabusCommandHandler>();
 
             // Register all validators and AutoMapper profiles from the assembly
             //chỉ cần thêm dòng này là đủ để đăng ký tất cả validator và profile trong assembly ko cần đăng ký từng cái một

@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: edulit-postgres
     restart: always
     environment:
@@ -17,6 +17,26 @@ services:
       - edulit-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres_lesson:
+    image: postgres:17.6-alpine
+    container_name: edulit-postgres-lesson
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lesson_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_lesson:/var/lib/postgresql/data
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lesson_db"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -49,6 +69,34 @@ services:
       dotnet AuthService.Api.dll
       "
 
+  lesson-service:
+    build:
+      context: ./services/lesson-service
+      dockerfile: LessonService.Api/Dockerfile
+    container_name: edulit-lesson-service
+    restart: on-failure
+    depends_on:
+      postgres_lesson:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres_lesson;Port=5432;Database=lesson_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
+      JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      JwtSettings__Issuer: "EduLit.Auth"
+      JwtSettings__Audience: "EduLit.Users"
+      JwtSettings__ExpiresInHours: "48"
+    ports:
+      - "8002:8080"
+    networks:
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until pg_isready -h postgres -p 5432 -U postgres;
+      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
+      echo 'PostgreSQL is ready!';
+      dotnet LessonService.APi.dll
+      "
+
   api-gateway:
     build:
       context: .
@@ -64,6 +112,7 @@ services:
 
 volumes:
   pgdata:
+  pgdata_lesson:
 
 networks:
   edulit-network:
