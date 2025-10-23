@@ -41,6 +41,27 @@ services:
       timeout: 5s
       retries: 10
 
+  mysql:
+    image: mysql:5.7.43
+    container_name: edulit-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: edulit_assessment_db
+      MYSQL_USER: developer
+      MYSQL_PASSWORD: devpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   auth-service:
     build:
       context: ./services/auth-service
