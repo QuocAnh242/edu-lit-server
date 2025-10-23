@@ -5,9 +5,8 @@ namespace AssessmentService.Dao.DAOs
     public class AssessmentDAO
     {
         private readonly AssessmentDbContext _context;
-        private readonly AssessmentDAO _instance;
 
-        private AssessmentDAO(AssessmentDbContext context)
+        public AssessmentDAO(AssessmentDbContext context)
         {
             _context = context;
         }

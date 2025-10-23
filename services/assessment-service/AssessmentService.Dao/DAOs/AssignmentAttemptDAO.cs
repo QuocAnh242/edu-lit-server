@@ -5,8 +5,7 @@ namespace AssessmentService.Dao.DAOs
     public class AssignmentAttemptDAO
     {
         private readonly AssessmentDbContext _context;
-        private readonly AssignmentAttemptDAO _instance;
-        private AssignmentAttemptDAO(AssessmentDbContext context)
+        public AssignmentAttemptDAO(AssessmentDbContext context)
         {
             _context = context;
         }

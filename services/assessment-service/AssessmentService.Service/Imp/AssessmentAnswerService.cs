@@ -7,8 +7,14 @@ namespace AssessmentService.Service.Imp
 {
     public class AssessmentAnswerService : IAssessmentAnswerService
     {
-        private readonly IAssessmentAnswerRepository repo;
-        private readonly IAssessmentQuestionRepository questrepo;
+        private readonly IAssessmentAnswerRepository _repo;
+        private readonly IAssessmentQuestionRepository _questrepo;
+
+        public AssessmentAnswerService(IAssessmentAnswerRepository repo, IAssessmentQuestionRepository questrepo)
+        {
+            _repo = repo;
+            _questrepo = questrepo;
+        }
 
         public async Task<ObjectResponse<AssessmentAnswer>> CreateAsync(AssessmentAnswerDTO assedto)
         {
@@ -32,7 +38,7 @@ namespace AssessmentService.Service.Imp
                 };
 
                 // kt kết quả đúng sai
-                AssessmentQuestion quest = await questrepo.GetAssessmentQuestionByIdAsync(assedto.AssessmentQuestionId);
+                AssessmentQuestion quest = await _questrepo.GetAssessmentQuestionByIdAsync(assedto.AssessmentQuestionId);
 
                 if ( quest.CorrectAnswer == assedto.SelectedAnswer)
                 {
@@ -43,7 +49,7 @@ namespace AssessmentService.Service.Imp
                     answer.IsCorrect = false;
                 }
 
-                await repo.CreateAssessmentAnswerAsync(answer);
+                await _repo.CreateAssessmentAnswerAsync(answer);
                 return ObjectResponse<AssessmentAnswer>.SuccessResponse(answer);
             }
             catch (Exception ex)
@@ -56,7 +62,7 @@ namespace AssessmentService.Service.Imp
         {
             try
             {
-                bool deleted = await repo.DeleteAssessmentAnswerAsync(id);
+                bool deleted = await _repo.DeleteAssessmentAnswerAsync(id);
                 return ObjectResponse<bool>.SuccessResponse(deleted);
             }
             catch (Exception ex)
@@ -68,7 +74,7 @@ namespace AssessmentService.Service.Imp
         public async Task<ObjectResponse<IEnumerable<AssessmentAnswer>>> GetAllAsync()
         {   try
             {
-                IEnumerable<AssessmentAnswer> answers = await repo.GetAllAssessmentAnswerAsync();
+                IEnumerable<AssessmentAnswer> answers = await _repo.GetAllAssessmentAnswerAsync();
                 return ObjectResponse<IEnumerable<AssessmentAnswer>>.SuccessResponse(answers);
             }
             catch (Exception ex)
@@ -81,7 +87,7 @@ namespace AssessmentService.Service.Imp
         {
             try
             {
-                AssessmentAnswer answer = await repo.GetAssessmentAnswerByIdAsync(id);
+                AssessmentAnswer answer = await _repo.GetAssessmentAnswerByIdAsync(id);
                 if (answer == null)
                 {
                     return ObjectResponse<AssessmentAnswer>.Response("404", "AssessmentAnswer not found", null);
@@ -108,7 +114,7 @@ namespace AssessmentService.Service.Imp
                 if (!Regex.IsMatch(selected, "^[ABCD]$"))
                     return ObjectResponse<bool>.FailureResponse(new ArgumentException("SelectedAnswer must be one of 'A', 'B', 'C' or 'D'."));
                 
-                AssessmentAnswer existingAnswer = await repo.GetAssessmentAnswerByIdAsync(assedto.AssessmentQuestionId);
+                AssessmentAnswer existingAnswer = await _repo.GetAssessmentAnswerByIdAsync(assedto.AssessmentQuestionId);
                 if (existingAnswer == null)
                 {
                     return ObjectResponse<bool>.Response("404", "AssessmentAnswer not found", false);
@@ -116,7 +122,7 @@ namespace AssessmentService.Service.Imp
                 existingAnswer.SelectedAnswer = assedto.SelectedAnswer;
 
                 // kt kết quả đúng sai
-                AssessmentQuestion quest = await questrepo.GetAssessmentQuestionByIdAsync(assedto.AssessmentQuestionId);
+                AssessmentQuestion quest = await _questrepo.GetAssessmentQuestionByIdAsync(assedto.AssessmentQuestionId);
                 if (quest.CorrectAnswer == assedto.SelectedAnswer)
                 {
                     existingAnswer.IsCorrect = true;
@@ -125,7 +131,7 @@ namespace AssessmentService.Service.Imp
                 {
                     existingAnswer.IsCorrect = false;
                 }
-                bool updated = await repo.UpdateAssessmentAnswerAsync(existingAnswer);
+                bool updated = await _repo.UpdateAssessmentAnswerAsync(existingAnswer);
                 return ObjectResponse<bool>.SuccessResponse(updated);
             }
             catch (Exception ex)

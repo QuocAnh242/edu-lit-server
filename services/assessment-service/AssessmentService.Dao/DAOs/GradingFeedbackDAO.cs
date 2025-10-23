@@ -5,7 +5,6 @@ namespace AssessmentService.Dao.DAOs
     public class GradingFeedbackDAO
     {
         private readonly AssessmentDbContext _context;
-        private readonly GradingFeedbackDAO _instance;
         public GradingFeedbackDAO(AssessmentDbContext context)
         {
             _context = context;

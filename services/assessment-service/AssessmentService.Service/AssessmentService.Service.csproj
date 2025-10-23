@@ -10,8 +10,4 @@
     <ProjectReference Include="..\AssessmentService.Repository\AssessmentService.Repository.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Imp\" />
-  </ItemGroup>
-
 </Project>

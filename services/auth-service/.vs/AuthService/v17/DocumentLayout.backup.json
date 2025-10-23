@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.infrastructure\\repositories\\authrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|solutionrelative:authservice.infrastructure\\repositories\\authrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\controllers\\authcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.infrastructure\\dao\\authdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|solutionrelative:authservice.infrastructure\\dao\\authdao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\controllers\\usercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.infrastructure\\dao\\roledao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{D768EEFB-52AD-49A6-8B53-111672C61FCA}|AuthService.Infrastructure\\AuthService.Infrastructure.csproj|solutionrelative:authservice.infrastructure\\dao\\roledao.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|c:\\users\\admin\\desktop\\prn232_groupproject\\edu-lit-server\\services\\auth-service\\authservice.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0D662E8A-431D-753E-CE2D-5CED3050ED5F}|AuthService.Api\\AuthService.Api.csproj|solutionrelative:authservice.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -22,45 +22,45 @@
       "DocumentGroups": [
         {
           "DockedHeight": 594,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AuthRepository.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\Repositories\\AuthRepository.cs",
-              "RelativeDocumentMoniker": "AuthService.Infrastructure\\Repositories\\AuthRepository.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\Repositories\\AuthRepository.cs",
-              "RelativeToolTip": "AuthService.Infrastructure\\Repositories\\AuthRepository.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAAwBIAAAAoAAAAAAAAAA==",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Program.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Program.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Program.cs",
+              "RelativeToolTip": "AuthService.Api\\Program.cs",
+              "ViewState": "AgIAACcAAAAAAAAAAAAAADcAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T11:48:40.905Z",
+              "WhenOpened": "2025-10-23T08:42:15.829Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AuthController.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\AuthController.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Controllers\\AuthController.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\AuthController.cs",
+              "RelativeToolTip": "AuthService.Api\\Controllers\\AuthController.cs",
+              "ViewState": "AgIAACAAAAAAAAAAAAAQwBcAAAA4AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-23T08:32:52.752Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "AuthDAO.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\AuthDAO.cs",
-              "RelativeDocumentMoniker": "AuthService.Infrastructure\\DAO\\AuthDAO.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\AuthDAO.cs",
-              "RelativeToolTip": "AuthService.Infrastructure\\DAO\\AuthDAO.cs",
-              "ViewState": "AgIAAAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Title": "UserController.cs",
+              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\UserController.cs",
+              "RelativeDocumentMoniker": "AuthService.Api\\Controllers\\UserController.cs",
+              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Api\\Controllers\\UserController.cs",
+              "RelativeToolTip": "AuthService.Api\\Controllers\\UserController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T11:35:14.817Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "RoleDAO.cs",
-              "DocumentMoniker": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\RoleDAO.cs",
-              "RelativeDocumentMoniker": "AuthService.Infrastructure\\DAO\\RoleDAO.cs",
-              "ToolTip": "C:\\Users\\Admin\\Desktop\\PRN232_GroupProject\\edu-lit-server\\services\\auth-service\\AuthService.Infrastructure\\DAO\\RoleDAO.cs",
-              "RelativeToolTip": "AuthService.Infrastructure\\DAO\\RoleDAO.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-20T11:34:45.12Z",
+              "WhenOpened": "2025-10-23T08:25:45.958Z",
               "EditorCaption": ""
             }
           ]

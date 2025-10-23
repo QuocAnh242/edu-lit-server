@@ -6,6 +6,10 @@ namespace AssessmentService.Repository.Imp
     public class AssessmentRepository : IAssessmentRepository
     {
         private readonly AssessmentDAO  _assessmentDAO;
+        public AssessmentRepository(AssessmentDAO assessmentDAO)
+        {
+            _assessmentDAO = assessmentDAO;
+        }
         public async Task CreateAssessmentAsync(Assessment assessment) => await _assessmentDAO.AddAssessmentAsync(assessment);
 
         public async Task<bool> DeleteAssessmentAsync(int id)
