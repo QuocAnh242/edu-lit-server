@@ -41,7 +41,46 @@ services:
       timeout: 5s
       retries: 10
 
-  
+  mysql_assessment:
+    image: mysql:5.7.43
+    container_name: edulit-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: edulit_assessment_db
+      MYSQL_USER: developer
+      MYSQL_PASSWORD: devpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  postgres_question:
+    image: postgres:17.6-alpine
+    container_name: edulit-postgres-question
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: question_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_question:/var/lib/postgresql/data
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d question_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   auth-service:
     build:
@@ -82,8 +121,7 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: "Host=postgres_lesson;Port=5432;Database=lesson_db;Username=postgres;Password=postgres"
-      ConnectionStrings__Redis: "redis-13508.c334.asia-southeast2-1.gce.redns.redis-cloud.com:13508,user=default,password=sS62t215atZzf6U7BQ8Lhbex592AJA1g"
+      ConnectionStrings__DefaultConnection: "Host=postgres_lesson;Port=5432;Database=lesson_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
       JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       JwtSettings__Issuer: "EduLit.Auth"
       JwtSettings__Audience: "EduLit.Users"
@@ -94,10 +132,38 @@ services:
       - edulit-network
     entrypoint: >
       /bin/sh -c "
-      until pg_isready -h postgres_lesson -p 5432 -U postgres;
+      until pg_isready -h postgres -p 5432 -U postgres;
       do echo 'Waiting for PostgreSQL...'; sleep 2; done;
       echo 'PostgreSQL is ready!';
       dotnet LessonService.APi.dll
+      "
+      
+  question-service:
+    build:
+      context: ./services/question-service
+      dockerfile: QuestionService.Api/Dockerfile
+    container_name: edulit-question-service
+    restart: on-failure
+    depends_on:
+      postgres_question:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres_question;Port=5432;Database=question_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
+      JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      JwtSettings__Issuer: "EduLit.Auth"
+      JwtSettings__Audience: "EduLit.Users"
+      JwtSettings__ExpiresInHours: "48"
+    ports:
+      - "8003:8080"
+    networks:
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until pg_isready -h postgres_question -p 5432 -U postgres;
+      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
+      echo 'PostgreSQL is ready!';
+      dotnet QuestionService.Api.dll
       "
 
   api-gateway:
@@ -116,6 +182,8 @@ services:
 volumes:
   pgdata:
   pgdata_lesson:
+  pgdata_question:
+  mysqldata:
 
 networks:
   edulit-network:
