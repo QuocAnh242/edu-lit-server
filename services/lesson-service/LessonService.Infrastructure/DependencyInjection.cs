@@ -1,11 +1,14 @@
-﻿using LessonService.Domain.IDAOs;
+﻿using LessonService.Application.IServices;
+using LessonService.Domain.IDAOs;
 using LessonService.Domain.Interfaces;
 using LessonService.Infrastructure.Persistance.DAOs;
 using LessonService.Infrastructure.Persistance.DBContext;
+using LessonService.Infrastructure.Persistance.DistributedCaches;
 using LessonService.Infrastructure.Persistance.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
 
 namespace LessonService.Infrastructure
 {
@@ -19,12 +22,28 @@ namespace LessonService.Infrastructure
             //register repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
+            //register third party
+            services.AddScoped<IRedisService, RedisService>();
+            
             // register services (unit of work)
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             // register db context
-            services.AddDbContext<LessonDbContext>(option =>
-            option.UseNpgsql(configuration.GetConnectionString("DefaultConnectionStringDB")));
+            services.AddDbContext<LessonDbContext>(options => 
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+            
+            var redisConfig = configuration.GetConnectionString("Redis");
+            
+            //register redis for basic caching
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = redisConfig;
+                options.InstanceName = "LessonService_";
+            });
+            
+            //register redis for advanced caching\
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+                ConnectionMultiplexer.Connect(redisConfig));
             
             return services;
         }

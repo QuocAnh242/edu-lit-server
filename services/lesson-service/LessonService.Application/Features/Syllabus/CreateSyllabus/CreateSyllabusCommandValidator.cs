@@ -16,10 +16,11 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
                 .MinimumLength(5).WithMessage("Title must be at least 5 characters.")
                 .MaximumLength(100).WithMessage("Title cannot exceed 100 characters.");
             RuleFor(x => x.AcademicYear)
+                .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Academic year is required.")
                 // Sử dụng .Matches() để kiểm tra định dạng
-                .Matches(@"^\d{4}\s-\s\d{4}$").WithMessage("Academic year must be in the format 'YYYY - YYYY', for example '2010 - 2012'.")
-                .Must(BeAValidYearRange).WithMessage("Academic year must be in the format 'YYYY - YYYY', for example '2010 - 2012'.");
+                .Matches(@"^\d{4}-\d{4}$").WithMessage("Academic year must be in the format 'YYYY-YYYY', for example '2010 - 2012'.")
+                .Must(BeAValidYearRange).WithMessage("Academic year must be in the format 'YYYY - YYYY', for example 'currentYear-currentYear + 5'.");
             RuleFor(x => x.Semester)
                 .NotNull().WithMessage("Semester is required.")
                 .IsInEnum().WithMessage("Semester is required and must be one of the allowed values.");
@@ -32,7 +33,7 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
         
         private bool BeAValidYearRange(string academicYear)
         {
-            var years = academicYear.Split(" - ");
+            var years = academicYear.Split("-");
             if (int.TryParse(years[0], out int startYear) && int.TryParse(years[1], out int endYear))
             {
                 // Check 1: Năm kết thúc phải lớn hơn năm bắt đầu
