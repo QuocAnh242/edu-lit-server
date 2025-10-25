@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -130,7 +132,7 @@ services:
       - edulit-network
     entrypoint: >
       /bin/sh -c "
-      until pg_isready -h postgres_lesson -p 5432 -U postgres;
+      until pg_isready -h postgres -p 5432 -U postgres;
       do echo 'Waiting for PostgreSQL...'; sleep 2; done;
       echo 'PostgreSQL is ready!';
       dotnet LessonService.APi.dll

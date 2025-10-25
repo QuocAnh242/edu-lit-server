@@ -4,6 +4,8 @@ using LessonService.Application.Features.Syllabus.CreateSyllabus;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using LessonService.Application.Features.Syllabus.GetSyllabusById;
+using LessonService.Domain.Commons;
 
 namespace LessonService.APi.Controllers;
 
@@ -14,45 +16,50 @@ namespace LessonService.APi.Controllers;
 public class SyllabusController : ControllerBase
 {
     private readonly ICommandHandler<CreateSyllabusCommand, Guid> _createSyllabusCommandHandler;
+    private readonly IQueryHandler<GetSyllabusByIdQuery, GetSyllabusByIdResponse> _getSyllabusByIdQueryHandler;
     
-    public SyllabusController(ICommandHandler<CreateSyllabusCommand, Guid> createSyllabusCommandHandler)
+    public SyllabusController(ICommandHandler<CreateSyllabusCommand, Guid> createSyllabusCommandHandler, IQueryHandler<GetSyllabusByIdQuery, GetSyllabusByIdResponse> getSyllabusByIdQueryHandler)
     {
         _createSyllabusCommandHandler = createSyllabusCommandHandler;
+        _getSyllabusByIdQueryHandler = getSyllabusByIdQueryHandler;
+    }
+    
+    // Stub GET action so CreatedAtAction has a target. Implement retrieval logic later.
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ApiResponse<GetSyllabusByIdResponse>>> GetSyllabusById(Guid id)
+    {
+        var result = await _getSyllabusByIdQueryHandler.Handle(new GetSyllabusByIdQuery(id), CancellationToken.None);
+        if (!result.Success)
+        {
+            if (result.StatusCode == 404)
+                return NotFound(result);
+            return BadRequest(result);
+        }
+        return Ok(result);
     }
     
     [HttpPost]
-    public async Task<ActionResult<Guid>> CreateSyllabus(CreateSyllabusCommand syllabusCommand)
+    public async Task<ActionResult<ApiResponse<Guid>>> CreateSyllabus(CreateSyllabusCommand syllabusCommand)
     {
         // Safely read the user's id from claims before handling the command
-        var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(userIdString))
-            return Unauthorized();
-
+        // var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        // if (string.IsNullOrWhiteSpace(userIdString))
+        //     return Unauthorized();
+    
         // If your command expects a string author id, set it here.
-        syllabusCommand.Author = userIdString;
-
+        // syllabusCommand.Author = userIdString;
+        syllabusCommand.Author = "Thai";
+    
         var result = await _createSyllabusCommandHandler.Handle(syllabusCommand, CancellationToken.None);
-        if (result.IsFailure)
+        if (!result.Success)
         {
-            if (result.Error.Code.Contains("Validation"))
-                return UnprocessableEntity(result.Error);
-            return BadRequest(result.Error);
+            if (result.StatusCode == 400)
+                return UnprocessableEntity(result.Message);
+            return BadRequest(result.Message);
         }
-        
-        // include the API version route value so URL generation works with api versioning
-        var apiVersion = RouteData.Values["version"]?.ToString();
 
-        return CreatedAtAction(
-            nameof(GetSyllabusById), // action used to retrieve the created resource
-            new { version = apiVersion, id = result.Value },  // route values (include version)
-            result.Value);
+        return CreatedAtAction(nameof(GetSyllabusById), new { id = result.Data }, result);
     }
 
-    // Stub GET action so CreatedAtAction has a target. Implement retrieval logic later.
-    [HttpGet("{id}")]
-    public async Task<ActionResult<Guid>> GetSyllabusById(Guid id)
-    {
-        // TODO: implement retrieval from database; return NotFound() if missing
-        return NotFound();
-    }
+
 }
