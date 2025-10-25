@@ -6,6 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Load Ocelot configuration
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 // Register Ocelot services
 builder.Services.AddOcelot(builder.Configuration);
 
@@ -15,6 +27,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Enable CORS - MUST be before UseOcelot
+app.UseCors("AllowFrontend");
 
 // Swagger for debugging Gateway only
 if (app.Environment.IsDevelopment())
