@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using LessonService.Application.Features.Syllabus.GetSyllabusById;
 
 namespace LessonService.Application
 {
@@ -17,8 +18,10 @@ namespace LessonService.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             // Register application services, handlers, and other dependencies here
-            //E.g
+            //Command
             services.AddScoped<ICommandHandler<CreateSyllabusCommand, Guid>, CreateSyllabusCommandHandler>();
+            //Query
+            services.AddScoped<IQueryHandler<GetSyllabusByIdQuery, GetSyllabusByIdResponse>, GetSyllabusByIdQueryHandler>();
 
             // Register all validators and AutoMapper profiles from the assembly
             //chỉ cần thêm dòng này là đủ để đăng ký tất cả validator và profile trong assembly ko cần đăng ký từng cái một
