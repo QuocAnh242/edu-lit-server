@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using QuestionService.Domain.Entities;
 
 namespace QuestionService.Infrastructure.Data
@@ -16,12 +16,13 @@ namespace QuestionService.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasPostgresExtension("uuid-ossp");
+            modelBuilder.HasDefaultSchema("public"); // nếu dùng schema public
 
             // QuestionBank entity configuration
             modelBuilder.Entity<QuestionBank>(entity =>
             {
                 entity.HasKey(e => e.QuestionBanksId).HasName("question_banks_pkey");
-                entity.ToTable("question_banks");
+                entity.ToTable("question_banks"); // hoặc "question_bank" đúng với DB hiện có
 
                 entity.Property(e => e.QuestionBanksId)
                     .HasDefaultValueSql("uuid_generate_v4()")
