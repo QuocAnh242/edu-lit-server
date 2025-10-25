@@ -164,6 +164,31 @@ services:
       dotnet QuestionService.Api.dll
       "
 
+  assessment-service:
+    build:
+      context: ./services/assessment-service
+      dockerfile: AssessmentService.Api/Dockerfile
+    container_name: edulit-assessment-service
+    restart: on-failure
+    depends_on:
+      mysql_assessment:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass"
+    ports:
+      - "8004:8080"
+    networks:
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until mysqladmin ping -h mysql_assessment --silent; do
+        echo 'Waiting for MySQL...'; sleep 3;
+      done;
+      echo 'MySQL is ready!';
+      dotnet AssessmentService.Api.dll
+      "
+
   api-gateway:
     build:
       context: .
