@@ -1,6 +1,17 @@
 version: "3.9"
 
 services:
+
+# docker-compose.yml
+  mongo:
+    image: mongo:6
+    container_name: edulit-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - edulit-network
+
   postgres:
     image: postgres:16-alpine
     container_name: edulit-postgres
@@ -17,6 +28,24 @@ services:
       - edulit-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: edulit-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672" # giao diện web để kiểm tra hàng đợi
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -91,9 +120,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:     
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=auth_db;Username=postgres;Password=postgres"
+      Mongo__ConnectionString: "mongodb://mongo:27017"
+      Mongo__Database: "auth_read"
+      RabbitMq__HostName: "rabbitmq"  
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: "guest"
+      RabbitMq__Password: "guest"
       Jwt__Key: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       Jwt__Issuer: "EduLit.Auth"
       Jwt__Audience: "EduLit.Users"
@@ -102,13 +139,6 @@ services:
       - "8001:8080"
     networks:
       - edulit-network
-    entrypoint: >
-      /bin/sh -c "
-      until pg_isready -h postgres -p 5432 -U postgres;
-      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
-      echo 'PostgreSQL is ready!';
-      dotnet AuthService.Api.dll
-      "
 
   lesson-service:
     build:
@@ -135,7 +165,7 @@ services:
       until pg_isready -h postgres -p 5432 -U postgres;
       do echo 'Waiting for PostgreSQL...'; sleep 2; done;
       echo 'PostgreSQL is ready!';
-      dotnet LessonService.APi.dll
+      dotnet LessonService.Api.dll
       "
       
   question-service:
