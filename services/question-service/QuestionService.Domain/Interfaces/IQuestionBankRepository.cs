@@ -14,3 +14,4 @@ namespace QuestionService.Domain.Interfaces
         Task<bool> ExistsAsync(Guid questionBanksId);
     }
 }
+

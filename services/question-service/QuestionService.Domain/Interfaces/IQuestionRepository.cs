@@ -1,4 +1,5 @@
 using QuestionService.Domain.Entities;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Domain.Interfaces
 {
@@ -8,7 +9,7 @@ namespace QuestionService.Domain.Interfaces
         Task<IEnumerable<Question>> GetAllAsync();
         Task<IEnumerable<Question>> GetByQuestionBankIdAsync(Guid questionBankId);
         Task<IEnumerable<Question>> GetByAuthorIdAsync(Guid authorId);
-        Task<IEnumerable<Question>> GetByQuestionTypeAsync(string questionType);
+        Task<IEnumerable<Question>> GetByQuestionTypeAsync(QuestionType questionType);
         Task<IEnumerable<Question>> GetPublishedQuestionsAsync();
         Task<Question> CreateAsync(Question question);
         Task<Question> UpdateAsync(Question question);

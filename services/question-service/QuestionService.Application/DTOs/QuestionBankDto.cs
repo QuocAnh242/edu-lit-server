@@ -11,3 +11,4 @@ namespace QuestionService.Application.DTOs
         public List<QuestionDto> Questions { get; set; } = new List<QuestionDto>();
     }
 }
+

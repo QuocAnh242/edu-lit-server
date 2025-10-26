@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuestionService.Application.DTOs.Request;
 using QuestionService.Application.DTOs.Response;
 using QuestionService.Application.Services.Interfaces;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Api.Controllers
 {
@@ -46,7 +47,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpGet("type/{questionType}")]
-        public async Task<IActionResult> GetByQuestionType(string questionType)
+        public async Task<IActionResult> GetByQuestionType(QuestionType questionType)
         {
             var res = await _questionService.GetByQuestionTypeAsync(questionType);
             return Ok(res);

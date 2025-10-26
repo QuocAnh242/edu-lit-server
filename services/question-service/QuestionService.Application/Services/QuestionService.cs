@@ -4,6 +4,7 @@ using QuestionService.Application.DTOs.Response;
 using QuestionService.Application.Services.Interfaces;
 using QuestionService.Domain.Entities;
 using QuestionService.Domain.Interfaces;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Application.Services
 {
@@ -81,7 +82,7 @@ namespace QuestionService.Application.Services
             }
         }
 
-        public async Task<ApiResponse<IEnumerable<QuestionDto>>> GetByQuestionTypeAsync(string questionType)
+        public async Task<ApiResponse<IEnumerable<QuestionDto>>> GetByQuestionTypeAsync(QuestionType questionType)
         {
             try
             {
@@ -128,25 +129,7 @@ namespace QuestionService.Application.Services
                 };
 
                 var createdQuestion = await _questionRepository.CreateAsync(question);
-
-                // Create question options
-                foreach (var optionRequest in request.QuestionOptions)
-                {
-                    var questionOption = new QuestionOption
-                    {
-                        QuestionOptionId = Guid.NewGuid(),
-                        OptionText = optionRequest.OptionText,
-                        IsCorrect = optionRequest.IsCorrect,
-                        OrderIdx = optionRequest.OrderIdx,
-                        QuestionId = createdQuestion.QuestionId
-                    };
-
-                    await _questionOptionRepository.CreateAsync(questionOption);
-                }
-
-                // Reload the question with all relationships
-                var fullQuestion = await _questionRepository.GetByIdAsync(createdQuestion.QuestionId);
-                var questionDto = MapToQuestionDto(fullQuestion!);
+                var questionDto = MapToQuestionDto(createdQuestion);
 
                 return ApiResponse<QuestionDto>.SuccessResponse(questionDto, "Question created successfully", 201);
             }
@@ -178,28 +161,7 @@ namespace QuestionService.Application.Services
                 existingQuestion.AuthorId = request.AuthorId;
 
                 await _questionRepository.UpdateAsync(existingQuestion);
-
-                // Delete existing question options
-                await _questionOptionRepository.DeleteByQuestionIdAsync(questionId);
-
-                // Create new question options
-                foreach (var optionRequest in request.QuestionOptions)
-                {
-                    var questionOption = new QuestionOption
-                    {
-                        QuestionOptionId = Guid.NewGuid(),
-                        OptionText = optionRequest.OptionText,
-                        IsCorrect = optionRequest.IsCorrect,
-                        OrderIdx = optionRequest.OrderIdx,
-                        QuestionId = questionId
-                    };
-
-                    await _questionOptionRepository.CreateAsync(questionOption);
-                }
-
-                // Reload the question with all relationships
-                var updatedQuestion = await _questionRepository.GetByIdAsync(questionId);
-                var questionDto = MapToQuestionDto(updatedQuestion!);
+                var questionDto = MapToQuestionDto(existingQuestion);
 
                 return ApiResponse<QuestionDto>.SuccessResponse(questionDto, "Question updated successfully");
             }
@@ -242,15 +204,7 @@ namespace QuestionService.Application.Services
                 UpdatedAt = question.UpdatedAt,
                 IsPublished = question.IsPublished,
                 QuestionBankId = question.QuestionBankId,
-                AuthorId = question.AuthorId,
-                QuestionOptions = question.QuestionOptions?.Select(qo => new QuestionOptionDto
-                {
-                    QuestionOptionId = qo.QuestionOptionId,
-                    OptionText = qo.OptionText,
-                    IsCorrect = qo.IsCorrect,
-                    OrderIdx = qo.OrderIdx,
-                    QuestionId = qo.QuestionId
-                }).ToList() ?? new List<QuestionOptionDto>()
+                AuthorId = question.AuthorId
             };
         }
     }
