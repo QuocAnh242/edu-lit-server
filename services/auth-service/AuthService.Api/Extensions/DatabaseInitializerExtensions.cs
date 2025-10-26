@@ -1,5 +1,6 @@
 ﻿using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+
 namespace AuthService.Api.Extensions
 {
     public static class DatabaseInitializerExtensions
@@ -19,8 +20,10 @@ namespace AuthService.Api.Extensions
             {
                 try
                 {
-                    logger.LogInformation($"Ensuring database is created... (Attempt {attempt}/{maxRetries})");
-                    await dbContext.Database.EnsureCreatedAsync();
+                    logger.LogInformation("Running database migrations... (Attempt {Attempt}/{MaxRetries})", attempt, maxRetries);
+                    
+                    // Use Migrate instead of EnsureCreated to apply migrations
+                    await dbContext.Database.MigrateAsync();
 
                     logger.LogInformation("Seeding initial data...");
                     DBInitializer.Seed(dbContext);
@@ -32,11 +35,11 @@ namespace AuthService.Api.Extensions
                 {
                     if (attempt == maxRetries)
                     {
-                        logger.LogError(ex, "Database initialization failed after {maxRetries} attempts. Service will continue running.", maxRetries);
-                        return; // Give up, but don't crash
+                        logger.LogError(ex, "Database initialization failed after {MaxRetries} attempts. Service will continue running.", maxRetries);
+                        return;
                     }
 
-                    logger.LogWarning(ex, "Database connection failed (Attempt {attempt}/{maxRetries}). Retrying in {delayMs}ms...", attempt, maxRetries, delayMs);
+                    logger.LogWarning(ex, "Database connection failed (Attempt {Attempt}/{MaxRetries}). Retrying in {DelayMs}ms...", attempt, maxRetries, delayMs);
                     await Task.Delay(delayMs);
                 }
             }

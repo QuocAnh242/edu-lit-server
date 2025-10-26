@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AuthService.Application.Queries
+namespace AuthService.Application.Abstractions.Queries
 {
     public class GetUserProfileQuery
     {
