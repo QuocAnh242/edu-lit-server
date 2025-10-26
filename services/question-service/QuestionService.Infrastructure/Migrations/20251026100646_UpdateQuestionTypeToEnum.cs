@@ -28,15 +28,36 @@ namespace QuestionService.Infrastructure.Migrations
                 newName: "question_banks",
                 newSchema: "public");
 
-            migrationBuilder.AlterColumn<int>(
-                name: "question_type",
+            // First, add a temporary column for the new integer values
+            migrationBuilder.AddColumn<int>(
+                name: "question_type_new",
                 schema: "public",
                 table: "questions",
                 type: "integer",
                 nullable: false,
-                oldClrType: typeof(string),
-                oldType: "character varying(50)",
-                oldMaxLength: 50);
+                defaultValue: 1);
+
+            // Convert existing string values to integer enum values
+            migrationBuilder.Sql(@"
+                UPDATE public.questions 
+                SET question_type_new = CASE 
+                    WHEN question_type = 'Paragraph' THEN 1
+                    WHEN question_type = 'Multichoice' THEN 2
+                    ELSE 1
+                END");
+
+            // Drop the old column
+            migrationBuilder.DropColumn(
+                name: "question_type",
+                schema: "public",
+                table: "questions");
+
+            // Rename the new column to the original name
+            migrationBuilder.RenameColumn(
+                name: "question_type_new",
+                schema: "public",
+                table: "questions",
+                newName: "question_type");
         }
 
         /// <inheritdoc />
@@ -57,14 +78,34 @@ namespace QuestionService.Infrastructure.Migrations
                 schema: "public",
                 newName: "question_banks");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "question_type",
+            // First, add a temporary column for the new string values
+            migrationBuilder.AddColumn<string>(
+                name: "question_type_new",
                 table: "questions",
                 type: "character varying(50)",
                 maxLength: 50,
                 nullable: false,
-                oldClrType: typeof(int),
-                oldType: "integer");
+                defaultValue: "Paragraph");
+
+            // Convert existing integer values back to string enum values
+            migrationBuilder.Sql(@"
+                UPDATE questions 
+                SET question_type_new = CASE 
+                    WHEN question_type = 1 THEN 'Paragraph'
+                    WHEN question_type = 2 THEN 'Multichoice'
+                    ELSE 'Paragraph'
+                END");
+
+            // Drop the old column
+            migrationBuilder.DropColumn(
+                name: "question_type",
+                table: "questions");
+
+            // Rename the new column to the original name
+            migrationBuilder.RenameColumn(
+                name: "question_type_new",
+                table: "questions",
+                newName: "question_type");
         }
     }
 }
