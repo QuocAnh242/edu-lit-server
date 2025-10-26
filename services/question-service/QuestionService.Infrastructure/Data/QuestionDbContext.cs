@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QuestionService.Domain.Entities;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Infrastructure.Data
 {
@@ -73,7 +74,7 @@ namespace QuestionService.Infrastructure.Data
 
                 entity.Property(e => e.QuestionType)
                     .IsRequired()
-                    .HasMaxLength(50)
+                    .HasConversion<int>()
                     .HasColumnName("question_type");
 
                 entity.Property(e => e.Metadata)

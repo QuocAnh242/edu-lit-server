@@ -1,6 +1,7 @@
 using QuestionService.Application.DTOs;
 using QuestionService.Application.DTOs.Request;
 using QuestionService.Application.DTOs.Response;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Application.Services.Interfaces
 {
@@ -10,7 +11,7 @@ namespace QuestionService.Application.Services.Interfaces
         Task<ApiResponse<IEnumerable<QuestionDto>>> GetAllAsync();
         Task<ApiResponse<IEnumerable<QuestionDto>>> GetByQuestionBankIdAsync(Guid questionBankId);
         Task<ApiResponse<IEnumerable<QuestionDto>>> GetByAuthorIdAsync(Guid authorId);
-        Task<ApiResponse<IEnumerable<QuestionDto>>> GetByQuestionTypeAsync(string questionType);
+        Task<ApiResponse<IEnumerable<QuestionDto>>> GetByQuestionTypeAsync(QuestionType questionType);
         Task<ApiResponse<IEnumerable<QuestionDto>>> GetPublishedQuestionsAsync();
         Task<ApiResponse<QuestionDto>> CreateAsync(CreateQuestionRequest request);
         Task<ApiResponse<QuestionDto>> UpdateAsync(Guid questionId, CreateQuestionRequest request);
