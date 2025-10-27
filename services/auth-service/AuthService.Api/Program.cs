@@ -35,7 +35,6 @@ builder.Services.AddSwaggerGen(c =>
 // Application and Infrastructure layers
 builder.Services.AddAuthInfrastructure(builder.Configuration);
 builder.Services.AddAuthApplication();
-
 // Cors setup
 builder.Services.AddCors(options =>
 {
@@ -65,6 +64,7 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 });
+Console.WriteLine("ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
 await app.Services.InitializeDatabaseAsync(); // This should create the outbox_messages table

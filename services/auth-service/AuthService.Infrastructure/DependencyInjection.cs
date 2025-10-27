@@ -47,39 +47,7 @@ public static class DependencyInjection
         services.AddScoped<IOutbox, EfCoreOutbox>();
         services.AddHostedService<OutboxPublisherBackgroundService>();
 
-        // RabbitMQ connection + publisher
-        services.AddSingleton<IConnection>(sp =>
-        {
-            var cfg = sp.GetRequiredService<IConfiguration>();
-
-            var cs = cfg.GetConnectionString("RabbitMq");
-            ConnectionFactory factory;
-            if (!string.IsNullOrWhiteSpace(cs))
-            {
-                factory = new ConnectionFactory { Uri = new Uri(cs) };
-            }
-            else
-            {
-                var host = cfg["RabbitMq:HostName"] ?? "rabbitmq";
-                var port = int.TryParse(cfg["RabbitMq:Port"], out var p) ? p : 5672;
-                var user = cfg["RabbitMq:UserName"] ?? "guest";
-                var pass = cfg["RabbitMq:Password"] ?? "guest";
-                var vhost = cfg["RabbitMq:VirtualHost"] ?? "/";
-
-                factory = new ConnectionFactory
-                {
-                    HostName = host,
-                    Port = port,
-                    UserName = user,
-                    Password = pass,
-                    VirtualHost = vhost
-                };
-            }
-
-            return factory.CreateConnectionAsync(clientProvidedName: "auth-service", cancellationToken: default)
-                          .GetAwaiter().GetResult();
-        });
-
+        // Remove IConnection singleton; register publisher directly.
         services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
 
         // MongoDB (read side)
