@@ -38,6 +38,9 @@ if (app.Environment.IsDevelopment())
 // Do NOT use HTTPS redirect if you're using HTTP between containers
 // app.UseHttpsRedirection();
 
+// IMPORTANT: UseCors MUST be called BEFORE UseOcelot
+app.UseCors("AllowFrontend");
+
 app.UseAuthorization();
 
 app.MapControllers();
