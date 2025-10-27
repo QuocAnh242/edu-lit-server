@@ -1,11 +1,6 @@
 ﻿using AuthService.Api.Extensions;
-using AuthService.Application.Services.Interfaces;
-using AuthService.Domain.Interfaces;
-using AuthService.Infrastructure.DAO;
-using AuthService.Infrastructure.DAO.Interfaces;
-using AuthService.Infrastructure.Data;
-using AuthService.Infrastructure.JWT;
-using AuthService.Infrastructure.Repositories;
+using AuthService.Application;
+using AuthService.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -15,10 +10,9 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+
 // Swagger + JWT security
 builder.Services.AddSwaggerGen(c =>
 {
@@ -35,27 +29,12 @@ builder.Services.AddSwaggerGen(c =>
     };
 
     c.AddSecurityDefinition("Bearer", jwtScheme);
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        { jwtScheme, new List<string>() }
-    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement { { jwtScheme, new List<string>() } });
 });
 
-// DI Container setup
-builder.Services.AddScoped<AuthDbContext>();
-builder.Services.AddScoped<IAuthDAO, AuthDAO>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
-builder.Services.AddScoped<IAuthService, AuthService.Application.Services.AuthService>();
-builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-// DI Role Service
-builder.Services.AddScoped<IRoleDAO, RoleDAO>();
-builder.Services.AddScoped<IRoleRepository, RoleRepository>();
-builder.Services.AddScoped<IRoleService, AuthService.Application.Services.RoleService>();
-//DI User Service
-builder.Services.AddScoped<IUserDAO, UserDAO>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IUserService, AuthService.Application.Services.UserService>();
-
+// Application and Infrastructure layers
+builder.Services.AddAuthInfrastructure(builder.Configuration);
+builder.Services.AddAuthApplication();
 // Cors setup
 builder.Services.AddCors(options =>
 {
@@ -64,10 +43,6 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod()
               .AllowAnyHeader());
 });
-
-// PostgreSQL connection
-builder.Services.AddDbContext<AuthDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // JWT setup
 builder.Services.AddAuthentication(options =>
@@ -89,9 +64,10 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 });
+Console.WriteLine("ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
-await app.Services.InitializeDatabaseAsync();
+await app.Services.InitializeDatabaseAsync(); // This should create the outbox_messages table
 app.UseRouting();
 
 // add cors middleware

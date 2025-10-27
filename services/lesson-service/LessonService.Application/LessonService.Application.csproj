@@ -15,7 +15,6 @@
     <Folder Include="Features\Syllabus\Delete\" />
     <Folder Include="Features\Syllabus\GetPagination\" />
     <Folder Include="Features\Syllabus\Update\" />
-    <Folder Include="IServices\" />
   </ItemGroup>
 
   <ItemGroup>

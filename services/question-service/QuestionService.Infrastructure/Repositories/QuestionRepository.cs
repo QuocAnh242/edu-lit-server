@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QuestionService.Domain.Entities;
 using QuestionService.Domain.Interfaces;
+using QuestionService.Domain.Enums;
 using QuestionService.Infrastructure.Data;
 
 namespace QuestionService.Infrastructure.Repositories
@@ -51,7 +52,7 @@ namespace QuestionService.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<Question>> GetByQuestionTypeAsync(string questionType)
+        public async Task<IEnumerable<Question>> GetByQuestionTypeAsync(QuestionType questionType)
         {
             return await _context.Questions
                 .Include(q => q.QuestionBank)

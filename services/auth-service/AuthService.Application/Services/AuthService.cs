@@ -2,7 +2,6 @@
 using AuthService.Application.DTOs.Response;
 using AuthService.Application.Enums;
 using AuthService.Application.Exceptions;
-using AuthService.Application.Queries;
 using AuthService.Application.Services.Interfaces;
 using AuthService.Domain.Interfaces;
 using Microsoft.Extensions.Logging;

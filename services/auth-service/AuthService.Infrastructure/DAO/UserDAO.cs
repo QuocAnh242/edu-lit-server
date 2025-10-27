@@ -1,4 +1,5 @@
 ﻿using AuthService.Domain.Entities;
+using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.DAO.Interfaces;
 using AuthService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -11,23 +12,25 @@ namespace AuthService.Infrastructure.DAO
 {
     public class UserDAO : IUserDAO
     {
-        private readonly AuthDbContext _context;
+        private readonly IUnitOfWork _uow;
+        private readonly AuthDbContext _db;
 
-        public UserDAO(AuthDbContext authDbContext)
+        public UserDAO(IUnitOfWork uow)
         {
-            this._context = authDbContext;
+            _uow = uow;
+            _db = (AuthDbContext)_uow.Context;
         }
 
-        public async Task<User> GetByIdAsync(Guid id) => await _context.Set<User>().FindAsync(id);
+        public async Task<User> GetByIdAsync(Guid id) => await _db.Set<User>().FindAsync(id);
 
-        public async Task<List<User>> GetAllAsync() => await _context.Set<User>().ToListAsync();
+        public async Task<List<User>> GetAllAsync() => await _db.Set<User>().ToListAsync();
 
         public async Task<(List<User> Items, int TotalCount)> GetPagedAsync(int page, int size)
         {
             if (page < 1) page = 1;
             if (size < 1) size = 20;
 
-            var query = _context.Set<User>()
+            var query = _db.Set<User>()
                 .Include(u => u.Role)
                 .AsNoTracking()
                 .OrderByDescending(u => u.CreatedAt ?? DateTime.UnixEpoch);
@@ -43,14 +46,14 @@ namespace AuthService.Infrastructure.DAO
 
         public async Task AddAsync(User user)
         {
-            _context.Set<User>().Add(user);
-            await _context.SaveChangesAsync();
+            _db.Set<User>().Add(user);
+            await _uow.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(User user)
         {
-            _context.Set<User>().Update(user);
-            await _context.SaveChangesAsync();
+            _db.Set<User>().Update(user);
+            await _uow.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(Guid id)
@@ -58,8 +61,8 @@ namespace AuthService.Infrastructure.DAO
             var user = await GetByIdAsync(id);
             if (user != null)
             {
-                _context.Set<User>().Remove(user);
-                await _context.SaveChangesAsync();
+                _db.Set<User>().Remove(user);
+                await _uow.SaveChangesAsync();
             }
         }
     }

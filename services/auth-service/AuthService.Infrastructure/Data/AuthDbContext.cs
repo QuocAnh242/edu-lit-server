@@ -13,6 +13,10 @@ namespace AuthService.Infrastructure.Data
         {
         }
 
+        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
+        {
+        }
+
         public AuthDbContext(DbContextOptions<AuthDbContext> options, IConfiguration configuration)
             : base(options)
         {
@@ -22,12 +26,12 @@ namespace AuthService.Infrastructure.Data
         public virtual DbSet<Oauthaccount> Oauthaccounts { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
+        public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
-                // Ưu tiên đọc từ environment (Docker), fallback sang appsettings.json khi local
                 var config = _configuration ?? new ConfigurationBuilder()
                     .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                     .AddJsonFile("appsettings.json", optional: true)
@@ -35,7 +39,9 @@ namespace AuthService.Infrastructure.Data
                     .Build();
 
                 var connectionString = config.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseNpgsql(connectionString);
+                optionsBuilder.UseNpgsql(connectionString)
+                    .ConfigureWarnings(warnings => 
+                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
             }
         }
 
@@ -98,6 +104,36 @@ namespace AuthService.Infrastructure.Data
                     .HasDefaultValueSql("uuid_generate_v4()")
                     .HasColumnName("id");
                 entity.Property(e => e.Name).HasColumnName("name");
+            });
+
+            // Outbox table mapping
+            modelBuilder.Entity<OutboxMessage>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("outbox_messages_pkey");
+                entity.ToTable("outbox_messages");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("uuid_generate_v4()")
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Type)
+                    .HasMaxLength(255)
+                    .HasColumnName("type");
+
+                entity.Property(e => e.Payload)
+                    .HasColumnName("payload");
+
+                entity.Property(e => e.OccurredOnUtc)
+                    .HasDefaultValueSql("now() at time zone 'utc'")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("occurred_on_utc");
+
+                entity.Property(e => e.ProcessedOnUtc)
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("processed_on_utc");
+
+                entity.Property(e => e.Error)
+                    .HasColumnName("error");
             });
 
             OnModelCreatingPartial(modelBuilder);

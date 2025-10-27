@@ -17,6 +17,7 @@ namespace QuestionService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
+                .HasDefaultSchema("public")
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
@@ -59,10 +60,8 @@ namespace QuestionService.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("question_bank_id");
 
-                    b.Property<string>("QuestionType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                    b.Property<int>("QuestionType")
+                        .HasColumnType("integer")
                         .HasColumnName("question_type");
 
                     b.Property<string>("Tags")
@@ -89,7 +88,7 @@ namespace QuestionService.Infrastructure.Migrations
 
                     b.HasIndex("QuestionBankId");
 
-                    b.ToTable("questions", (string)null);
+                    b.ToTable("questions", "public");
                 });
 
             modelBuilder.Entity("QuestionService.Domain.Entities.QuestionBank", b =>
@@ -129,7 +128,7 @@ namespace QuestionService.Infrastructure.Migrations
                     b.HasKey("QuestionBanksId")
                         .HasName("question_banks_pkey");
 
-                    b.ToTable("question_banks", (string)null);
+                    b.ToTable("question_banks", "public");
                 });
 
             modelBuilder.Entity("QuestionService.Domain.Entities.QuestionOption", b =>
@@ -163,7 +162,7 @@ namespace QuestionService.Infrastructure.Migrations
 
                     b.HasIndex("QuestionId");
 
-                    b.ToTable("question_options", (string)null);
+                    b.ToTable("question_options", "public");
                 });
 
             modelBuilder.Entity("QuestionService.Domain.Entities.Question", b =>
