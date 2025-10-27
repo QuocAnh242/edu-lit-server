@@ -18,10 +18,10 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src 
 
-COPY ["LessonService.Api/LessonService.Api.csproj", "LessonService.Api/"]
-COPY ["LessonService.Application/LessonService.Application.csproj", "LessonService.Application/"]
-COPY ["LessonService.Domain/LessonService.Domain.csproj", "LessonService.Domain/"]
-COPY ["LessonService.Infrastructure/LessonService.Infrastructure.csproj", "LessonService.Infrastructure/"]
+COPY LessonService.Api/LessonService.Api.csproj LessonService.Api/
+COPY LessonService.Application/LessonService.Application.csproj LessonService.Application/
+COPY LessonService.Domain/LessonService.Domain.csproj LessonService.Domain/
+COPY LessonService.Infrastructure/LessonService.Infrastructure.csproj LessonService.Infrastructure/
 
 RUN dotnet restore "LessonService.Api/LessonService.Api.csproj"
 
