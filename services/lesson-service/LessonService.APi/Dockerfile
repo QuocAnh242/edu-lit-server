@@ -18,27 +18,27 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src 
 
-COPY ["LessonService.APi/LessonService.APi.csproj", "LessonService.APi/"]
+COPY ["LessonService.Api/LessonService.Api.csproj", "LessonService.Api/"]
 COPY ["LessonService.Application/LessonService.Application.csproj", "LessonService.Application/"]
 COPY ["LessonService.Domain/LessonService.Domain.csproj", "LessonService.Domain/"]
 COPY ["LessonService.Infrastructure/LessonService.Infrastructure.csproj", "LessonService.Infrastructure/"]
 
-RUN dotnet restore "LessonService.APi/LessonService.APi.csproj"
+RUN dotnet restore "LessonService.Api/LessonService.Api.csproj"
 
 # Copy toàn bộ mã nguồn
 COPY . .
 
 # Build project
-WORKDIR "/src/LessonService.APi"
-RUN dotnet build "LessonService.APi.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/LessonService.Api"
+RUN dotnet build "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # ===================================================
 # Stage 3: Publish - Tách biệt bước publish cho rõ ràng
 # ===================================================
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-WORKDIR "/src/LessonService.APi"
-RUN dotnet publish "LessonService.APi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/LessonService.Api"
+RUN dotnet publish "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # ===================================================
 # Stage 4: Final - Tạo image cuối cùng để chạy
@@ -51,4 +51,4 @@ WORKDIR /app
 COPY --from=publish /app/publish /app
 
 # Run the published assembly by absolute path to avoid ambiguity
-ENTRYPOINT ["dotnet", "/app/LessonService.APi.dll"]
+ENTRYPOINT ["dotnet", "/app/LessonService.Api.dll"]

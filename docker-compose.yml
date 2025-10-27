@@ -1,6 +1,17 @@
 version: "3.9"
 
 services:
+
+# docker-compose.yml
+  mongo:
+    image: mongo:6
+    container_name: edulit-mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - edulit-network
+
   postgres:
     image: postgres:16-alpine
     container_name: edulit-postgres
@@ -17,6 +28,24 @@ services:
       - edulit-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d auth_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: edulit-rabbitmq
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672" # giao diện web để kiểm tra hàng đợi
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -41,7 +70,7 @@ services:
       timeout: 5s
       retries: 10
 
-  mysql:
+  mysql_assessment:
     image: mysql:5.7.43
     container_name: edulit-mysql
     restart: always
@@ -62,6 +91,26 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres_question:
+    image: postgres:17.6-alpine
+    container_name: edulit-postgres-question
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: question_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata_question:/var/lib/postgresql/data
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d question_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   auth-service:
     build:
       context: ./services/auth-service
@@ -71,9 +120,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      rabbitmq:     
+        condition: service_started
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=auth_db;Username=postgres;Password=postgres"
+      Mongo__ConnectionString: "mongodb://mongo:27017"
+      Mongo__Database: "auth_read"
+      RabbitMq__HostName: "rabbitmq"  
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: "guest"
+      RabbitMq__Password: "guest"
       Jwt__Key: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       Jwt__Issuer: "EduLit.Auth"
       Jwt__Audience: "EduLit.Users"
@@ -82,13 +139,6 @@ services:
       - "8001:8080"
     networks:
       - edulit-network
-    entrypoint: >
-      /bin/sh -c "
-      until pg_isready -h postgres -p 5432 -U postgres;
-      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
-      echo 'PostgreSQL is ready!';
-      dotnet AuthService.Api.dll
-      "
 
   lesson-service:
     build:
@@ -115,7 +165,60 @@ services:
       until pg_isready -h postgres -p 5432 -U postgres;
       do echo 'Waiting for PostgreSQL...'; sleep 2; done;
       echo 'PostgreSQL is ready!';
-      dotnet LessonService.APi.dll
+      dotnet LessonService.Api.dll
+      "
+      
+  question-service:
+    build:
+      context: ./services/question-service
+      dockerfile: QuestionService.Api/Dockerfile
+    container_name: edulit-question-service
+    restart: on-failure
+    depends_on:
+      postgres_question:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres_question;Port=5432;Database=question_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
+      JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      JwtSettings__Issuer: "EduLit.Auth"
+      JwtSettings__Audience: "EduLit.Users"
+      JwtSettings__ExpiresInHours: "48"
+    ports:
+      - "8003:8080"
+    networks:
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until pg_isready -h postgres_question -p 5432 -U postgres;
+      do echo 'Waiting for PostgreSQL...'; sleep 2; done;
+      echo 'PostgreSQL is ready!';
+      dotnet QuestionService.Api.dll
+      "
+
+  assessment-service:
+    build:
+      context: ./services/assessment-service
+      dockerfile: AssessmentService.Api/Dockerfile
+    container_name: edulit-assessment-service
+    restart: on-failure
+    depends_on:
+      mysql_assessment:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass"
+    ports:
+      - "8004:8080"
+    networks:
+      - edulit-network
+    entrypoint: >
+      /bin/sh -c "
+      until mysqladmin ping -h mysql_assessment --silent; do
+        echo 'Waiting for MySQL...'; sleep 3;
+      done;
+      echo 'MySQL is ready!';
+      dotnet AssessmentService.Api.dll
       "
 
   api-gateway:
@@ -134,6 +237,8 @@ services:
 volumes:
   pgdata:
   pgdata_lesson:
+  pgdata_question:
+  mysqldata:
 
 networks:
   edulit-network:

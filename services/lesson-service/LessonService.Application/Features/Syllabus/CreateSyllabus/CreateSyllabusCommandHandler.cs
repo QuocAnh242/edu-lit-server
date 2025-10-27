@@ -19,7 +19,7 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
             _mapper = mapper;
         }
 
-        public async Task<Result<Guid>> Handle(CreateSyllabusCommand syllabusCommand, CancellationToken cancellationToken)
+        public async Task<ApiResponse<Guid>> Handle(CreateSyllabusCommand syllabusCommand, CancellationToken cancellationToken)
         {
             var validationResult = await _createSyllabusCommandValidator.ValidateAsync(syllabusCommand);
             if (!validationResult.IsValid)
@@ -27,7 +27,7 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
                 var errors = validationResult.Errors
                     .Select(e => new Error("Syllabus.Create.Validation", e.ErrorMessage))
                     .ToList();
-                return Result<Guid>.Failure(errors);
+                return ApiResponse<Guid>.FailureResponse(errors.First().Message, 400);
             }
 
             var createdSyllabus = _mapper.Map<Domain.Entities.Syllabus>(syllabusCommand);
@@ -39,13 +39,14 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
             try
             {
                 await _unitOfWork.SaveChangesAsync();
+                //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.
             }
             catch (Exception e)
             {
-                return Result<Guid>.Failure(new Error("Syllabus.Create.Database.Error", e.Message));
+                return ApiResponse<Guid>.FailureResponse(e.Message, 500);
             }
             
-            return Result<Guid>.Success(createdSyllabus.Id);
+            return ApiResponse<Guid>.SuccessResponse(createdSyllabus.Id, "Create Syllabus Successfully", 201);
         }
         
     }

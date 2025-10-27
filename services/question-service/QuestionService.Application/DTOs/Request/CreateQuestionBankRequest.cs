@@ -18,3 +18,4 @@ namespace QuestionService.Application.DTOs.Request
         public Guid OwnerId { get; set; }
     }
 }
+

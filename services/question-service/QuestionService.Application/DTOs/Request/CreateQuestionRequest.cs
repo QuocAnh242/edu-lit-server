@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using QuestionService.Domain.Enums;
 
 namespace QuestionService.Application.DTOs.Request
 {
@@ -13,8 +14,7 @@ namespace QuestionService.Application.DTOs.Request
         public string Body { get; set; } = string.Empty;
 
         [Required]
-        [MaxLength(50)]
-        public string QuestionType { get; set; } = string.Empty;
+        public QuestionType QuestionType { get; set; }
 
         public string? Metadata { get; set; }
 
@@ -30,7 +30,5 @@ namespace QuestionService.Application.DTOs.Request
 
         [Required]
         public Guid AuthorId { get; set; }
-
-        public List<CreateQuestionOptionRequest> QuestionOptions { get; set; } = new List<CreateQuestionOptionRequest>();
     }
 }

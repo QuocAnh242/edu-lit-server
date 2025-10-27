@@ -1,3 +1,5 @@
+using QuestionService.Domain.Enums;
+
 namespace QuestionService.Domain.Entities
 {
     public partial class Question
@@ -8,7 +10,7 @@ namespace QuestionService.Domain.Entities
 
         public string Body { get; set; } = null!;
 
-        public string QuestionType { get; set; } = null!;
+        public QuestionType QuestionType { get; set; }
 
         public string? Metadata { get; set; }
 
