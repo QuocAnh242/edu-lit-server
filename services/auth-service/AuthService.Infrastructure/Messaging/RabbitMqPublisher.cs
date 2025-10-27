@@ -11,7 +11,6 @@ public sealed class RabbitMqPublisher : IMessageBusPublisher
 {
     private readonly ConnectionFactory _factory;
     private IConnection? _connection;
-
     public RabbitMqPublisher(IConfiguration cfg)
     {
         var cs = cfg.GetConnectionString("RabbitMq");

@@ -1,6 +1,8 @@
 ﻿using AuthService.Api.Extensions;
 using AuthService.Application;
 using AuthService.Infrastructure;
+using AuthService.Infrastructure.Messaging;
+using AuthService.Application.Abstractions.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -12,6 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+
+// Add RabbitMQ publisher (single registration)
+builder.Services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
 
 // Swagger + JWT security
 builder.Services.AddSwaggerGen(c =>
@@ -35,6 +40,7 @@ builder.Services.AddSwaggerGen(c =>
 // Application and Infrastructure layers
 builder.Services.AddAuthInfrastructure(builder.Configuration);
 builder.Services.AddAuthApplication();
+
 // Cors setup
 builder.Services.AddCors(options =>
 {
@@ -64,16 +70,15 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
     };
 });
+
 Console.WriteLine("ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
 
 var app = builder.Build();
-await app.Services.InitializeDatabaseAsync(); // This should create the outbox_messages table
+await app.Services.InitializeDatabaseAsync();
 app.UseRouting();
 
-// add cors middleware
 app.UseCors("AllowAll");
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

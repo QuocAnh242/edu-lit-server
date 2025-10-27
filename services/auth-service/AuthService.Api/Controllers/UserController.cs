@@ -2,7 +2,9 @@
 using AuthService.Application.DTOs;
 using AuthService.Application.Users.Commands;
 using AuthService.Application.Users.Queries;
+using AuthService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace AuthService.Api.Controllers
 {
@@ -12,11 +14,13 @@ namespace AuthService.Api.Controllers
     {
         private readonly ICommandDispatcher _commands;
         private readonly IQueryDispatcher _queries;
+        private readonly IMessageBusPublisher _messageBus;
 
-        public UserController(ICommandDispatcher commands, IQueryDispatcher queries)
+        public UserController(ICommandDispatcher commands, IQueryDispatcher queries, IMessageBusPublisher messageBus)
         {
             _commands = commands;
             _queries = queries;
+            _messageBus = messageBus;
         }
 
         [HttpGet]
@@ -59,7 +63,17 @@ namespace AuthService.Api.Controllers
             var res = await _commands.Send<CreateUserCommand, Guid>(cmd, ct);
             if (!res.Success) return BadRequest(res);
 
-            // 201 Created + Location header pointing to GetById
+            var evt = new
+            {
+                id = res.Data,
+                username = dto.Username,
+                email = dto.Email,
+                fullName = dto.FullName,
+                roleId = dto.RoleId,
+                occurredAt = DateTimeOffset.UtcNow
+            };
+            await _messageBus.PublishAsync("user.created", JsonSerializer.Serialize(evt), ct);
+
             return CreatedAtAction(nameof(GetById), new { id = res.Data }, res);
         }
 
@@ -76,6 +90,18 @@ namespace AuthService.Api.Controllers
 
             var res = await _commands.Send<UpdateUserCommand, bool>(cmd, ct);
             if (!res.Success) return NotFound(res);
+
+            var evt = new
+            {
+                id,
+                username = dto.Username,
+                email = dto.Email,
+                fullName = dto.FullName,
+                roleId = dto.RoleId,
+                occurredAt = DateTimeOffset.UtcNow
+            };
+            await _messageBus.PublishAsync("user.updated", JsonSerializer.Serialize(evt), ct);
+
             return Ok(res);
         }
 
@@ -84,6 +110,17 @@ namespace AuthService.Api.Controllers
         {
             var cmd = new DeleteUserCommand(id);
             var res = await _commands.Send<DeleteUserCommand, bool>(cmd, ct);
+
+            if (res.Success)
+            {
+                var evt = new
+                {
+                    id,
+                    occurredAt = DateTimeOffset.UtcNow
+                };
+                await _messageBus.PublishAsync("user.deleted", JsonSerializer.Serialize(evt), ct);
+            }
+
             return Ok(res);
         }
     }
