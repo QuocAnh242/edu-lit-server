@@ -13,6 +13,10 @@ namespace AuthService.Infrastructure.Data
         {
         }
 
+        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
+        {
+        }
+
         public AuthDbContext(DbContextOptions<AuthDbContext> options, IConfiguration configuration)
             : base(options)
         {

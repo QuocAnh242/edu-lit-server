@@ -53,6 +53,45 @@ namespace AuthService.Infrastructure.Migrations
                     b.ToTable("oauthaccount", (string)null);
                 });
 
+            modelBuilder.Entity("AuthService.Domain.Entities.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<string>("Error")
+                        .HasColumnType("text")
+                        .HasColumnName("error");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_on_utc")
+                        .HasDefaultValueSql("now() at time zone 'utc'");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("payload");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_on_utc");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id")
+                        .HasName("outbox_messages_pkey");
+
+                    b.ToTable("outbox_messages", (string)null);
+                });
+
             modelBuilder.Entity("AuthService.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -124,44 +163,6 @@ namespace AuthService.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("user_roles", (string)null);
-                });
-
-            modelBuilder.Entity("AuthService.Infrastructure.Messaging.OutboxMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id")
-                        .HasDefaultValueSql("uuid_generate_v4()");
-
-                    b.Property<string>("Error")
-                        .HasColumnType("text")
-                        .HasColumnName("error");
-
-                    b.Property<DateTime>("OccurredOnUtc")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("occurred_on_utc")
-                        .HasDefaultValueSql("now() at time zone 'utc'");
-
-                    b.Property<string>("Payload")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("payload");
-
-                    b.Property<DateTime?>("ProcessedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("processed_on_utc");
-
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("type");
-
-                    b.HasKey("Id")
-                        .HasName("outbox_messages_pkey");
-
-                    b.ToTable("outbox_messages", (string)null);
                 });
 
             modelBuilder.Entity("AuthService.Domain.Entities.Oauthaccount", b =>

@@ -1,6 +1,6 @@
 ﻿using AuthService.Application.Enums;
 using AuthService.Domain.Entities;
-using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Infrastructure.Data
 {
@@ -10,18 +10,39 @@ namespace AuthService.Infrastructure.Data
         {
             try
             {
-                if (!context.UserRoles.Any())
+                var requiredRoleNames = new[]
                 {
-                    var roles = new[]
-                    {
-                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.STUDENT.ToString() },
-                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.TEACHER.ToString() },
-                        new UserRole { Id = Guid.NewGuid(), Name = RoleType.ADMIN.ToString() }
-                    };
+                    RoleType.STUDENT.ToString(),
+                    RoleType.TEACHER.ToString(),
+                    RoleType.ADMIN.ToString()
+                };
 
-                    context.UserRoles.AddRange(roles);
+                // Fetch existing role names
+                var existingNames = context.UserRoles
+                    .AsNoTracking()
+                    .Select(r => r.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+                // Build only missing roles
+                var missingRoles = requiredRoleNames
+                    .Where(name => !existingNames.Contains(name))
+                    .Select(name => new UserRole
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = name
+                    })
+                    .ToList();
+
+                if (missingRoles.Count > 0)
+                {
+                    context.UserRoles.AddRange(missingRoles);
                     context.SaveChanges();
                 }
+            }
+            catch (DbUpdateException ex)
+            {
+                // In case of concurrent startup or unique index race, ignore duplicates
+                Console.WriteLine($"[DBInitializer] Role seeding skipped due to constraint: {ex.Message}");
             }
             catch (Exception ex)
             {
