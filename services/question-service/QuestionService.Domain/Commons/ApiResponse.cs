@@ -1,4 +1,4 @@
-namespace QuestionService.Application.DTOs.Response
+namespace QuestionService.Domain.Commons
 {
     public class ApiResponse<T>
     {
