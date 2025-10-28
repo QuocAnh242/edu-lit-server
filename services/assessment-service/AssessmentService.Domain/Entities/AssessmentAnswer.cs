@@ -18,7 +18,7 @@ public partial class AssessmentAnswer
 
     public bool IsCorrect { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public virtual AssessmentQuestion AssessmentQuestion { get; set; } = null!;
 

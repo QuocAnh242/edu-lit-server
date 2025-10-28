@@ -1,6 +1,6 @@
 ﻿using AssessmentService.Domain.Entities;
 using AssessmentService.Infrastructure.Dao.Interfaces;
-using AssessmentService.Infrastructure.Data;
+using AssessmentService.Infrastructure.Persistance.DBContext;
 
 namespace AssessmentService.Infrastructure.DAO
 {

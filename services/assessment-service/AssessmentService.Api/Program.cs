@@ -2,9 +2,14 @@ using AssessmentService.Application.Services;
 using AssessmentService.Application.Services.Interfaces;
 using AssessmentService.Domain.Interfaces;
 using AssessmentService.Infrastructure.DAO;
-using AssessmentService.Infrastructure.Data;
+using AssessmentService.Infrastructure.Persistance.DBContext;
 using AssessmentService.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,9 +29,70 @@ builder.Services.AddScoped<IAssessmentService, AssessmentServices>();
 
 builder.Services.AddControllers();
 
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            // check signature token
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!)),
+
+            // check Issuer
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings["Issuer"],
+
+            // check Audience
+            ValidateAudience = true,
+            ValidAudience = jwtSettings["Audience"],
+
+            // check live time token
+            ValidateLifetime = true,
+            // no delay time
+            ClockSkew = TimeSpan.Zero,
+
+            // role claim type
+            RoleClaimType = ClaimTypes.Role
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddRouting(options => options.LowercaseUrls = true); // lowercase url
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    // 1. Security Scheme
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        In = ParameterLocation.Header,
+        Description = "Please enter a valid token",
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        BearerFormat = "JWT",
+        Scheme = "Bearer"
+    });
+
+    // 2. Security Scheme to all endpoint need
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[]{}
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -39,6 +105,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

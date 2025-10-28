@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-namespace AssessmentService.Infrastructure.Data;
+namespace AssessmentService.Infrastructure.Persistance.DBContext;
 
 public partial class AssessmentDbContext : DbContext
 {

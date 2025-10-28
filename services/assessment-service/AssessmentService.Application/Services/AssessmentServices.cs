@@ -1,8 +1,8 @@
 ﻿using AssessmentService.Application.DTOs.Request;
-using AssessmentService.Application.DTOs.Response;
-using AssessmentService.Application.Enums;
 using AssessmentService.Application.Services.Interfaces;
+using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Entities;
+using AssessmentService.Domain.Enums;
 using AssessmentService.Domain.Interfaces;
 
 namespace AssessmentService.Application.Services

@@ -1,4 +1,4 @@
-﻿namespace AssessmentService.Application.DTOs.Response
+﻿namespace AssessmentService.Domain.Commons
 {
     public class ObjectResponse<T>
     {

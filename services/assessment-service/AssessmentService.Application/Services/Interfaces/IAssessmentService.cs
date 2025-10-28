@@ -1,5 +1,5 @@
 ﻿using AssessmentService.Application.DTOs.Request;
-using AssessmentService.Application.DTOs.Response;
+using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Entities;
 
 namespace AssessmentService.Application.Services.Interfaces
