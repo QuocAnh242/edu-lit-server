@@ -21,15 +21,15 @@ namespace AssessmentService.Application.Features.Assessment.CreateAssessment
 
         public async Task<ObjectResponse<int>> Handle(CreateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
         {
-            // not validation for now
-            /*var validationResult = await _createAssessmentCommandValidator.ValidateAsync(assessmentCommand);
+            // validation
+            var validationResult = await _createAssessmentCommandValidator.ValidateAsync(assessmentCommand);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
                     .Select(e => new Error("Assessment.Create.Validation", e.ErrorMessage))
                     .ToList();
                 return ObjectResponse<int>.Response("400", errors.First().Message, 0);
-            }*/
+            }
 
             var createdAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
 

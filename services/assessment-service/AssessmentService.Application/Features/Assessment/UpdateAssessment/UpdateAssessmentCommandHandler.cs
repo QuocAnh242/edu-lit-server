@@ -21,15 +21,16 @@ namespace AssessmentService.Application.Features.Assessment.UpdateAssessment
 
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
         {
-            // not validation for now
-            /*var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(assessmentCommand);
+            // validation
+            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(assessmentCommand);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
-                    .Select(e => new Error("Assessment.Create.Validation", e.ErrorMessage))
+                    .Select(e => new Error("Assessment.Update.Validation", e.ErrorMessage))
                     .ToList();
-                return ObjectResponse<int>.Response("400", errors.First().Message, 0);
-            }*/
+                return ObjectResponse<bool>.Response("400", errors.First().Message, false);
+            }
+
             try
             {
                 var updatedAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
