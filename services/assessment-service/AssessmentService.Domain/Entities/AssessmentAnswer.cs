@@ -1,17 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
 
-namespace AssessmentService.Core.Entities
+namespace AssessmentService.Domain.Entities;
+
+public partial class AssessmentAnswer
 {
-    public class AssessmentAnswer
-    {
-        public int AnswerId { get; set; }
-        public int AssessmentQuestionId { get; set; }
-        public int AttemptsId { get; set; }
-        public char SelectedAnswer { get; set; }
-        public bool IsCorrect { get; set; }
-        public DateTime CreatedAt { get; set; }
+    public int AnswerId { get; set; }
 
-        public AssessmentQuestion AssessmentQuestion { get; set; }
-        public AssignmentAttempt AssignmentAttempt { get; set; }
-    }
+    public int AssessmentQuestionId { get; set; }
+
+    public int AttemptsId { get; set; }
+
+    /// <summary>
+    /// A, B, C, D mà student chọn
+    /// </summary>
+    public string SelectedAnswer { get; set; } = null!;
+
+    public bool IsCorrect { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+
+    public virtual AssessmentQuestion AssessmentQuestion { get; set; } = null!;
+
+    public virtual AssignmentAttempt Attempts { get; set; } = null!;
 }

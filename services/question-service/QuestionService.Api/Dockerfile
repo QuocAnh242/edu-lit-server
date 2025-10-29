@@ -16,10 +16,10 @@ USER appuser
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["QuestionService.Api/QuestionService.Api.csproj", "QuestionService.Api/"]
-COPY ["QuestionService.Application/QuestionService.Application.csproj", "QuestionService.Application/"]
-COPY ["QuestionService.Domain/QuestionService.Domain.csproj", "QuestionService.Domain/"]
-COPY ["QuestionService.Infrastructure/QuestionService.Infrastructure.csproj", "QuestionService.Infrastructure/"]
+COPY QuestionService.Api/QuestionService.Api.csproj QuestionService.Api/
+COPY QuestionService.Application/QuestionService.Application.csproj QuestionService.Application/
+COPY QuestionService.Domain/QuestionService.Domain.csproj QuestionService.Domain/
+COPY QuestionService.Infrastructure/QuestionService.Infrastructure.csproj QuestionService.Infrastructure/
 RUN dotnet restore "./QuestionService.Api/QuestionService.Api.csproj"
 COPY . .
 WORKDIR "/src/QuestionService.Api"

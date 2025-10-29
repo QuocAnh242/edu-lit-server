@@ -1,4 +1,9 @@
-using AssessmentService.Core.Data;
+using AssessmentService.Application.Services;
+using AssessmentService.Application.Services.Interfaces;
+using AssessmentService.Domain.Interfaces;
+using AssessmentService.Infrastructure.DAO;
+using AssessmentService.Infrastructure.Data;
+using AssessmentService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,9 +15,15 @@ builder.Services.AddDbContext<AssessmentDbContext>(options =>
         new MySqlServerVersion(new Version(5, 7, 43))
     ));
 
-// Add services to the container.
+// Register DAOs (scoped)
+builder.Services.AddScoped<AssessmentDAO>();
+
+// Register DI services and repositories
+builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
+builder.Services.AddScoped<IAssessmentService, AssessmentServices>();
 
 builder.Services.AddControllers();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

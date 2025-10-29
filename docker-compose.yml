@@ -207,17 +207,21 @@ services:
         condition: service_healthy
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass"
+      ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass;SslMode=None;Connect Timeout=30;"
     ports:
       - "8004:8080"
     networks:
       - edulit-network
     entrypoint: >
       /bin/sh -c "
-      until nc -z mysql_assessment 3306;
-      do echo 'Waiting for MySQL...'; sleep 3;
+      echo 'Waiting for MySQL to be ready...';
+      until mysqladmin ping -h mysql_assessment -u developer -pdevpass --silent; do
+        echo 'MySQL not ready, waiting...'; 
+        sleep 3;
       done;
       echo 'MySQL is ready!';
+      sleep 3;
+      echo 'Starting Assessment Service...';
       dotnet AssessmentService.Api.dll
       "
 
