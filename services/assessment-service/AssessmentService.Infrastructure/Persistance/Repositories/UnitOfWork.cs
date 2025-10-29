@@ -2,8 +2,6 @@
 using AssessmentService.Domain.IDAOs;
 using AssessmentService.Domain.Interfaces;
 using AssessmentService.Infrastructure.Persistance.DBContext;
-using AssessmentService.Infrastructure.Persistance.Repositories;
-using AssessmentService.Domain.Interfaces;
 using AssessmentService.Infrastructure.Persistance.DAOs;
 
 namespace AssessmentService.Infrastructure.Persistance.Repositories

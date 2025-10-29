@@ -3,7 +3,10 @@ using AssessmentService.Application.Abstractions.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using AssessmentService.Application.Features.Assessment.CreateAssessment;
+using AssessmentService.Application.Features.Assessment.UpdateAssessment;
 using AssessmentService.Application.Features.Assessment.GetAssessmentById;
+using AssessmentService.Application.Features.Assessment.DeleteAssessment;
+using AssessmentService.Application.Features.Assessment.GetAllAssessment;
 
 namespace AssessmentService.Application
 {
@@ -14,9 +17,11 @@ namespace AssessmentService.Application
             // Register application services, handlers, and other dependencies here
             //Command
             services.AddScoped<ICommandHandler<CreateAssessmentCommand, int>, CreateAssessmentCommandHandler>();
+            services.AddScoped<ICommandHandler<UpdateAssessmentCommand, bool>, UpdateAssessmentCommandHandler>();
+            services.AddScoped<ICommandHandler<DeleteAssessmentCommand, bool>, DeleteAssessmentCommandHandler>();
             //Query
             services.AddScoped<IQueryHandler<GetAssessmentByIdQuery, GetAssessmentByIdResponse>, GetAssessmentByIdQueryHandler>();
-
+            services.AddScoped<IQueryHandler<GetAllAssessmentQuery, List<GetAllAssessmentResponse>>, GetAllAssessmentQueryHandler>();
             // Register all validators and AutoMapper profiles from the assembly
             //chỉ cần thêm dòng này là đủ để đăng ký tất cả validator và profile trong assembly ko cần đăng ký từng cái một
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

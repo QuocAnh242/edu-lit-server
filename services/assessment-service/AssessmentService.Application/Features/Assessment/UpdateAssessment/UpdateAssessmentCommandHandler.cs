@@ -4,25 +4,25 @@ using AssessmentService.Domain.Interfaces;
 using AutoMapper;
 using FluentValidation;
 
-namespace AssessmentService.Application.Features.Assessment.CreateAssessment
+namespace AssessmentService.Application.Features.Assessment.UpdateAssessment
 {
-    public class CreateAssessmentCommandHandler : ICommandHandler<CreateAssessmentCommand, int>
+    public class UpdateAssessmentCommandHandler : ICommandHandler<UpdateAssessmentCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IValidator<CreateAssessmentCommand> _createAssessmentCommandValidator;
+        private readonly IValidator<UpdateAssessmentCommand> _updateAssessmentCommandValidator;
         private readonly IMapper _mapper;
 
-        public CreateAssessmentCommandHandler(IUnitOfWork unitOfWork, IValidator<CreateAssessmentCommand> createAssessmentCommandValidator, IMapper mapper)
+        public UpdateAssessmentCommandHandler(IUnitOfWork unitOfWork, IValidator<UpdateAssessmentCommand> updateAssessmentCommandValidator, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            _createAssessmentCommandValidator = createAssessmentCommandValidator;
+            _updateAssessmentCommandValidator = updateAssessmentCommandValidator;
             _mapper = mapper;
         }
 
-        public async Task<ObjectResponse<int>> Handle(CreateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
+        public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
         {
             // not validation for now
-            /*var validationResult = await _createAssessmentCommandValidator.ValidateAsync(assessmentCommand);
+            /*var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(assessmentCommand);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -30,22 +30,18 @@ namespace AssessmentService.Application.Features.Assessment.CreateAssessment
                     .ToList();
                 return ObjectResponse<int>.Response("400", errors.First().Message, 0);
             }*/
-
-            var createdAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
-
-            await _unitOfWork.AssessmentRepository.AddAsync(createdAssessment);
-
             try
             {
+                var updatedAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
+                _unitOfWork.AssessmentRepository.Update(updatedAssessment);
                 await _unitOfWork.SaveChangesAsync();
+                return ObjectResponse<bool>.SuccessResponse(true);
                 //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.
             }
             catch (Exception e)
             {
-                return ObjectResponse<int>.Response("400", e.Message, 0);
+                return ObjectResponse<bool>.Response("400", e.Message, false);
             }
-
-            return ObjectResponse<int>.SuccessResponse(createdAssessment.AssessmentId);
         }
 
     }

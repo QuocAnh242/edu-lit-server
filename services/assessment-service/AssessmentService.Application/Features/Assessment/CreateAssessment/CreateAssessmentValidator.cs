@@ -2,7 +2,7 @@
 
 namespace AssessmentService.Application.Features.Assessment.CreateAssessment
 {
-    public class CreateAssessmentValidator : AbstractValidator<CreateAssessmentCommand>
+    public class UpdateAssessmentValidator : AbstractValidator<CreateAssessmentCommand>
     {
     }
 }

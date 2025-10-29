@@ -4,10 +4,8 @@ using AssessmentService.Domain.Interfaces;
 using AssessmentService.Infrastructure.Persistance.DistributedCaches;
 using AssessmentService.Infrastructure.Persistance.Repositories;
 using AssessmentService.Infrastructure.Persistance.DAOs;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
 
 namespace AssessmentService.Infrastructure
 {
@@ -22,7 +20,7 @@ namespace AssessmentService.Infrastructure
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             //register third party
-            services.AddScoped<IRedisService, RedisService>();
+            //services.AddScoped<IRedisService, RedisService>();
             
             // register services (unit of work)
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -31,18 +29,18 @@ namespace AssessmentService.Infrastructure
             /*services.AddDbContext<AssessmentDbContext>(options => 
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));*/
             
-            var redisConfig = configuration.GetConnectionString("Redis");
+            //var redisConfig = configuration.GetConnectionString("Redis");
             
             //register redis for basic caching
-            services.AddStackExchangeRedisCache(options =>
+            /*services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = redisConfig;
                 options.InstanceName = "LessonService_";
-            });
+            });*/
             
             //register redis for advanced caching\
-            services.AddSingleton<IConnectionMultiplexer>(sp =>
-                ConnectionMultiplexer.Connect(redisConfig));
+            /*services.AddSingleton<IConnectionMultiplexer>(sp =>
+                ConnectionMultiplexer.Connect(redisConfig));*/
             
             return services;
         }

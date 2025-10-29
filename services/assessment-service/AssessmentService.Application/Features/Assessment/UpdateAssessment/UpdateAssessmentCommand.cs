@@ -1,21 +1,15 @@
-﻿using AssessmentService.Domain.Enums;
+﻿using AssessmentService.Application.Abstractions.Messaging;
 
-namespace AssessmentService.Application.DTOs.Request
+namespace AssessmentService.Application.Features.Assessment.UpdateAssessment
 {
-    public class AssessmentDTO
+    public class UpdateAssessmentCommand : ICommand<bool>
     {
+        public int Id { get; set; }
         public string CourseId { get; set; } = null!;
-
         public string CreatorId { get; set; } = null!;
-
         public string Title { get; set; } = null!;
-
         public string? Description { get; set; }
-
         public int TotalQuestions { get; set; }
-
         public int DurationMinutes { get; set; }
-
-        public string? Status { get; set; } = AssessmentStatus.Private.ToString();
     }
 }

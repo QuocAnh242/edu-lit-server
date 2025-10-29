@@ -1,9 +1,6 @@
-using AssessmentService.Application.Services;
-using AssessmentService.Application.Services.Interfaces;
-using AssessmentService.Domain.Interfaces;
-using AssessmentService.Infrastructure.DAO;
+using AssessmentService.Application;
+using AssessmentService.Infrastructure;
 using AssessmentService.Infrastructure.Persistance.DBContext;
-using AssessmentService.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -19,13 +16,6 @@ builder.Services.AddDbContext<AssessmentDbContext>(options =>
         builder.Configuration.GetConnectionString("MySqlConnection"),
         new MySqlServerVersion(new Version(5, 7, 43))
     ));
-
-// Register DAOs (scoped)
-builder.Services.AddScoped<AssessmentDAO>();
-
-// Register DI services and repositories
-builder.Services.AddScoped<IAssessmentRepository, AssessmentRepository>();
-builder.Services.AddScoped<IAssessmentService, AssessmentServices>();
 
 builder.Services.AddControllers();
 
@@ -93,6 +83,9 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
+
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddApplication();
 
 var app = builder.Build();
 

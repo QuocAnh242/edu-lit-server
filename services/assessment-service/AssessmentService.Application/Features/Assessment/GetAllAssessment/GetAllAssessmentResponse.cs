@@ -1,6 +1,6 @@
-﻿namespace AssessmentService.Application.Features.Assessment.GetAssessmentById
+﻿namespace AssessmentService.Application.Features.Assessment.GetAllAssessment
 {
-    public class GetAssessmentByIdResponse
+    public class GetAllAssessmentResponse
     {
         public int AssessmentId { get; set; }
 
