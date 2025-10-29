@@ -13,9 +13,6 @@ namespace QuestionService.Application.DTOs.Request
 
         [MaxLength(100)]
         public string? Subject { get; set; }
-
-        [Required]
-        public Guid OwnerId { get; set; }
     }
 }
 

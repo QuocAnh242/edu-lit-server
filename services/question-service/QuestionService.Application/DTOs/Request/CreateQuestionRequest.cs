@@ -27,8 +27,5 @@ namespace QuestionService.Application.DTOs.Request
 
         [Required]
         public Guid QuestionBankId { get; set; }
-
-        [Required]
-        public Guid AuthorId { get; set; }
     }
 }
