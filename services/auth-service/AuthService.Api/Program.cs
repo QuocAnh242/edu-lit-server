@@ -1,5 +1,4 @@
-﻿using AuthService.Api.Extensions;
-using AuthService.Application;
+﻿using AuthService.Application;
 using AuthService.Infrastructure;
 using AuthService.Infrastructure.Messaging;
 using AuthService.Application.Abstractions.Messaging;
@@ -17,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 // Add RabbitMQ publisher (single registration)
 builder.Services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
-
+    
 // Swagger + JWT security
 builder.Services.AddSwaggerGen(c =>
 {
@@ -36,6 +35,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", jwtScheme);
     c.AddSecurityRequirement(new OpenApiSecurityRequirement { { jwtScheme, new List<string>() } });
 });
+
 
 // Application and Infrastructure layers
 builder.Services.AddAuthInfrastructure(builder.Configuration);
@@ -71,10 +71,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-Console.WriteLine("ConnectionString: " + builder.Configuration.GetConnectionString("DefaultConnection"));
-
 var app = builder.Build();
-await app.Services.InitializeDatabaseAsync();
 app.UseRouting();
 
 app.UseCors("AllowAll");

@@ -1,10 +1,12 @@
 ﻿using AuthService.Application.DTOs.Request;
 using AuthService.Application.DTOs;
-using AuthService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using AuthService.Application.DTOs.Response;
+using System.Threading;
+using AuthService.Application.Abstractions.Messaging;
+using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 
 namespace AuthService.Api.Controllers
 {
@@ -12,39 +14,39 @@ namespace AuthService.Api.Controllers
     [Route("api/v1/[controller]")]
     public class AuthController : ControllerBase
     {
-        private readonly IAuthService _authService;
+        private readonly ICommandDispatcher _commands;
 
-        public AuthController(IAuthService authService)
+        public AuthController(ICommandDispatcher commands)
         {
-            _authService = authService;
+            _commands = commands;
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
+        public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
 
-            var response = await _authService.LoginAsync(
-                new LoginCommand
-                {
-                    Username = request.Username,
-                    Password = request.Password
-                });
+            var cmd = new LoginCommand
+            {
+                Username = request.Username,
+                Password = request.Password
+            };
 
+            var response = await _commands.Send<LoginCommand, UserDto>(cmd, ct);
             if (!response.Success)
                 return Unauthorized(response);
 
             return Ok(response);
         }
-
+            
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+        public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken ct)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
 
-            var command = new RegisterCommand
+            var cmd = new RegisterCommand
             {
                 Username = request.Username,
                 Email = request.Email,
@@ -52,7 +54,7 @@ namespace AuthService.Api.Controllers
                 FullName = request.FullName
             };
 
-            var response = await _authService.RegisterAsync(command);
+            var response = await _commands.Send<RegisterCommand, UserDto>(cmd, ct);
             if (!response.Success || response.Data == null)
                 return BadRequest(response);
 
