@@ -18,6 +18,9 @@ namespace AssessmentService.Domain.IDAOs
         /// <returns>Danh sách tất cả các đối tượng.</returns>
         Task<List<T>> GetAllAsync();
 
+        // Optional: You can add a method to get entities by a specific condition
+        Task<List<T>> GetAllByAsync(Expression<Func<T, bool>> predicate);
+
         /// <summary>
         /// Lấy một danh sách các đối tượng đã được phân trang.
         /// </summary>

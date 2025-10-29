@@ -33,6 +33,15 @@ namespace AssessmentService.Infrastructure.Persistance.DAOs
             return await _dbset.FindAsync(id);
         }
 
+        // Optional: You can add a method to get entities by a specific condition
+        public async Task<List<T>> GetAllByAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbset
+                .AsNoTracking()
+                .Where(predicate)
+                .ToListAsync();
+        }
+
         public async Task<PagedResult<T>> GetPagedAsync(int pageIndex, int pageSize, Expression<Func<T, bool>>? filter)
         {
             // Validate and normalize input parameters

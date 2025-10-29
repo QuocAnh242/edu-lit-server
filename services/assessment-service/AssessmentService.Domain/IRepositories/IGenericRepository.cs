@@ -1,5 +1,4 @@
 ﻿using AssessmentService.Domain.Commons;
-using AssessmentService.Domain.Commons;
 using System.Linq.Expressions;
 
 
@@ -19,6 +18,9 @@ namespace AssessmentService.Domain.Interfaces
         /// </summary>
         /// <returns>Danh sách tất cả các đối tượng.</returns>
         Task<List<T>> GetAllAsync();
+
+        // Optional: Lấy tất cả các đối tượng theo điều kiện
+        Task<List<T>> GetAllByAsync(Expression<Func<T, bool>> predicate);
 
         /// <summary>
         /// Lấy một danh sách các đối tượng đã được phân trang.

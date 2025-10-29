@@ -31,6 +31,8 @@ namespace AssessmentService.Application.Features.Assessment.CreateAssessment
                 return ObjectResponse<int>.Response("400", errors.First().Message, 0);
             }
 
+            // sẽ có hàm check valid courseId và creatorId sau khi có service của user và course
+
             var createdAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
 
             await _unitOfWork.AssessmentRepository.AddAsync(createdAssessment);

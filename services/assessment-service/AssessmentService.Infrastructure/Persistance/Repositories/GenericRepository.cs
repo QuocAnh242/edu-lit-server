@@ -1,5 +1,6 @@
 ﻿using AssessmentService.Domain.IDAOs;
 using AssessmentService.Domain.Interfaces;
+using System.Linq.Expressions;
 
 namespace AssessmentService.Infrastructure.Persistance.Repositories
 {
@@ -20,6 +21,11 @@ namespace AssessmentService.Infrastructure.Persistance.Repositories
         public async Task<List<T>> GetAllAsync()
         {
             return await _genericDAO.GetAllAsync();
+        }
+
+        public Task<List<T>> GetAllByAsync(Expression<Func<T, bool>> predicate)
+        {
+            return _genericDAO.GetAllByAsync(predicate);
         }
 
         public async Task<T?> GetByIdAsync(int id)
