@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestionService.Api.Extensions;
 using QuestionService.Application.Abstractions.Messaging;
 using QuestionService.Application.DTOs;
 using QuestionService.Application.Features.QuestionBank.CreateQuestionBank;
@@ -13,6 +15,7 @@ namespace QuestionService.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]  // Require authentication for all endpoints in this controller
     public class QuestionBankController : ControllerBase
     {
         private readonly ICommandHandler<CreateQuestionBankCommand, Guid> _createCommandHandler;
@@ -71,6 +74,25 @@ namespace QuestionService.Api.Controllers
         {
             var query = new GetQuestionBanksBySubjectQuery(subject);
             var res = await _getBySubjectQueryHandler.Handle(query, CancellationToken.None);
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Example: Get current user's question banks using JWT claims
+        /// </summary>
+        [HttpGet("my-question-banks")]
+        public async Task<IActionResult> GetMyQuestionBanks()
+        {
+            // Extract user ID from JWT token
+            var userId = User.GetUserId();
+            
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var query = new GetQuestionBanksByOwnerIdQuery(userId.Value);
+            var res = await _getByOwnerIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 

@@ -9,3 +9,5 @@ namespace QuestionService.Application.Abstractions.Messaging
     public interface IQuery<TResponse>;
 }
 
+
+
