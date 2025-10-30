@@ -7,7 +7,7 @@ using System.Security.Claims;
 using LessonService.Application.Features.Syllabus.GetSyllabusById;
 using LessonService.Domain.Commons;
 
-namespace LessonService.APi.Controllers;
+namespace LessonService.Api.Controllers;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
