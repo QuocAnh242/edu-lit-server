@@ -1,7 +1,5 @@
 ﻿using AuthService.Application.Abstractions.Messaging;
 using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
-using AuthService.Application.DTOs;
-using AuthService.Application.Services.Users.Commands;
 using AuthService.Application.Users.Queries.GetUserById;
 using AuthService.Application.Users.Queries.GetUserByUsername;
 using AuthService.Application.Users.Queries.SearchUsers;
@@ -21,7 +19,7 @@ namespace AuthService.Api.Controllers
         // Query Dispatcher (Queries)
         private readonly IQueryDispatcher _queries;
 
-        public UserController(, IMessageBusPublisher messageBusPublisher, IQueryDispatcher queries)
+        public UserController(IMessageBusPublisher messageBusPublisher, IQueryDispatcher queries)
         {
             _messageBusPublisher = messageBusPublisher;
             _queries = queries;
