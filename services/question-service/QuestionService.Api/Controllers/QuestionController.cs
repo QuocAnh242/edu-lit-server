@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestionService.Api.Extensions;
 using QuestionService.Application.Abstractions.Messaging;
 using QuestionService.Application.DTOs;
+using QuestionService.Application.DTOs.Request;
 using QuestionService.Application.Features.Question.CreateQuestion;
 using QuestionService.Application.Features.Question.DeleteQuestion;
 using QuestionService.Application.Features.Question.GetAllQuestions;
@@ -16,6 +19,7 @@ namespace QuestionService.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]  // Require authentication for all endpoints
     public class QuestionController : ControllerBase
     {
         private readonly ICommandHandler<CreateQuestionCommand, Guid> _createCommandHandler;
@@ -99,16 +103,60 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateQuestionCommand command)
+        /// <summary>
+        /// Get current user's questions using JWT claims
+        /// </summary>
+        [HttpGet("my-questions")]
+        public async Task<IActionResult> GetMyQuestions()
         {
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var query = new GetQuestionsByAuthorIdQuery(userId.Value);
+            var res = await _getByAuthorIdQueryHandler.Handle(query, CancellationToken.None);
+            return Ok(res);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateQuestionRequest request)
+        {
+            // Extract AuthorId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var command = new CreateQuestionCommand
+            {
+                Title = request.Title,
+                Body = request.Body,
+                QuestionType = request.QuestionType,
+                Metadata = request.Metadata,
+                Tags = request.Tags,
+                Version = request.Version,
+                IsPublished = request.IsPublished,
+                QuestionBankId = request.QuestionBankId,
+                AuthorId = userId.Value
+            };
+
             var res = await _createCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionCommand request)
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionRequest request)
         {
+            // Extract AuthorId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
             var command = new UpdateQuestionCommand
             {
                 QuestionId = id,
@@ -120,7 +168,7 @@ namespace QuestionService.Api.Controllers
                 Version = request.Version,
                 IsPublished = request.IsPublished,
                 QuestionBankId = request.QuestionBankId,
-                AuthorId = request.AuthorId
+                AuthorId = userId.Value
             };
             var res = await _updateCommandHandler.Handle(command, CancellationToken.None);
             if (!res.Success) return NotFound(res);

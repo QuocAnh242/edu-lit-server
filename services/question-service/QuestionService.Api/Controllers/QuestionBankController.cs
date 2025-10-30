@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestionService.Api.Extensions;
 using QuestionService.Application.Abstractions.Messaging;
 using QuestionService.Application.DTOs;
+using QuestionService.Application.DTOs.Request;
 using QuestionService.Application.Features.QuestionBank.CreateQuestionBank;
 using QuestionService.Application.Features.QuestionBank.DeleteQuestionBank;
 using QuestionService.Application.Features.QuestionBank.GetAllQuestionBanks;
@@ -13,6 +16,7 @@ namespace QuestionService.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]  // Require authentication for all endpoints in this controller
     public class QuestionBankController : ControllerBase
     {
         private readonly ICommandHandler<CreateQuestionBankCommand, Guid> _createCommandHandler;
@@ -74,23 +78,64 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateQuestionBankCommand command)
+        /// <summary>
+        /// Example: Get current user's question banks using JWT claims
+        /// </summary>
+        [HttpGet("my-question-banks")]
+        public async Task<IActionResult> GetMyQuestionBanks()
         {
+            // Extract user ID from JWT token
+            var userId = User.GetUserId();
+            
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var query = new GetQuestionBanksByOwnerIdQuery(userId.Value);
+            var res = await _getByOwnerIdQueryHandler.Handle(query, CancellationToken.None);
+            return Ok(res);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateQuestionBankRequest request)
+        {
+            // Extract OwnerId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var command = new CreateQuestionBankCommand
+            {
+                Title = request.Title,
+                Description = request.Description,
+                Subject = request.Subject,
+                OwnerId = userId.Value
+            };
+
             var res = await _createCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
 
         [HttpPut("{questionBanksId:guid}")]
-        public async Task<IActionResult> Update(Guid questionBanksId, [FromBody] CreateQuestionBankCommand request)
+        public async Task<IActionResult> Update(Guid questionBanksId, [FromBody] CreateQuestionBankRequest request)
         {
+            // Extract OwnerId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
             var command = new UpdateQuestionBankCommand
             {
                 QuestionBankId = questionBanksId,
                 Title = request.Title,
                 Description = request.Description,
                 Subject = request.Subject,
-                OwnerId = request.OwnerId
+                OwnerId = userId.Value
             };
             var res = await _updateCommandHandler.Handle(command, CancellationToken.None);
             if (!res.Success) return NotFound(res);
