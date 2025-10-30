@@ -18,7 +18,7 @@ using QuestionService.Domain.Enums;
 namespace QuestionService.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/question")]
     [Authorize]  // Require authentication for all endpoints
     public class QuestionController : ControllerBase
     {
@@ -71,26 +71,26 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpGet("question-bank/{questionBankId:guid}")]
-        public async Task<IActionResult> GetByQuestionBankId(Guid questionBankId)
+        [HttpGet("question-bank/{id:guid}")]
+        public async Task<IActionResult> GetByQuestionBankId(Guid id)
         {
-            var query = new GetQuestionsByQuestionBankIdQuery(questionBankId);
+            var query = new GetQuestionsByQuestionBankIdQuery(id);
             var res = await _getByQuestionBankIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 
-        [HttpGet("author/{authorId:guid}")]
-        public async Task<IActionResult> GetByAuthorId(Guid authorId)
+        [HttpGet("author/{id:guid}")]
+        public async Task<IActionResult> GetByAuthorId(Guid id)
         {
-            var query = new GetQuestionsByAuthorIdQuery(authorId);
+            var query = new GetQuestionsByAuthorIdQuery(id);
             var res = await _getByAuthorIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 
-        [HttpGet("type/{questionType}")]
-        public async Task<IActionResult> GetByQuestionType(QuestionType questionType)
+        [HttpGet("type/{id}")]
+        public async Task<IActionResult> GetByQuestionType(QuestionType id)
         {
-            var query = new GetQuestionsByTypeQuery(questionType);
+            var query = new GetQuestionsByTypeQuery(id);
             var res = await _getByTypeQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }

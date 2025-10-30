@@ -15,7 +15,7 @@ using QuestionService.Application.Features.QuestionBank.UpdateQuestionBank;
 namespace QuestionService.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/questionbank")]
     [Authorize]  // Require authentication for all endpoints in this controller
     public class QuestionBankController : ControllerBase
     {
@@ -45,10 +45,10 @@ namespace QuestionService.Api.Controllers
             _getBySubjectQueryHandler = getBySubjectQueryHandler;
         }
 
-        [HttpGet("{questionBanksId:guid}")]
-        public async Task<IActionResult> GetById(Guid questionBanksId)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var query = new GetQuestionBankByIdQuery(questionBanksId);
+            var query = new GetQuestionBankByIdQuery(id);
             var res = await _getByIdQueryHandler.Handle(query, CancellationToken.None);
             if (!res.Success) return NotFound(res);
             return Ok(res);
@@ -62,10 +62,10 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpGet("owner/{ownerId:guid}")]
-        public async Task<IActionResult> GetByOwnerId(Guid ownerId)
+        [HttpGet("owner/{id:guid}")]
+        public async Task<IActionResult> GetByOwnerId(Guid id)
         {
-            var query = new GetQuestionBanksByOwnerIdQuery(ownerId);
+            var query = new GetQuestionBanksByOwnerIdQuery(id);
             var res = await _getByOwnerIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
@@ -119,8 +119,8 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpPut("{questionBanksId:guid}")]
-        public async Task<IActionResult> Update(Guid questionBanksId, [FromBody] CreateQuestionBankRequest request)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionBankRequest request)
         {
             // Extract OwnerId from JWT token
             var userId = User.GetUserId();
@@ -131,7 +131,7 @@ namespace QuestionService.Api.Controllers
 
             var command = new UpdateQuestionBankCommand
             {
-                QuestionBankId = questionBanksId,
+                QuestionBankId = id,
                 Title = request.Title,
                 Description = request.Description,
                 Subject = request.Subject,
@@ -142,10 +142,10 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpDelete("{questionBanksId:guid}")]
-        public async Task<IActionResult> Delete(Guid questionBanksId)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var command = new DeleteQuestionBankCommand(questionBanksId);
+            var command = new DeleteQuestionBankCommand(id);
             var res = await _deleteCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
