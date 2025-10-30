@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuestionService.Application.Abstractions.Messaging;
 using QuestionService.Application.DTOs;
@@ -12,6 +13,7 @@ namespace QuestionService.Api.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+    [Authorize]  // Require authentication for all endpoints
     public class QuestionOptionController : ControllerBase
     {
         private readonly ICommandHandler<CreateQuestionOptionCommand, Guid> _createCommandHandler;
