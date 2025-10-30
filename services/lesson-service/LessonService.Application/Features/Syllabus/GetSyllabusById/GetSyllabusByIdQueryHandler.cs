@@ -25,7 +25,7 @@ public class GetSyllabusByIdQueryHandler : IQueryHandler<GetSyllabusByIdQuery, G
         var cachedSyllabus = await _redisService.GetAsync<GetSyllabusByIdResponse>(cacheKey);
         if (cachedSyllabus is not null)
         {
-            return ApiResponse<GetSyllabusByIdResponse>.SuccessResponse(cachedSyllabus, "Get Syllabus Successfully", 200);
+            return ApiResponse<GetSyllabusByIdResponse>.SuccessResponse(cachedSyllabus, "Get Syllabus Successfully");
         }
 
         var syllabysEntity = await _unitOfWork.SyllabusRepository.GetByIdAsync(query.Id);
@@ -35,6 +35,6 @@ public class GetSyllabusByIdQueryHandler : IQueryHandler<GetSyllabusByIdQuery, G
         }
         var syllabus = _mapper.Map<GetSyllabusByIdResponse>(syllabysEntity);
         await _redisService.SetAsync(cacheKey, syllabus, TimeSpan.FromMinutes(10));
-        return ApiResponse<GetSyllabusByIdResponse>.SuccessResponse(syllabus, "Get Syllabus Successfully", 200);
+        return ApiResponse<GetSyllabusByIdResponse>.SuccessResponse(syllabus, "Get Syllabus Successfully");
     }
 }

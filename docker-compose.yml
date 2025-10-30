@@ -152,6 +152,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres_lesson;Port=5432;Database=lesson_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
+      ConnectionStrings__Redis: "redis-13508.c334.asia-southeast2-1.gce.redns.redis-cloud.com:13508,user=default,password=sS62t215atZzf6U7BQ8Lhbex592AJA1g"
       JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       JwtSettings__Issuer: "EduLit.Auth"
       JwtSettings__Audience: "EduLit.Users"

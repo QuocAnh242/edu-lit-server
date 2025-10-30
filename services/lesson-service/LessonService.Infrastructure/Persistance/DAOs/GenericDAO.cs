@@ -73,13 +73,13 @@ namespace LessonService.Infrastructure.Persistance.DAOs
 
         public void Remove(T entity)
         {
-            //if (entity is ISoftDeletable softDeletableEntity)
-            //{
-            //    // 2. Nếu là VIP, chỉ "đánh dấu" đã rời đi
-            //    softDeletableEntity.IsActive = false;
-            //    _dbSet.Update(entity); // Báo cho EF Core biết là có sự thay đổi (UPDATE)
-            //}
-            //else
+            // if (entity is ISoftDeletable softDeletableEntity)
+            // {
+            //     // 2. Nếu là VIP, chỉ "đánh dấu" đã rời đi
+            //     softDeletableEntity.IsActive = false;
+            //     _dbSet.Update(entity); // Báo cho EF Core biết là có sự thay đổi (UPDATE)
+            // }
+            // else
             //{
                 _dbset.Remove(entity);
             //}
