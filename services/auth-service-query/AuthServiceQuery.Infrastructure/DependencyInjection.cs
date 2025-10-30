@@ -7,6 +7,9 @@ using AuthService.Infrastructure.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 using AuthService.Application.Abstractions.Messaging.Dispatcher;
 using AuthService.Application.Users.Queries.GetUserById;
@@ -21,6 +24,16 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddAuthInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        // Configure MongoDB GUID serialization
+        try
+        {
+            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        }
+        catch (BsonSerializationException)
+        {
+            // Already registered, ignore
+        }
+        
         // MongoDB for Read side
         services.AddSingleton<IMongoDatabase>(_ =>
         {
