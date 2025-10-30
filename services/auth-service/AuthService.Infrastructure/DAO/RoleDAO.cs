@@ -25,8 +25,23 @@ namespace AuthService.Infrastructure.DAO
 
         public async Task<UserRole?> GetByNameAsync(string name)
             => await _db.Set<UserRole>().FirstOrDefaultAsync(r => r.Name == name);
-
+            
         public async Task<List<UserRole>> GetAllAsync()
             => await _db.Set<UserRole>().ToListAsync();
+
+        public async Task AddAsync(UserRole role)
+        {
+            await _db.Set<UserRole>().AddAsync(role);
+        }
+
+        public async Task UpdateAsync(UserRole role)
+        {
+            _db.Set<UserRole>().Update(role);
+        }
+
+        public async Task DeleteAsync(UserRole role)
+        {
+            _db.Set<UserRole>().Remove(role);
+        }
     }
 }

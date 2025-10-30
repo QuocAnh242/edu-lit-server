@@ -18,5 +18,8 @@ namespace AuthService.Infrastructure.Repositories
         public Task<UserRole?> GetByIdAsync(Guid id) => _dao.GetByIdAsync(id);
         public Task<List<UserRole>> GetAllAsync() => _dao.GetAllAsync();
         public Task<UserRole?> GetByNameAsync(string name) => _dao.GetByNameAsync(name);
+        public Task AddAsync(UserRole role) => _dao.AddAsync(role);
+        public Task UpdateAsync(UserRole role) => _dao.UpdateAsync(role);
+        public Task DeleteAsync(UserRole role) => _dao.DeleteAsync(role);
     }
 }
