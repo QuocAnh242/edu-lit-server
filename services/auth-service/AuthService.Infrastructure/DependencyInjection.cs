@@ -9,9 +9,7 @@ using AuthService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MongoDB.Driver;
 using RabbitMQ.Client;
-using AuthService.Domain.Entities.ReadModels;
 using AuthService.Application.Abstractions.Messaging;
 
 namespace AuthService.Infrastructure;
@@ -46,28 +44,6 @@ public static class DependencyInjection
 
         // Remove IConnection singleton; register publisher directly.
         services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
-
-        // MongoDB (read side)
-        services.AddSingleton<IMongoClient>(sp =>
-        {
-            var cs = configuration.GetConnectionString("Mongo") 
-                     ?? configuration.GetSection("Mongo")["ConnectionString"] 
-                     ?? "mongodb://localhost:27017";
-            return new MongoClient(cs);
-        });
-
-        services.AddSingleton<IMongoDatabase>(sp =>
-        {
-            var dbName = configuration.GetSection("Mongo")["Database"] ?? "auth_read";
-            var client = sp.GetRequiredService<IMongoClient>();
-            return client.GetDatabase(dbName);
-        });
-
-        services.AddSingleton<IMongoCollection<UserReadModel>>(sp =>
-        {
-            var db = sp.GetRequiredService<IMongoDatabase>();
-            return db.GetCollection<UserReadModel>("users");
-        });
 
         return services;
     }

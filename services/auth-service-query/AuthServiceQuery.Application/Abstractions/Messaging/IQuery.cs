@@ -6,5 +6,6 @@ using System.Threading.Tasks;
 
 namespace AuthService.Application.Abstractions.Messaging
 {
-    public interface IQuery<TResponse>;
+    // Marker interface for queries
+    public interface IQuery<TResponse> { }
 }

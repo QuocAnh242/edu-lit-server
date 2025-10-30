@@ -13,7 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-
+// Lowercase URLs for apis
+builder.Services.AddRouting(options => options.LowercaseUrls = true);
 // Add RabbitMQ publisher (single registration)
 builder.Services.AddSingleton<IMessageBusPublisher, RabbitMqPublisher>();
     
@@ -73,6 +74,7 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 app.UseRouting();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors("AllowAll");
 

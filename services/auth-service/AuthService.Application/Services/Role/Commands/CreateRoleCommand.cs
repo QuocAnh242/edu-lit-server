@@ -8,10 +8,9 @@ using System.Windows.Input;
 
 namespace AuthService.Application.Services.Role.Commands
 {
-    public class CreateRoleCommand : ICommand<int>
+    public class CreateRoleCommand : ICommand<Guid>
     {
         public string Name { get; set; } = null!;
-
 
     }
 }

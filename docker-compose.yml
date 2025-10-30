@@ -5,7 +5,7 @@ services:
 # docker-compose.yml
   mongo:
     image: mongo:6
-    container_name: edulit-mongo
+    container_name: edulit-mongo-auth
     restart: always
     ports:
       - "27017:27017"
@@ -38,7 +38,7 @@ services:
     restart: always
     ports:
       - "5672:5672"
-      - "15672:15672" # giao diện web để kiểm tra hàng đợi
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
