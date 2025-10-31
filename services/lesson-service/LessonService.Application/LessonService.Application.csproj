@@ -7,14 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
-    <Folder Include="Features\Courses\" />
     <Folder Include="Features\Activities\" />
     <Folder Include="Features\LessonContexts\" />
     <Folder Include="Features\Sessions\" />
-    <Folder Include="Features\Syllabus\Delete\" />
-    <Folder Include="Features\Syllabus\GetPagination\" />
-    <Folder Include="Features\Syllabus\Update\" />
   </ItemGroup>
 
   <ItemGroup>

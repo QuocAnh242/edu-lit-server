@@ -46,7 +46,7 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
                 return ApiResponse<Guid>.FailureResponse(e.Message, 500);
             }
             
-            return ApiResponse<Guid>.SuccessResponse(createdSyllabus.Id, "Create Syllabus Successfully", 201);
+            return ApiResponse<Guid>.SuccessResponse(createdSyllabus.Id, "Create Syllabus Successfully");
         }
         
     }

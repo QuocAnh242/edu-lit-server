@@ -12,7 +12,7 @@ using QuestionService.Application.Features.QuestionOption.UpdateQuestionOption;
 namespace QuestionService.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/questionoption")]
     [Authorize]  // Require authentication for all endpoints
     public class QuestionOptionController : ControllerBase
     {
@@ -39,19 +39,19 @@ namespace QuestionService.Api.Controllers
             _getByQuestionIdQueryHandler = getByQuestionIdQueryHandler;
         }
 
-        [HttpGet("{questionOptionId:guid}")]
-        public async Task<IActionResult> GetById(Guid questionOptionId)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var query = new GetQuestionOptionByIdQuery(questionOptionId);
+            var query = new GetQuestionOptionByIdQuery(id);
             var res = await _getByIdQueryHandler.Handle(query, CancellationToken.None);
             if (!res.Success) return NotFound(res);
             return Ok(res);
         }
 
-        [HttpGet("question/{questionId:guid}")]
-        public async Task<IActionResult> GetByQuestionId(Guid questionId)
+        [HttpGet("question/{id:guid}")]
+        public async Task<IActionResult> GetByQuestionId(Guid id)
         {
-            var query = new GetQuestionOptionsByQuestionIdQuery(questionId);
+            var query = new GetQuestionOptionsByQuestionIdQuery(id);
             var res = await _getByQuestionIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
@@ -63,12 +63,12 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpPut("{questionOptionId:guid}")]
-        public async Task<IActionResult> Update(Guid questionOptionId, [FromBody] CreateQuestionOptionCommand request)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionOptionCommand request)
         {
             var command = new UpdateQuestionOptionCommand
             {
-                QuestionOptionId = questionOptionId,
+                QuestionOptionId = id,
                 OptionText = request.OptionText,
                 IsCorrect = request.IsCorrect,
                 OrderIdx = request.OrderIdx
@@ -78,18 +78,18 @@ namespace QuestionService.Api.Controllers
             return Ok(res);
         }
 
-        [HttpDelete("{questionOptionId:guid}")]
-        public async Task<IActionResult> Delete(Guid questionOptionId)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var command = new DeleteQuestionOptionCommand(questionOptionId);
+            var command = new DeleteQuestionOptionCommand(id);
             var res = await _deleteCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
 
-        [HttpDelete("question/{questionId:guid}")]
-        public async Task<IActionResult> DeleteByQuestionId(Guid questionId)
+        [HttpDelete("question/{id:guid}")]
+        public async Task<IActionResult> DeleteByQuestionId(Guid id)
         {
-            var command = new DeleteQuestionOptionsByQuestionIdCommand(questionId);
+            var command = new DeleteQuestionOptionsByQuestionIdCommand(id);
             var res = await _deleteByQuestionIdCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }

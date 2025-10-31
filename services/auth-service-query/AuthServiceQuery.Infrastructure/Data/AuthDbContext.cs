@@ -1,144 +1,56 @@
-﻿using AuthService.Domain.Entities;
+using AuthService.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using System;
 
 namespace AuthService.Infrastructure.Data
 {
-    public partial class AuthDbContext : DbContext
+    /// <summary>
+    /// AuthDbContext for Query Service - minimal implementation
+    /// This service is primarily for reading from MongoDB
+    /// This DbContext is only needed for Outbox pattern if write operations are added later
+    /// </summary>
+    public class AuthDbContext : DbContext
     {
-        private readonly IConfiguration _configuration;
-
-        public AuthDbContext()
-        {
-        }
-
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
         {
         }
 
-        public AuthDbContext(DbContextOptions<AuthDbContext> options, IConfiguration configuration)
-            : base(options)
-        {
-            _configuration = configuration;
-        }
-
-        public virtual DbSet<Oauthaccount> Oauthaccounts { get; set; }
-        public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<UserRole> UserRoles { get; set; }
-        public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            if (!optionsBuilder.IsConfigured)
-            {
-                var config = _configuration ?? new ConfigurationBuilder()
-                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                    .AddJsonFile("appsettings.json", optional: true)
-                    .AddEnvironmentVariables()
-                    .Build();
-
-                var connectionString = config.GetConnectionString("DefaultConnection");
-                optionsBuilder.UseNpgsql(connectionString)
-                    .ConfigureWarnings(warnings => 
-                        warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
-            }
-        }
+        public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<UserRole> UserRoles => Set<UserRole>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.HasPostgresExtension("uuid-ossp");
+            base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Oauthaccount>(entity =>
-            {
-                entity.HasKey(e => e.Id).HasName("oauthaccount_pkey");
-                entity.ToTable("oauthaccount");
-
-                entity.Property(e => e.Id)
-                    .HasDefaultValueSql("uuid_generate_v4()")
-                    .HasColumnName("id");
-                entity.Property(e => e.Provider).HasColumnName("provider");
-                entity.Property(e => e.ProviderAccountId).HasColumnName("provider_account_id");
-                entity.Property(e => e.UserId).HasColumnName("user_id");
-
-                entity.HasOne(d => d.User).WithMany(p => p.Oauthaccounts)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade)
-                    .HasConstraintName("oauthaccount_user_id_fkey");
-            });
-
-            modelBuilder.Entity<User>(entity =>
-            {
-                entity.HasKey(e => e.Id).HasName("users_pkey");
-                entity.ToTable("users");
-
-                entity.HasIndex(e => e.Email, "users_email_key").IsUnique();
-                entity.HasIndex(e => e.Username, "users_username_key").IsUnique();
-
-                entity.Property(e => e.Id)
-                    .HasDefaultValueSql("uuid_generate_v4()")
-                    .HasColumnName("id");
-                entity.Property(e => e.CreatedAt)
-                    .HasDefaultValueSql("now() at time zone 'utc'")
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("created_at");
-                entity.Property(e => e.Email).HasColumnName("email");
-                entity.Property(e => e.FullName).HasColumnName("full_name");
-                entity.Property(e => e.Password).HasColumnName("password");
-                entity.Property(e => e.RoleId).HasColumnName("role_id");
-                entity.Property(e => e.Username).HasColumnName("username");
-
-                entity.HasOne(d => d.Role).WithMany(p => p.Users)
-                    .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("users_role_id_fkey");
-            });
-
-            modelBuilder.Entity<UserRole>(entity =>
-            {
-                entity.HasKey(e => e.Id).HasName("user_roles_pkey");
-                entity.ToTable("user_roles");
-
-                entity.HasIndex(e => e.Name, "user_roles_name_key").IsUnique();
-
-                entity.Property(e => e.Id)
-                    .HasDefaultValueSql("uuid_generate_v4()")
-                    .HasColumnName("id");
-                entity.Property(e => e.Name).HasColumnName("name");
-            });
-
-            // Outbox table mapping
+            // OutboxMessage configuration
             modelBuilder.Entity<OutboxMessage>(entity =>
             {
-                entity.HasKey(e => e.Id).HasName("outbox_messages_pkey");
                 entity.ToTable("outbox_messages");
-
-                entity.Property(e => e.Id)
-                    .HasDefaultValueSql("uuid_generate_v4()")
-                    .HasColumnName("id");
-
-                entity.Property(e => e.Type)
-                    .HasMaxLength(255)
-                    .HasColumnName("type");
-
-                entity.Property(e => e.Payload)
-                    .HasColumnName("payload");
-
-                entity.Property(e => e.OccurredOnUtc)
-                    .HasDefaultValueSql("now() at time zone 'utc'")
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("occurred_on_utc");
-
-                entity.Property(e => e.ProcessedOnUtc)
-                    .HasColumnType("timestamp with time zone")
-                    .HasColumnName("processed_on_utc");
-
-                entity.Property(e => e.Error)
-                    .HasColumnName("error");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Payload).IsRequired();
+                entity.HasIndex(e => e.ProcessedOnUtc);
             });
 
-            OnModelCreatingPartial(modelBuilder);
-        }
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("users");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Username).IsRequired().HasMaxLength(128);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
+                entity.HasIndex(e => e.Username).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
+            });
 
-        partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+            // UserRole configuration
+            modelBuilder.Entity<UserRole>(entity =>
+            {
+                entity.ToTable("user_roles");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(128);
+            });
+        }
     }
 }
+
