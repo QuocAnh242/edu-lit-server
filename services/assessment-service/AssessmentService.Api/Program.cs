@@ -1,6 +1,8 @@
 using AssessmentService.Application;
+using AssessmentService.Application.IServices;
 using AssessmentService.Infrastructure;
 using AssessmentService.Infrastructure.Persistance.DBContext;
+using AssessmentService.Infrastructure.Persistance.Email;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,14 +12,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-/*builder.Services.AddCors(options =>
+builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
-        policy.AllowAnyOrigin() //.AllowCredentials() API use JWT
+    {
+        policy.AllowAnyOrigin() //.AllowCredentials() API use JWT Bearer
               .AllowAnyMethod()
-              .AllowAnyHeader()
-    );
-});*/
+              .AllowAnyHeader();
+    });
+});
 
 // Add DbContext
 builder.Services.AddDbContext<AssessmentDbContext>(options =>
@@ -25,6 +28,10 @@ builder.Services.AddDbContext<AssessmentDbContext>(options =>
         builder.Configuration.GetConnectionString("MySqlConnection"),
         new MySqlServerVersion(new Version(5, 7, 43))
     ));
+
+// Configure Email Options
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 
@@ -104,7 +111,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-//app.UseCors("AllowAll");
+
+app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 

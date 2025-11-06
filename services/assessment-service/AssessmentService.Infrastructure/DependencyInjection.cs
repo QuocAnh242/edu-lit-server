@@ -7,6 +7,7 @@ using AssessmentService.Infrastructure.Persistance.DAOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
+using AssessmentService.Infrastructure.Persistance.Email;
 
 namespace AssessmentService.Infrastructure
 {
@@ -25,7 +26,6 @@ namespace AssessmentService.Infrastructure
 
             //register third party
             services.AddScoped<IRedisService, RedisService>();
-
 
             var redisConfig = configuration.GetConnectionString("RedisConnection");
 
