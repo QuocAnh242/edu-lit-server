@@ -2,9 +2,9 @@
 
 namespace AssessmentService.Application.Features.Assessment.CreateAssessment
 {
-    public class UpdateAssessmentValidator : AbstractValidator<CreateAssessmentCommand>
+    public class CreateAssessmentValidator : AbstractValidator<CreateAssessmentCommand>
     {
-        public UpdateAssessmentValidator() 
+        public CreateAssessmentValidator() 
         {
             RuleFor(x => x.CourseId)
                 .NotEmpty().WithMessage("CourseId is required.")

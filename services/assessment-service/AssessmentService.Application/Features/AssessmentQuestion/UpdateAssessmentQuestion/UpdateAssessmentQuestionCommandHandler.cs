@@ -1,5 +1,6 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
 using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Interfaces;
 using AutoMapper;
@@ -17,12 +18,21 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
         private readonly IUnitOfWork _unitOfWork;
         private readonly IValidator<UpdateAssessmentQuestionCommand> _updateAssessmentCommandValidator;
         private readonly IMapper _mapper;
-        public UpdateAssessmentQuestionCommandHandler(IUnitOfWork unitOfWork, IValidator<UpdateAssessmentQuestionCommand> updateAssessmentCommandValidator, IMapper mapper)
+        private readonly IRedisService _redisService;
+        private const string CacheKey = "assessmentQuestions:all";
+
+        public UpdateAssessmentQuestionCommandHandler(
+            IUnitOfWork unitOfWork,
+            IValidator<UpdateAssessmentQuestionCommand> updateAssessmentCommandValidator,
+            IMapper mapper,
+            IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _updateAssessmentCommandValidator = updateAssessmentCommandValidator;
             _mapper = mapper;
+            _redisService = redisService;
         }
+
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentQuestionCommand request, CancellationToken cancellationToken)
         {
             // validation
@@ -42,10 +52,21 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
                 {
                     return ObjectResponse<bool>.Response("404", "AssessmentQuestion not found", false);
                 }
+
+                var assessment = await _unitOfWork.AssessmentRepository.GetByIdAsync(request.AssessmentId);
+                if (assessment == null)
+                {
+                    return ObjectResponse<bool>.Response("404", "Assessment not found", false);
+                }
+
                 // Map updated fields
                 _mapper.Map(request, existingAssessmentQuestion);
                 _unitOfWork.AssessmentQuestionRepository.Update(existingAssessmentQuestion);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Invalidate cache
+                await _redisService.RemoveAsync(CacheKey);
+
                 return ObjectResponse<bool>.SuccessResponse(true);
             }
             catch (Exception e)

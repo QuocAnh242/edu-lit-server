@@ -1,4 +1,5 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
+using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Interfaces;
 using System;
@@ -12,10 +13,15 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.DeleteAssess
     public class DeleteAssessmentQuestionCommandHandler : ICommandHandler<DeleteAssessmentQuestionCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public DeleteAssessmentQuestionCommandHandler(IUnitOfWork unitOfWork)
+        private readonly IRedisService _redisService;
+        private const string CacheKey = "assessmentQuestions:all";
+
+        public DeleteAssessmentQuestionCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
+            _redisService = redisService;
         }
+
         public async Task<ObjectResponse<bool>> Handle(DeleteAssessmentQuestionCommand command, CancellationToken cancellationToken)
         {
             try
@@ -27,6 +33,9 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.DeleteAssess
                 }
 
                 _unitOfWork.AssessmentQuestionRepository.Remove(asseQuestEntity);
+                // Invalidate cache
+                await _redisService.RemoveAsync(CacheKey);
+
                 return ObjectResponse<bool>.SuccessResponse(true);
             }
             catch (Exception ex)

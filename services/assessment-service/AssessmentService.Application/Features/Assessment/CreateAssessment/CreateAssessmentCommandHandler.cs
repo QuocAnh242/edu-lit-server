@@ -1,5 +1,7 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
+using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
+using AssessmentService.Domain.Enums;
 using AssessmentService.Domain.Interfaces;
 using AutoMapper;
 using FluentValidation;
@@ -11,12 +13,19 @@ namespace AssessmentService.Application.Features.Assessment.CreateAssessment
         private readonly IUnitOfWork _unitOfWork;
         private readonly IValidator<CreateAssessmentCommand> _createAssessmentCommandValidator;
         private readonly IMapper _mapper;
+        private readonly IRedisService _redisService;
+        private const string CacheKey = "assessments:all";
 
-        public CreateAssessmentCommandHandler(IUnitOfWork unitOfWork, IValidator<CreateAssessmentCommand> createAssessmentCommandValidator, IMapper mapper)
+        public CreateAssessmentCommandHandler(
+            IUnitOfWork unitOfWork,
+            IValidator<CreateAssessmentCommand> createAssessmentCommandValidator,
+            IMapper mapper,
+            IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _createAssessmentCommandValidator = createAssessmentCommandValidator;
             _mapper = mapper;
+            _redisService = redisService;
         }
 
         public async Task<ObjectResponse<int>> Handle(CreateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
@@ -35,11 +44,17 @@ namespace AssessmentService.Application.Features.Assessment.CreateAssessment
 
             var createdAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
 
+            createdAssessment.Status = AssessmentStatus.Public.ToString();
+            createdAssessment.IsActive = true;
+
             await _unitOfWork.AssessmentRepository.AddAsync(createdAssessment);
 
             try
             {
                 await _unitOfWork.SaveChangesAsync();
+                // Invalidate cache
+                await _redisService.RemoveAsync(CacheKey);
+
                 //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.
             }
             catch (Exception e)

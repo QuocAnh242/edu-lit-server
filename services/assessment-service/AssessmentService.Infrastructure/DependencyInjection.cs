@@ -6,6 +6,8 @@ using AssessmentService.Infrastructure.Persistance.Repositories;
 using AssessmentService.Infrastructure.Persistance.DAOs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using StackExchange.Redis;
+using AssessmentService.Infrastructure.Persistance.Email;
 
 namespace AssessmentService.Infrastructure
 {
@@ -18,29 +20,24 @@ namespace AssessmentService.Infrastructure
 
             //register repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-
-            //register third party
-            //services.AddScoped<IRedisService, RedisService>();
             
             // register services (unit of work)
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            // register db context
-            /*services.AddDbContext<AssessmentDbContext>(options => 
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));*/
-            
-            //var redisConfig = configuration.GetConnectionString("Redis");
-            
+            //register third party
+            services.AddScoped<IRedisService, RedisService>();
+
+            var redisConfig = configuration.GetConnectionString("RedisConnection");
+
+            var redisConnection = ConnectionMultiplexer.Connect(redisConfig);
+            services.AddSingleton<IConnectionMultiplexer>(redisConnection);
+
             //register redis for basic caching
-            /*services.AddStackExchangeRedisCache(options =>
+            services.AddStackExchangeRedisCache(options =>
             {
                 options.Configuration = redisConfig;
-                options.InstanceName = "LessonService_";
-            });*/
-            
-            //register redis for advanced caching\
-            /*services.AddSingleton<IConnectionMultiplexer>(sp =>
-                ConnectionMultiplexer.Connect(redisConfig));*/
+                options.InstanceName = "assessment:";
+            });
             
             return services;
         }
