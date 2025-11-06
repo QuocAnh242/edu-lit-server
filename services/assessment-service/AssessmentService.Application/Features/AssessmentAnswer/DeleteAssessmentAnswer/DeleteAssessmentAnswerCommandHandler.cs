@@ -8,31 +8,31 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AssessmentService.Application.Features.AssessmentQuestion.DeleteAssessmentQuestion
+namespace AssessmentService.Application.Features.AssessmentAnswer.DeleteAssessmentAnswer
 {
-    public class DeleteAssessmentQuestionCommandHandler : ICommandHandler<DeleteAssessmentQuestionCommand, bool>
+    public class DeleteAssessmentAnswerCommandHandler : ICommandHandler<DeleteAssessmentAnswerCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRedisService _redisService;
-        private const string CacheKey = "assessmentQuestions:all";
+        private const string CacheKey = "assessmentAnswer:all";
 
-        public DeleteAssessmentQuestionCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
+        public DeleteAssessmentAnswerCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _redisService = redisService;
         }
 
-        public async Task<ObjectResponse<bool>> Handle(DeleteAssessmentQuestionCommand command, CancellationToken cancellationToken)
+        public async Task<ObjectResponse<bool>> Handle(DeleteAssessmentAnswerCommand command, CancellationToken cancellationToken)
         {
             try
             {
-                var asseQuestEntity = await _unitOfWork.AssessmentQuestionRepository.GetByIdAsync(command.Id);
-                if (asseQuestEntity is null)
+                var answerEntity = await _unitOfWork.AssessmentAnswerRepository.GetByIdAsync(command.AnswerId);
+                if (answerEntity is null)
                 {
-                    return ObjectResponse<bool>.Response("404", "Assessment Question Not Found", false);
+                    return ObjectResponse<bool>.Response("404", "Assessment Answer Not Found", false);
                 }
+                _unitOfWork.AssessmentAnswerRepository.Remove(answerEntity);
 
-                _unitOfWork.AssessmentQuestionRepository.Remove(asseQuestEntity);
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
 

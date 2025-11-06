@@ -10,6 +10,15 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+/*builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin() //.AllowCredentials() API use JWT
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+    );
+});*/
+
 // Add DbContext
 builder.Services.AddDbContext<AssessmentDbContext>(options =>
     options.UseMySql(
@@ -95,6 +104,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+//app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
