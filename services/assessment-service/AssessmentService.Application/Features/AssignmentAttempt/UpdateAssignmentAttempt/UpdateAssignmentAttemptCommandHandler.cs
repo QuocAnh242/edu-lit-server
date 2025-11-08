@@ -1,6 +1,7 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
 using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
+using AssessmentService.Domain.Entities;
 using AssessmentService.Domain.Interfaces;
 using AutoMapper;
 using FluentValidation;
@@ -30,7 +31,7 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.UpdateAssignm
         public async Task<ObjectResponse<bool>> Handle(UpdateAssignmentAttemptCommand command, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _validator.ValidateAsync(command);
+            var validationResult = await _validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -57,12 +58,16 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.UpdateAssignm
             try
             {
                 // map updated fields
-                var assignmentAttemptToUpdate = _mapper.Map<Domain.Entities.AssignmentAttempt>(command);
-                _unitOfWork.AssignmentAttemptRepository.Update(assignmentAttemptToUpdate);
+                _mapper.Map(command, existingAssignmentAttempt);
+                _unitOfWork.AssignmentAttemptRepository.Update(existingAssignmentAttempt);
                 await _unitOfWork.SaveChangesAsync();
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assignmentAttempts:assessmentId:{command.AttemptsId}");
+                await _redisService.RemoveAsync($"assignmentAttempt:{command.AttemptsId}");
+                await _redisService.RemoveAsync($"grading:attempt:{command.AttemptsId}");
+
                 return ObjectResponse<bool>.SuccessResponse(true);
             }
             catch (Exception ex)

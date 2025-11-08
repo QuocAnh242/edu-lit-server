@@ -24,6 +24,8 @@ using AssessmentService.Application.Features.AssignmentAttempt.GetAssignmentAtte
 using AssessmentService.Application.Features.AssignmentAttempt.GetAssignmentAttemptById;
 using AssessmentService.Application.Features.AssignmentAttempt.InviteUserToAssignmentAttempt;
 using AssessmentService.Application.Features.AssignmentAttempt.UpdateAssignmentAttempt;
+using AssessmentService.Application.Features.GradingFeedback.CalculateGrading;
+using AssessmentService.Application.Features.GradingFeedback.GetGradingFeedback;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -53,6 +55,8 @@ namespace AssessmentService.Application
             services.AddScoped<ICommandHandler<DeleteAssignmentAttemptCommand, bool>, DeleteAssignmentAttemptCommandHandler>();
             services.AddScoped<ICommandHandler<InviteUserToAssignmentAttemptCommand, bool>, InviteUserToAssignmentAttemptHandler>();
 
+            services.AddScoped<ICommandHandler<CalculateGradingCommand, CalculateGradingResponse>, CalculateGradingCommandHandler>();
+
 
             //Query
             services.AddScoped<IQueryHandler<GetAssessmentByIdQuery, GetAssessmentByIdResponse>, GetAssessmentByIdQueryHandler>();
@@ -70,6 +74,7 @@ namespace AssessmentService.Application
             services.AddScoped<IQueryHandler<GetAllAssignmentAttemptQuery, List<GetAllAssignmentAttemptResponse>>, GetAllAssignmentAttemptQueryHandler>();
             services.AddScoped<IQueryHandler<GetAllAssignmentAttemptByAssessmentIdQuery, List<GetAllAssignmentAttemptByAssessmentIdResponse>>, GetAllAssignmentAttemptByAssessmentIdQueryHandler>();
 
+            services.AddScoped<IQueryHandler<GetGradingFeedbackQuery, GetGradingFeedbackResponse>, GetGradingFeedbackQueryHandler>();
 
             // Register all validators and AutoMapper profiles from the assembly
             //chỉ cần thêm dòng này là đủ để đăng ký tất cả validator và profile trong assembly ko cần đăng ký từng cái một

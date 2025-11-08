@@ -28,9 +28,11 @@ namespace AssessmentService.Application.Features.Assessment.DeleteAssessment
                 }
 
                 _unitOfWork.AssessmentRepository.Remove(assessmentEntity);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessment:{command.AssessmentId}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

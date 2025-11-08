@@ -30,7 +30,7 @@ namespace AssessmentService.Application.Features.Assessment.UpdateAssessment
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentCommand assessmentCommand, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(assessmentCommand);
+            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(assessmentCommand, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -47,12 +47,13 @@ namespace AssessmentService.Application.Features.Assessment.UpdateAssessment
 
             try
             {
-                var updatedAssessment = _mapper.Map<Domain.Entities.Assessment>(assessmentCommand);
-                _unitOfWork.AssessmentRepository.Update(updatedAssessment);
+                _mapper.Map(assessmentCommand, existingAssessment);
+                _unitOfWork.AssessmentRepository.Update(existingAssessment);
                 await _unitOfWork.SaveChangesAsync();
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessment:{assessmentCommand.Id}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
                 //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.

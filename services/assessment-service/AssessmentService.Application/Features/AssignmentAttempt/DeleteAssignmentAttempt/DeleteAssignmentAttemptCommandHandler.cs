@@ -26,10 +26,15 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.DeleteAssignm
                 {
                     return ObjectResponse<bool>.Response("404", "Assignment Attempt Not Found", false);
                 }
+
                 _unitOfWork.AssignmentAttemptRepository.Remove(assignAttemptEntity);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assignmentAttempts:assessmentId:{command.Id}");
+                await _redisService.RemoveAsync($"assignmentAttempt:{command.Id}");
+                await _redisService.RemoveAsync($"grading:attempt:{command.Id}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

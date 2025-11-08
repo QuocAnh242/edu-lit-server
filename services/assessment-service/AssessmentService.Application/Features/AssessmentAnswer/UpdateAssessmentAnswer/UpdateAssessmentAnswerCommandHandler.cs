@@ -29,7 +29,7 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessme
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentAnswerCommand command, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _validator.ValidateAsync(command);
+            var validationResult = await _validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -57,24 +57,20 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessme
                 {
                     return ObjectResponse<bool>.Response("404", "Assessment answer not found", false);
                 }
-                var updatedAnswer = _mapper.Map<Domain.Entities.AssessmentAnswer>(command);
+                
+                _mapper.Map(command, existingAnswer);
 
                 // chek answer for the question in the db to set IsCorrect
-                var quest = await _unitOfWork.AssessmentQuestionRepository.GetByIdAsync(command.AssessmentQuestionId);
-                if (quest.CorrectAnswer == command.SelectedAnswer)
-                {
-                    updatedAnswer.IsCorrect = true;
-                }
-                else
-                {
-                    updatedAnswer.IsCorrect = false;
-                }
+                existingAnswer.IsCorrect = (question.CorrectAnswer == command.SelectedAnswer);
 
-                _unitOfWork.AssessmentAnswerRepository.Update(updatedAnswer);
+                _unitOfWork.AssessmentAnswerRepository.Update(existingAnswer);
                 await _unitOfWork.SaveChangesAsync();
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentAnswers:attemptId:{command.AttemptsId}");
+                await _redisService.RemoveAsync($"assessmentAnswer:{command.AnswerId}");
+                await _redisService.RemoveAsync($"grading:attempt:{command.AttemptsId}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

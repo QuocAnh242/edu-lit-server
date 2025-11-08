@@ -30,7 +30,7 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.CreateAssignm
         public async Task<ObjectResponse<int>> Handle(CreateAssignmentAttemptCommand command, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _validator.ValidateAsync(command);
+            var validationResult = await _validator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -55,7 +55,10 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.CreateAssignm
                 await _unitOfWork.SaveChangesAsync();
 
                 // Invalidate cache
-                await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync(CacheKey); //all
+                await _redisService.RemoveAsync($"assignmentAttempts:assessmentId:{assignmentAttempt.AttemptsId}");
+                await _redisService.RemoveAsync($"assignmentAttempt:{assignmentAttempt.AttemptsId}");
+                await _redisService.RemoveAsync($"grading:attempt:{assignmentAttempt.AttemptsId}");
             }
             catch (Exception e)
             {
