@@ -1,15 +1,10 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
-using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
 using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
+using AssessmentService.Domain.Entities;
 using AssessmentService.Domain.Interfaces;
 using AutoMapper;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssessmentQuestion
 {
@@ -36,7 +31,7 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentQuestionCommand request, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(request);
+            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -66,6 +61,9 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentQuestions:assessmentId:{request.AssessmentId}");
+
+                await _redisService.RemoveAsync($"assessmentQuestion:{request.AssessmentQuestionId}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

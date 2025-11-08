@@ -3,6 +3,7 @@ using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Interfaces;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,9 +33,16 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.DeleteAssess
                     return ObjectResponse<bool>.Response("404", "Assessment Question Not Found", false);
                 }
 
+                var assessmentId = asseQuestEntity.AssessmentId;
+
                 _unitOfWork.AssessmentQuestionRepository.Remove(asseQuestEntity);
+                _unitOfWork.SaveChangesAsync(cancellationToken);
+
                 // Invalidate cache
-                await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync(CacheKey); //all assessment questions cache
+                await _redisService.RemoveAsync($"assessmentQuestions:assessmentId:{assessmentId}");
+
+                await _redisService.RemoveAsync($"assessmentQuestion:{command.Id}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

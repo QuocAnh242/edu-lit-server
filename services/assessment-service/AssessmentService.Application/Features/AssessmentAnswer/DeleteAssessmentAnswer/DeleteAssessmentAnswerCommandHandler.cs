@@ -31,10 +31,17 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.DeleteAssessme
                 {
                     return ObjectResponse<bool>.Response("404", "Assessment Answer Not Found", false);
                 }
+
+                var attemptId = answerEntity.AttemptsId;
+
                 _unitOfWork.AssessmentAnswerRepository.Remove(answerEntity);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentAnswers:attemptId:{attemptId}");
+                await _redisService.RemoveAsync($"assessmentAnswer:{command.AnswerId}");
+                await _redisService.RemoveAsync($"grading:attempt:{attemptId}");
 
                 return ObjectResponse<bool>.SuccessResponse(true);
             }

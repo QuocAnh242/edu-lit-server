@@ -30,7 +30,7 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
         public async Task<ObjectResponse<int>> Handle(CreateAssessmentAnswerCommand command, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _createAssessmentCommandValidator.ValidateAsync(command);
+            var validationResult = await _createAssessmentCommandValidator.ValidateAsync(command, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -54,22 +54,17 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
             var createdAssessmentAnswer = _mapper.Map<Domain.Entities.AssessmentAnswer>(command);
 
             // chek answer for the question in the db to set IsCorrect
-            var quest =  await _unitOfWork.AssessmentQuestionRepository.GetByIdAsync(command.AssessmentQuestionId);
-            if (quest.CorrectAnswer == command.SelectedAnswer)
-            {
-                createdAssessmentAnswer.IsCorrect = true;
-            }
-            else
-            {
-                createdAssessmentAnswer.IsCorrect = false;
-            }
+            createdAssessmentAnswer.IsCorrect = (question.CorrectAnswer == command.SelectedAnswer);
 
             await _unitOfWork.AssessmentAnswerRepository.AddAsync(createdAssessmentAnswer);
             try
             {
                 await _unitOfWork.SaveChangesAsync();
+
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentAnswers:attemptId:{command.AttemptsId}");
+                await _redisService.RemoveAsync($"grading:attempt:{command.AttemptsId}");
             }
             catch (Exception e)
             {

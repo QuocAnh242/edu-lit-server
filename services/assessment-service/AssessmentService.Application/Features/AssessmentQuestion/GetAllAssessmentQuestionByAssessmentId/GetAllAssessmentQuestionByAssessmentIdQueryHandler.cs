@@ -33,7 +33,7 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.GetAllAssess
                 }
 
                 // 2. Nếu không có cache, query từ database
-                var assessmentQuestions = await _unitOfWork.AssessmentQuestionRepository.GetAllByAsync(x => x.AssessmentQuestionId == query.Id);
+                var assessmentQuestions = await _unitOfWork.AssessmentQuestionRepository.GetAllByAsync(x => x.AssessmentId == query.Id);
                 var questions = _mapper.Map<List<GetAllAssessmentQuestionByAssessmentIdResponse>>(assessmentQuestions);
                 
                 // 3. Lưu vào cache

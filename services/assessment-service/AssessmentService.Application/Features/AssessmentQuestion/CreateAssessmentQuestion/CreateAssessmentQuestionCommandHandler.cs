@@ -31,7 +31,7 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.CreateAssess
         public async Task<ObjectResponse<int>> Handle(CreateAssessmentQuestionCommand assessmentQuestionCommand, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _createAssessmentCommandValidator.ValidateAsync(assessmentQuestionCommand);
+            var validationResult = await _createAssessmentCommandValidator.ValidateAsync(assessmentQuestionCommand, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -61,6 +61,7 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.CreateAssess
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentQuestions:assessmentId:{assessmentQuestionCommand.AssessmentId}");
 
                 //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.
             }
