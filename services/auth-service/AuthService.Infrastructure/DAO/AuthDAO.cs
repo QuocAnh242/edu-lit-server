@@ -20,13 +20,22 @@ namespace AuthService.Infrastructure.DAO
             _db = (AuthDbContext)_uow.Context;
         }
 
+        // Login user by username and password
         public async Task<User?> LoginAsync(string username, string password)
         {
-            return await _db.Users
+            // Fetch user by username only (password is verified with BCrypt)
+            var user = await _db.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user is null) return null;
+
+            // Verify password with BCrypt (hash comparison)
+            var ok = BCrypt.Net.BCrypt.Verify(password, user.Password);
+            return ok ? user : null;
         }
 
+        // Register a new user with default role as STUDENT
         public async Task<User> RegisterAsync(string username, string email, string password, string fullName)
         {
             var defaultRoleName = RoleType.STUDENT.ToString();
@@ -35,12 +44,15 @@ namespace AuthService.Infrastructure.DAO
             if (studentRole == null)
                 throw new Exception($"Default role '{defaultRoleName}' not found.");
 
+            // Hash the password before storing
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
+
             var user = new User
             {
                 Id = Guid.NewGuid(),
                 Username = username,
                 Email = email,
-                Password = password,
+                Password = passwordHash,
                 FullName = fullName,
                 CreatedAt = DateTime.UtcNow,
                 RoleId = studentRole.Id,

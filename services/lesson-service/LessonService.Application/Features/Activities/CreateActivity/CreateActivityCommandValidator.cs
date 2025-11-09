@@ -1,0 +1,31 @@
+using FluentValidation;
+
+namespace LessonService.Application.Features.Activities.CreateActivity;
+
+public class CreateActivityCommandValidator : AbstractValidator<CreateActivityCommand>
+{
+    public CreateActivityCommandValidator()
+    {
+        RuleFor(x => x.SessionId)
+            .NotEmpty().WithMessage("SessionId is required");
+        
+        RuleFor(x => x.Title)
+            .NotEmpty().WithMessage("Title is required")
+            .MaximumLength(200).WithMessage("Title must not exceed 200 characters");
+        
+        RuleFor(x => x.Description)
+            .MaximumLength(1000).WithMessage("Description must not exceed 1000 characters");
+        
+        RuleFor(x => x.ActivityType)
+            .NotEmpty().WithMessage("ActivityType is required")
+            .MaximumLength(100).WithMessage("ActivityType must not exceed 100 characters");
+        
+        RuleFor(x => x.Position)
+            .GreaterThanOrEqualTo(0).WithMessage("Position must be greater than or equal to 0");
+        
+        RuleFor(x => x.Points)
+            .GreaterThanOrEqualTo(0).When(x => x.Points.HasValue)
+            .WithMessage("Points must be greater than or equal to 0");
+    }
+}
+

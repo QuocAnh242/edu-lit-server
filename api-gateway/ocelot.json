@@ -1,7 +1,8 @@
 {
   "Routes": [
+    // === AUTH COMMANDS ===
     {
-      "DownstreamPathTemplate": "/api/v1/Auth/{everything}",
+      "DownstreamPathTemplate": "/api/v1/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,11 +10,27 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/Auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/auth/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
+    // === AUTH QUERIES ===
     {
-      "DownstreamPathTemplate": "/api/v1/Role/{everything}",
+      "DownstreamPathTemplate": "/api/v1/user/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth-service-query",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/user/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+    },
+
+    // === ROLE COMMANDS ===
+    {
+      "DownstreamPathTemplate": "/api/v1/role/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -21,35 +38,27 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/Role/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/command/role/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
+    // === ROLE QUERIES ===
     {
-      "DownstreamPathTemplate": "/api/v1/User/{everything}",
+      "DownstreamPathTemplate": "/api/v1/role/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "auth-service",
+          "Host": "auth-service-query",
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/User/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/query/role/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
     },
+
+    // === QUESTION ===
     {
-      "DownstreamPathTemplate": "/api/v1/Question/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "question-service",
-          "Port": 8080
-        }
-      ],
-      "UpstreamPathTemplate": "/api/v1/Question/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/v1/QuestionBank/{everything}",
+      "DownstreamPathTemplate": "/api/v1/question/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -57,11 +66,12 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/QuestionBank/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/question/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
     {
-      "DownstreamPathTemplate": "/api/v1/QuestionOption/{everything}",
+      "DownstreamPathTemplate": "/api/v1/questionbank/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -69,10 +79,24 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/QuestionOption/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/questionbank/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/v1/questionoption/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "question-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/questionoption/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
     }
   ],
+
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:8000"
   }

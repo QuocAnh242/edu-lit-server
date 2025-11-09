@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AssessmentService.Domain.Entities;
+﻿namespace AssessmentService.Domain.Entities;
 
 public partial class AssessmentAnswer
 {
@@ -18,7 +15,7 @@ public partial class AssessmentAnswer
 
     public bool IsCorrect { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
     public virtual AssessmentQuestion AssessmentQuestion { get; set; } = null!;
 
