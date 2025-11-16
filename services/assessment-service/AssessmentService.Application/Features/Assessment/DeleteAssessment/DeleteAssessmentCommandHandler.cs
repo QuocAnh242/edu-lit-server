@@ -1,4 +1,5 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
+using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
 using AssessmentService.Domain.Interfaces;
 
@@ -7,10 +8,15 @@ namespace AssessmentService.Application.Features.Assessment.DeleteAssessment
     public class DeleteAssessmentCommandHandler : ICommandHandler<DeleteAssessmentCommand, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
-        public DeleteAssessmentCommandHandler(IUnitOfWork unitOfWork)
+        private readonly IRedisService _redisService;
+        private const string CacheKey = "assessments:all";
+
+        public DeleteAssessmentCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
+            _redisService = redisService;
         }
+
         public async Task<ObjectResponse<bool>> Handle(DeleteAssessmentCommand command, CancellationToken cancellationToken)
         {
             try
@@ -22,6 +28,12 @@ namespace AssessmentService.Application.Features.Assessment.DeleteAssessment
                 }
 
                 _unitOfWork.AssessmentRepository.Remove(assessmentEntity);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                // Invalidate cache
+                await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessment:{command.AssessmentId}");
+
                 return ObjectResponse<bool>.SuccessResponse(true);
             }
             catch (Exception ex)

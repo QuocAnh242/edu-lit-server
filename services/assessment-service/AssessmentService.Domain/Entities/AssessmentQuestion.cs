@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AssessmentService.Domain.Entities;
+﻿namespace AssessmentService.Domain.Entities;
 
 public partial class AssessmentQuestion
 {

@@ -1,14 +1,10 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
-using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.IServices;
 using AssessmentService.Domain.Commons;
+using AssessmentService.Domain.Entities;
 using AssessmentService.Domain.Interfaces;
 using AutoMapper;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssessmentQuestion
 {
@@ -17,16 +13,25 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
         private readonly IUnitOfWork _unitOfWork;
         private readonly IValidator<UpdateAssessmentQuestionCommand> _updateAssessmentCommandValidator;
         private readonly IMapper _mapper;
-        public UpdateAssessmentQuestionCommandHandler(IUnitOfWork unitOfWork, IValidator<UpdateAssessmentQuestionCommand> updateAssessmentCommandValidator, IMapper mapper)
+        private readonly IRedisService _redisService;
+        private const string CacheKey = "assessmentQuestions:all";
+
+        public UpdateAssessmentQuestionCommandHandler(
+            IUnitOfWork unitOfWork,
+            IValidator<UpdateAssessmentQuestionCommand> updateAssessmentCommandValidator,
+            IMapper mapper,
+            IRedisService redisService)
         {
             _unitOfWork = unitOfWork;
             _updateAssessmentCommandValidator = updateAssessmentCommandValidator;
             _mapper = mapper;
+            _redisService = redisService;
         }
+
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentQuestionCommand request, CancellationToken cancellationToken)
         {
             // validation
-            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(request);
+            var validationResult = await _updateAssessmentCommandValidator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
@@ -42,10 +47,24 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.UpdateAssess
                 {
                     return ObjectResponse<bool>.Response("404", "AssessmentQuestion not found", false);
                 }
+
+                var assessment = await _unitOfWork.AssessmentRepository.GetByIdAsync(request.AssessmentId);
+                if (assessment == null)
+                {
+                    return ObjectResponse<bool>.Response("404", "Assessment not found", false);
+                }
+
                 // Map updated fields
                 _mapper.Map(request, existingAssessmentQuestion);
                 _unitOfWork.AssessmentQuestionRepository.Update(existingAssessmentQuestion);
                 await _unitOfWork.SaveChangesAsync();
+
+                // Invalidate cache
+                await _redisService.RemoveAsync(CacheKey);
+                await _redisService.RemoveAsync($"assessmentQuestions:assessmentId:{request.AssessmentId}");
+
+                await _redisService.RemoveAsync($"assessmentQuestion:{request.AssessmentQuestionId}");
+
                 return ObjectResponse<bool>.SuccessResponse(true);
             }
             catch (Exception e)

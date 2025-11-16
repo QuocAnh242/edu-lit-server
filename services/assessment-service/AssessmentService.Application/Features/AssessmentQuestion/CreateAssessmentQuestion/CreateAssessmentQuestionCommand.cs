@@ -11,6 +11,5 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.CreateAssess
         /// A, B, C, D
         /// </summary>
         public string CorrectAnswer { get; set; } = null!;
-        public bool? IsActive { get; set; }
     }
 }
