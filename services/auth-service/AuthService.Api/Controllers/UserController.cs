@@ -33,13 +33,15 @@ namespace AuthService.Api.Controllers
                 Username = dto.Username,
                 Email = dto.Email,
                 FullName = dto.FullName,
-                RoleId = dto.RoleId
+                RoleId = dto.RoleId,
+                Password = dto.Password ?? string.Empty
             };
 
             var res = await _commands.Send<CreateUserCommand, Guid>(cmd, ct);
 
             // Handle Errors
-            if (!res.Success) return BadRequest(res);
+            if (!res.Success) 
+                return BadRequest(res);
 
             var evt = new
             {
@@ -72,7 +74,8 @@ namespace AuthService.Api.Controllers
             var res = await _commands.Send<UpdateUserCommand, bool>(cmd, ct);
 
             // Handle Errors
-            if (!res.Success) return NotFound(res);
+            if (!res.Success) 
+                return NotFound(res);
 
             // Create event payload, publish to RabbitMQ
             var evt = new

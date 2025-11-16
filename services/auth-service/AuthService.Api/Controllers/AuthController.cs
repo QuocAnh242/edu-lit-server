@@ -5,6 +5,8 @@ using AuthService.Application.DTOs.Request;
 using AuthService.Application.DTOs.Response;
 using AuthService.Application.Enums;
 using AuthService.Application.Exceptions;
+using AuthService.Application.Services.Auth.Commands;
+using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,12 +25,18 @@ namespace AuthService.Api.Controllers
         //// RabbitMQ Publisher
         private readonly IMessageBusPublisher _messageBusPublisher;
         private readonly IOutbox _outbox;
+        private readonly IUserRepository _userRepository;
 
-        public AuthController(ICommandDispatcher commands, IMessageBusPublisher messageBusPublisher, IOutbox outbox)
+        public AuthController(
+            ICommandDispatcher commands, 
+            IMessageBusPublisher messageBusPublisher, 
+            IOutbox outbox,
+            IUserRepository userRepository)
         {
             _commands = commands;
             _messageBusPublisher = messageBusPublisher;
             _outbox = outbox;
+            _userRepository = userRepository;
         }
 
         // api/v1/auth/login
@@ -153,22 +161,14 @@ namespace AuthService.Api.Controllers
                         occurredAtUtc = DateTime.UtcNow
                     });
                     // Publish Event to Message Bus
-                    //await _messageBusPublisher.PublishAsync("auth.user.registration.failed", failedPayload, ct);
                     await _outbox.EnqueueAsync("auth.user.registration.failed", failedPayload, ct);
                     
                     // Return Bad Request
                     return BadRequest(response);
                 }
 
-                var successPayload = JsonSerializer.Serialize(new
-                {
-                    user = response.Data,
-                    occurredAtUtc = DateTime.UtcNow
-                });
-
-                // Publish Event to Message Bus
-                //await _messageBusPublisher.PublishAsync("auth.user.registration.successful", successPayload, ct);
-                await _outbox.EnqueueAsync("auth.user.registration.successful", successPayload, ct);
+                // Note: Event "auth.user.created" is already published by RegisterHandler
+                // No need to publish duplicate event here
 
                 // Return Success Response
                 return Ok(response);
@@ -211,8 +211,253 @@ namespace AuthService.Api.Controllers
                 //await _messageBusPublisher.PublishAsync("auth.user.registration.failed", errorPayload, ct);
                 await _outbox.EnqueueAsync("auth.user.registration.failed", errorPayload, ct);
 
-                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An Unexpected error occurred", 500));
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
 
+            }
+        }
+
+        // api/v1/auth/google-login
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                var cmd = new GoogleLoginCommand
+                {
+                    IdToken = request.IdToken
+                };
+
+                var response = await _commands.Send<GoogleLoginCommand, UserDto>(cmd, ct);
+
+                if (!response.Success)
+                {
+                    var failPayload = JsonSerializer.Serialize(new
+                    {
+                        Reason = response.Message,
+                        errorCode = response.ErrorCode,
+                        occurredAtUtc = DateTime.UtcNow
+                    });
+
+                    await _outbox.EnqueueAsync("auth.user.google.login.failed", failPayload, ct);
+                    return Unauthorized(response);
+                }
+
+                var successPayload = JsonSerializer.Serialize(new
+                {
+                    user = response.Data,
+                    occurredAtUtc = DateTime.UtcNow
+                });
+
+                await _outbox.EnqueueAsync("auth.user.google.login.successful", successPayload, ct);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                var errorPayload = JsonSerializer.Serialize(new
+                {
+                    error = "Unexpected error occurred during Google login",
+                    detail = ex.Message,
+                    occurredAtUtc = DateTime.UtcNow
+                });
+
+                await _outbox.EnqueueAsync("auth.user.google.login.failed", errorPayload, ct);
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/refresh-token
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                var cmd = new RefreshTokenCommand
+                {
+                    RefreshToken = request.RefreshToken
+                };
+
+                var response = await _commands.Send<RefreshTokenCommand, UserDto>(cmd, ct);
+
+                if (!response.Success)
+                {
+                    return Unauthorized(response);
+                }
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/forget-password
+        [HttpPost("forget-password")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<bool>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                var cmd = new ForgetPasswordRequestCommand
+                {
+                    Email = request.Email
+                };
+
+                var response = await _commands.Send<ForgetPasswordRequestCommand, bool>(cmd, ct);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<bool>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/reset-password
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<bool>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                var cmd = new ResetPasswordCommand
+                {
+                    Email = request.Email,
+                    OtpCode = request.OtpCode,
+                    NewPassword = request.NewPassword
+                };
+
+                var response = await _commands.Send<ResetPasswordCommand, bool>(cmd, ct);
+                
+                if (!response.Success)
+                    return BadRequest(response);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<bool>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/change-password
+        [HttpPost("change-password")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<bool>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                // Get user ID from JWT claims
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                                  ?? User.FindFirst("sub")
+                                  ?? User.Claims.FirstOrDefault(c => c.Type == "user_id");
+
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResponse<bool>.FailureResponse("Invalid or missing user token", 401));
+                }
+
+                var cmd = new ChangePasswordCommand
+                {
+                    UserId = userId,
+                    OldPassword = request.OldPassword,
+                    NewPassword = request.NewPassword
+                };
+
+                var response = await _commands.Send<ChangePasswordCommand, bool>(cmd, ct);
+                
+                if (!response.Success)
+                    return BadRequest(response);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<bool>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/profile (GET - View Profile)
+        [HttpGet("profile")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> GetProfile(CancellationToken ct)
+        {
+            try
+            {
+                // Get user ID from JWT claims
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                                  ?? User.FindFirst("sub")
+                                  ?? User.Claims.FirstOrDefault(c => c.Type == "user_id");
+
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResponse<UserDto>.FailureResponse("Invalid or missing user token", 401));
+                }
+
+                // Get user from repository
+                var user = await _userRepository.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    return NotFound(ApiResponse<UserDto>.FailureResponse("User not found", 404));
+                }
+
+                var dto = new UserDto(user);
+                return Ok(ApiResponse<UserDto>.SuccessResponse(dto, "Profile retrieved successfully"));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
+            }
+        }
+
+        // api/v1/auth/profile (PUT - Edit Profile)
+        [HttpPut("profile")]
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken ct)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ApiResponse<UserDto>.FailureResponse("Invalid input", 400));
+
+            try
+            {
+                // Get user ID from JWT claims
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
+                                  ?? User.FindFirst("sub")
+                                  ?? User.Claims.FirstOrDefault(c => c.Type == "user_id");
+
+                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+                {
+                    return Unauthorized(ApiResponse<UserDto>.FailureResponse("Invalid or missing user token", 401));
+                }
+
+                var cmd = new UpdateProfileCommand
+                {
+                    UserId = userId,
+                    FullName = request.FullName
+                };
+
+                var response = await _commands.Send<UpdateProfileCommand, UserDto>(cmd, ct);
+                
+                if (!response.Success)
+                    return BadRequest(response);
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
             }
         }
     }

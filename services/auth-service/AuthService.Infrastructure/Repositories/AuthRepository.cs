@@ -29,5 +29,15 @@ namespace AuthService.Infrastructure.Repositories
         {
             return await _authDAO.GetByUsernameAsync(username);
         }
+
+        public async Task<Oauthaccount?> GetOAuthAccountAsync(string provider, string providerAccountId)
+        {
+            return await _authDAO.GetOAuthAccountAsync(provider, providerAccountId);
+        }
+
+        public async Task AddOAuthAccountAsync(Oauthaccount oauthAccount)
+        {
+            await _authDAO.AddOAuthAccountAsync(oauthAccount);
+        }
     }
 }

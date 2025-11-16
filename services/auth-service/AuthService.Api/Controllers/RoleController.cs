@@ -3,6 +3,7 @@ using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 using AuthService.Application.DTOs;
 using AuthService.Application.Services.Role.Commands;
 using AuthService.Application.Services.Role.Interfaces;
+using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,13 @@ namespace AuthService.Api.Controllers
         private readonly ICommandDispatcher _commands;
         // RabbitMQ Publisher
         private readonly IMessageBusPublisher _messageBusPublisher;
+        private readonly IOutbox _outbox;
 
-        public RoleController(ICommandDispatcher commands, IMessageBusPublisher messageBusPublisher)
+        public RoleController(ICommandDispatcher commands, IMessageBusPublisher messageBusPublisher, IOutbox outbox)
         {
             _commands = commands;
             _messageBusPublisher = messageBusPublisher;
+            _outbox = outbox;
         }
 
         // Create Role
@@ -64,6 +67,34 @@ namespace AuthService.Api.Controllers
             var cmd = new DeleteRoleCommand(id);
             var res = await _commands.Send<DeleteRoleCommand, bool>(cmd, ct);
             return Ok(res);
+        }
+
+        // Sync Roles to Query Service
+        // api/v1/role/sync
+        [HttpPost("sync")]
+        public async Task<IActionResult> SyncRoles([FromServices] IRoleService roleService, [FromServices] IUnitOfWork unitOfWork, CancellationToken ct)
+        {
+            var rolesResult = await roleService.GetAllAsync();
+            if (!rolesResult.Success)
+            {
+                return BadRequest(rolesResult);
+            }
+
+            var synced = 0;
+            foreach (var role in rolesResult.Data!)
+            {
+                await _outbox.EnqueueAsync("auth.role.created", new
+                {
+                    id = role.Id,
+                    name = role.Name,
+                }, ct);
+                synced++;
+            }
+            
+            // Save outbox messages
+            await unitOfWork.SaveChangesAsync(ct);
+
+            return Ok(new { message = $"Synced {synced} roles to query service", count = synced });
         }
     }
 }

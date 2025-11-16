@@ -47,8 +47,8 @@ namespace AuthService.Infrastructure.Messaging
         {
             try
             {
-                _logger.LogInformation("🚀 Starting RabbitMQ User Projection Service...");
-                _logger.LogInformation("📡 Connecting to RabbitMQ: {HostName}:{Port}", _factory.HostName, _factory.Port);
+                _logger.LogInformation("Starting RabbitMQ User Projection Service...");
+                _logger.LogInformation("Connecting to RabbitMQ: {HostName}:{Port}", _factory.HostName, _factory.Port);
 
                 // Retry connection with delay
                 var retryCount = 0;
@@ -57,36 +57,44 @@ namespace AuthService.Infrastructure.Messaging
                     try
                     {
                         _conn = await _factory.CreateConnectionAsync(clientProvidedName: "auth-service-query", cancellationToken: stoppingToken);
-                        _logger.LogInformation("✅ Connected to RabbitMQ successfully!");
+                        _logger.LogInformation("Connected to RabbitMQ successfully!");
                         break;
                     }
                     catch (Exception ex)
                     {
                         retryCount++;
-                        _logger.LogWarning(ex, "⚠️ Failed to connect to RabbitMQ (attempt {Retry}/10). Retrying in 5s...", retryCount);
+                        _logger.LogWarning(ex, "Failed to connect to RabbitMQ (attempt {Retry}/10). Retrying in 5s...", retryCount);
                         await Task.Delay(5000, stoppingToken);
                     }
                 }
 
                 if (_conn == null)
                 {
-                    _logger.LogError("❌ Could not connect to RabbitMQ after 10 attempts. Service stopped.");
+                    _logger.LogError("Could not connect to RabbitMQ after 10 attempts. Service stopped.");
                     return;
                 }
 
                 _channel = await _conn.CreateChannelAsync(cancellationToken: stoppingToken);
-                _logger.LogInformation("📢 Channel created");
+                _logger.LogInformation("Channel created");
 
                 await _channel.ExchangeDeclareAsync(Exchange, ExchangeType.Topic, durable: true, autoDelete: false, arguments: null, cancellationToken: stoppingToken);
-                _logger.LogInformation("📮 Exchange declared: {Exchange}", Exchange);
+                _logger.LogInformation("Exchange declared: {Exchange}", Exchange);
 
                 await _channel.QueueDeclareAsync(QueueName, durable: true, exclusive: false, autoDelete: false, arguments: null, cancellationToken: stoppingToken);
-                _logger.LogInformation("📥 Queue declared: {Queue}", QueueName);
+                _logger.LogInformation("Queue declared: {Queue}", QueueName);
 
-                foreach (var rk in new[] { "auth.user.registration.successful", "auth.user.created", "auth.user.updated", "auth.user.deleted" })
+                foreach (var rk in new[] { 
+                    "auth.user.registration.successful", 
+                    "auth.user.created", 
+                    "auth.user.updated", 
+                    "auth.user.deleted",
+                    "auth.user.profile.updated",
+                    "auth.user.password.changed",
+                    "auth.user.password.reset"
+                })
                 {
                     await _channel.QueueBindAsync(QueueName, Exchange, rk, arguments: null, cancellationToken: stoppingToken);
-                    _logger.LogInformation("🔗 Queue bound to routing key: {RoutingKey}", rk);
+                    _logger.LogInformation("Queue bound to routing key: {RoutingKey}", rk);
                 }
 
                 var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -97,36 +105,36 @@ namespace AuthService.Infrastructure.Messaging
                         var routingKey = ea.RoutingKey;
                         var json = Encoding.UTF8.GetString(ea.Body.ToArray());
                         
-                        _logger.LogInformation("📨 Received event: {RoutingKey}", routingKey);
-                        _logger.LogDebug("📄 Payload: {Payload}", json);
+                        _logger.LogInformation("Received event: {RoutingKey}", routingKey);
+                        _logger.LogDebug("Payload: {Payload}", json);
                         
                         await ProjectAsync(routingKey, json, stoppingToken);
                         await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
                         
-                        _logger.LogInformation("✅ Event processed successfully: {RoutingKey}", routingKey);
+                        _logger.LogInformation("Event processed successfully: {RoutingKey}", routingKey);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "❌ Projection failed for event. Nacking message.");
+                        _logger.LogError(ex, " Projection failed for event. Nacking message.");
                         await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true, cancellationToken: stoppingToken);
                     }
                 };
 
                 await _channel.BasicConsumeAsync(queue: QueueName, autoAck: false, consumer: consumer, cancellationToken: stoppingToken);
-                _logger.LogInformation("🎧 RabbitMQ user projection service is now listening for events...");
-                _logger.LogInformation("✅ Service started successfully!");
+                _logger.LogInformation("RabbitMQ user projection service is now listening for events...");
+                _logger.LogInformation("Service started successfully!");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Fatal error in RabbitMQ projection service");
+                _logger.LogError(ex, "Fatal error in RabbitMQ projection service");
                 throw;
             }
         }
 
         private async Task ProjectAsync(string type, string payload, CancellationToken ct)
         {
-            _logger.LogInformation("🔄 Projecting event type: {Type}", type);
-            _logger.LogInformation("📄 Raw JSON payload: {Payload}", payload);
+            _logger.LogInformation("Projecting event type: {Type}", type);
+            _logger.LogInformation("Raw JSON payload: {Payload}", payload);
             
             // Handle double-serialized JSON (payload might be a JSON string containing JSON)
             var actualPayload = payload;
@@ -137,7 +145,7 @@ namespace AuthService.Infrastructure.Messaging
                 if (testDoc.RootElement.ValueKind == JsonValueKind.String)
                 {
                     actualPayload = testDoc.RootElement.GetString() ?? payload;
-                    _logger.LogInformation("📦 Unwrapped double-serialized JSON");
+                    _logger.LogInformation("Unwrapped double-serialized JSON");
                 }
             }
             catch
@@ -176,8 +184,9 @@ namespace AuthService.Infrastructure.Messaging
                         var email = GetStringProperty(userData, "email", "Email");
                         var fullName = GetStringProperty(userData, "fullName", "FullName", "full_name");
                         var roleId = GetNullableGuidProperty(userData, "roleId", "RoleId", "role_id");
+                        var roleName = GetStringProperty(userData, "roleName", "RoleName", "role_name");
                         
-                        _logger.LogInformation("👤 Creating user in MongoDB: {Username} ({Id})", username, id);
+                        _logger.LogInformation("Creating user in MongoDB: {Username} ({Id})", username, id);
                         
                         var userModel = new UserReadModel
                         {
@@ -186,42 +195,100 @@ namespace AuthService.Infrastructure.Messaging
                             Email = email,
                             FullName = fullName,
                             RoleId = roleId,
+                            RoleName = roleName,
                             CreatedAt = DateTime.UtcNow
                         };
                         
                         await dao.UpsertAsync(userModel);
-                        _logger.LogInformation("✅ User created in MongoDB: {Username}", username);
+                        _logger.LogInformation("User created in MongoDB: {Username}", username);
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "❌ Failed to parse UserCreatedEvent");
+                        _logger.LogError(ex, "Failed to parse UserCreatedEvent");
                         throw;
                     }
                     break;
                 }
                 case "auth.user.updated":
                 {
-                    var e = JsonSerializer.Deserialize<UserUpdatedEvent>(payload, new JsonSerializerOptions 
-                    { 
-                        PropertyNameCaseInsensitive = true 
-                    })!;
-                    
-                    _logger.LogInformation("📝 Updating user in MongoDB: {Id}", e.id);
-                    
-                    var existing = await dao.GetByIdAsync(e.id);
-                    if (existing is null)
+                    try
                     {
-                        _logger.LogWarning("⚠️ User not found in MongoDB for update: {Id}", e.id);
-                        break;
+                        using var doc = JsonDocument.Parse(actualPayload);
+                        var root = doc.RootElement;
+                        
+                        var userId = GetGuidProperty(root, "id", "Id", "userId", "UserId");
+                        var username = GetStringProperty(root, "username", "Username", "userName", "UserName");
+                        var email = GetStringProperty(root, "email", "Email");
+                        var fullName = GetStringProperty(root, "fullName", "FullName", "full_name");
+                        var roleId = GetNullableGuidProperty(root, "roleId", "RoleId", "role_id");
+                        var roleName = GetStringProperty(root, "roleName", "RoleName", "role_name");
+                        
+                        _logger.LogInformation("Updating user in MongoDB: {Id}", userId);
+                        
+                        var existing = await dao.GetByIdAsync(userId);
+                        if (existing is null)
+                        {
+                            _logger.LogWarning("⚠User not found in MongoDB for update: {Id}", userId);
+                            break;
+                        }
+                        
+                        if (!string.IsNullOrEmpty(username)) existing.Username = username;
+                        if (!string.IsNullOrEmpty(email)) existing.Email = email;
+                        if (!string.IsNullOrEmpty(fullName)) existing.FullName = fullName;
+                        if (roleId.HasValue) existing.RoleId = roleId;
+                        if (!string.IsNullOrEmpty(roleName)) existing.RoleName = roleName;
+                        
+                        await dao.UpsertAsync(existing);
+                        _logger.LogInformation("User updated in MongoDB: {Id}", userId);
                     }
-                    
-                    existing.Username = e.username ?? existing.Username;
-                    existing.Email = e.email ?? existing.Email;
-                    existing.FullName = e.fullName ?? existing.FullName;
-                    existing.RoleId = e.roleId ?? existing.RoleId;
-                    await dao.UpsertAsync(existing);
-                    
-                    _logger.LogInformation("✅ User updated in MongoDB: {Id}", e.id);
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to parse UserUpdatedEvent");
+                        throw;
+                    }
+                    break;
+                }
+                case "auth.user.profile.updated":
+                case "auth.user.password.changed":
+                case "auth.user.password.reset":
+                {
+                    // These events update user data, so we need to update the MongoDB document
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(actualPayload);
+                        var root = doc.RootElement;
+                        
+                        // Extract userId (could be "userId" or "id")
+                        var userId = GetGuidProperty(root, "id", "Id", "userId", "UserId");
+                        
+                        _logger.LogInformation("Updating user in MongoDB for event {Type}: {Id}", type, userId);
+                        
+                        var existing = await dao.GetByIdAsync(userId);
+                        if (existing is null)
+                        {
+                            _logger.LogWarning("⚠User not found in MongoDB for {Type}: {Id}", type, userId);
+                            break;
+                        }
+                        
+                        // For profile.updated, update fullName
+                        if (type == "auth.user.profile.updated")
+                        {
+                            var fullName = GetStringProperty(root, "fullName", "FullName", "full_name");
+                            if (!string.IsNullOrEmpty(fullName)) existing.FullName = fullName;
+                        }
+                        
+                        // For password events, we don't need to update anything in the read model
+                        // (passwords are not stored in read model for security)
+                        // But we still update to ensure the document exists
+                        
+                        await dao.UpsertAsync(existing);
+                        _logger.LogInformation("User updated in MongoDB for {Type}: {Id}", type, userId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to parse {Type} event", type);
+                        throw;
+                    }
                     break;
                 }
                 case "auth.user.deleted":
@@ -231,13 +298,13 @@ namespace AuthService.Infrastructure.Messaging
                         PropertyNameCaseInsensitive = true 
                     })!;
                     
-                    _logger.LogInformation("🗑️ Deleting user from MongoDB: {Id}", e.id);
+                    _logger.LogInformation("Deleting user from MongoDB: {Id}", e.id);
                     await dao.DeleteAsync(e.id);
-                    _logger.LogInformation("✅ User deleted from MongoDB: {Id}", e.id);
+                    _logger.LogInformation("User deleted from MongoDB: {Id}", e.id);
                     break;
                 }
                 default:
-                    _logger.LogWarning("⚠️ Unknown event type: {Type}", type);
+                    _logger.LogWarning("Unknown event type: {Type}", type);
                     break;
             }
         }
