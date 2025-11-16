@@ -22,4 +22,6 @@ public partial class User
     public virtual ICollection<Oauthaccount> Oauthaccounts { get; set; } = new List<Oauthaccount>();
 
     public virtual UserRole? Role { get; set; }
+    
+    public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }

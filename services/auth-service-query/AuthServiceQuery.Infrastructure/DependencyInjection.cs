@@ -15,6 +15,11 @@ using AuthService.Application.Abstractions.Messaging.Dispatcher;
 using AuthService.Application.Users.Queries.GetUserById;
 using AuthService.Application.Users.Queries.GetUserByUsername;
 using AuthService.Application.Users.Queries.SearchUsers;
+using AuthService.Application.Users.Queries.GetUserRole;
+using AuthService.Application.Roles.Queries.GetAllRoles;
+using AuthService.Application.Roles.Queries.GetRoleById;
+using AuthService.Application.Roles.Queries.GetRoleByName;
+using AuthService.Application.Roles.Queries.SearchRoles;
 using AuthService.Application.DTOs;
 using AuthService.Application.DTOs.Response;
 
@@ -47,17 +52,26 @@ public static class DependencyInjection
         // MongoDB Read DAO and Repository
         services.AddScoped<IUserReadDAO, MongoUserReadDAO>();
         services.AddScoped<IUserReadRepository, UserReadRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
 
         // Query dispatcher
         services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 
-        // Query handlers
+        // Query handlers - Users
         services.AddScoped<IQueryHandler<GetUserByIdQuery, UserReadDto>, GetUserByIdQueryHandler>();
         services.AddScoped<IQueryHandler<GetUserByUsernameQuery, UserReadDto>, GetUserByUsernameQueryHandler>();
         services.AddScoped<IQueryHandler<SearchUsersQuery, PagedResult<UserReadDto>>, SearchUsersQueryHandler>();
+        services.AddScoped<IQueryHandler<GetUserRoleQuery, RoleDto>, GetUserRoleQueryHandler>();
+
+        // Query handlers - Roles
+        services.AddScoped<IQueryHandler<GetAllRolesQuery, List<RoleDto>>, GetAllRolesQueryHandler>();
+        services.AddScoped<IQueryHandler<GetRoleByIdQuery, RoleDto>, GetRoleByIdQueryHandler>();
+        services.AddScoped<IQueryHandler<GetRoleByNameQuery, RoleDto>, GetRoleByNameQueryHandler>();
+        services.AddScoped<IQueryHandler<SearchRolesQuery, PagedResult<RoleDto>>, SearchRolesQueryHandler>();
 
         // Background projector (RabbitMQ subscriber) - syncs from Write service to MongoDB
         services.AddHostedService<RabbitMqUserProjectionService>();
+        services.AddHostedService<RabbitMqRoleProjectionService>();
         
         //register other infrastructure services like email, logging, etc. here
         services.AddScoped<IMessageBusPublisher, RabbitMqPublisher>();

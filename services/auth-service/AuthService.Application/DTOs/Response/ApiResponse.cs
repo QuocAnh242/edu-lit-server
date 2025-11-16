@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AuthService.Application.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,5 +19,8 @@ namespace AuthService.Application.DTOs.Response
 
         public static ApiResponse<T> FailureResponse(string message, int? errorCode = null)
             => new ApiResponse<T> { Success = false, Message = message, ErrorCode = errorCode };
+
+        public static ApiResponse<T> Error(ApiStatusCode apiCode, string message)
+            => new ApiResponse<T> { Success = false, Message = message, ErrorCode = (int)apiCode };
     }
 }

@@ -9,6 +9,8 @@ namespace AuthService.Domain.Interfaces
 {
     public interface IJwtTokenGenerator
     {
-        string GenerateToken(User user);
+        string GenerateAccessToken(User user);
+        string GenerateRefreshToken();
+        (string AccessToken, string RefreshToken) GenerateTokenPair(User user);
     }
 }

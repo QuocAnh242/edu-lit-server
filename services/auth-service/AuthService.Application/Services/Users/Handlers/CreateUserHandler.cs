@@ -10,6 +10,11 @@ public sealed class CreateUserHandler(IUserRepository repo, IOutbox outbox) : IC
 {
     public async Task<ApiResponse<Guid>> Handle(CreateUserCommand command, CancellationToken cancellationToken)
     {
+        // Hash password if provided
+        var passwordHash = !string.IsNullOrWhiteSpace(command.Password)
+            ? BCrypt.Net.BCrypt.HashPassword(command.Password)
+            : null;
+
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -17,21 +22,24 @@ public sealed class CreateUserHandler(IUserRepository repo, IOutbox outbox) : IC
             Email = command.Email,
             FullName = command.FullName,
             RoleId = command.RoleId,
-            Password = command.Password, // No password on admin-created user unless you add flow
+            Password = passwordHash ?? string.Empty,
             CreatedAt = DateTime.UtcNow
         };
 
         await repo.AddAsync(user);
 
+        // Reload user with role to get role name
+        user = await repo.GetByIdAsync(user.Id);
+
         await outbox.EnqueueAsync("auth.user.created", new
         {
-            user.Id,
-            user.Username,
-            user.Email,
-            user.FullName,
-            user.RoleId,
-            user.Password,
-            user.CreatedAt
+            id = user.Id,
+            username = user.Username,
+            email = user.Email,
+            fullName = user.FullName,
+            roleId = user.RoleId,
+            roleName = user.Role?.Name,
+            createdAt = user.CreatedAt
         }, cancellationToken);
 
         return ApiResponse<Guid>.SuccessResponse(user.Id, $"Create User {user.FullName} Successfully!");
