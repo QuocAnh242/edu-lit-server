@@ -6,6 +6,8 @@ using AuthService.Infrastructure.Data;
 using AuthService.Infrastructure.JWT;
 using AuthService.Infrastructure.Messaging;
 using AuthService.Infrastructure.Repositories;
+using AuthService.Infrastructure.Services;
+using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,9 +36,20 @@ public static class DependencyInjection
         services.AddScoped<IAuthRepository, AuthRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
         // JWT token generator
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+
+        // Google OAuth service
+        services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+
+        // Email service
+        services.Configure<EmailOptions>(configuration.GetSection("EmailSettings"));
+        services.AddScoped<IEmailService, EmailService>();
+
+        // OTP repository
+        services.AddScoped<IOtpRepository, OtpRepository>();
 
         // Outbox + background publisher
         services.AddScoped<IOutbox, EfCoreOutbox>();

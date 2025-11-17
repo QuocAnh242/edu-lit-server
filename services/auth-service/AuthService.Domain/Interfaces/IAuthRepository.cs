@@ -8,5 +8,7 @@ namespace AuthService.Domain.Interfaces
         Task<User?> GetByUsernameAsync(string name);
         Task<User?> LoginAsync(string username, string password);
         Task<User?> RegisterAsync(string username, string email, string password, string fullName);
+        Task<Oauthaccount?> GetOAuthAccountAsync(string provider, string providerAccountId);
+        Task AddOAuthAccountAsync(Oauthaccount oauthAccount);
     }
 }

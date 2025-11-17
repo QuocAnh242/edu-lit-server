@@ -3,6 +3,7 @@ using AuthService.Application.Abstractions.Messaging;
 using AuthService.Application.Abstractions.Messaging.Dispatcher;
 using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 using AuthService.Application.DTOs;
+using AuthService.Application.Services.Auth.Commands;
 using AuthService.Application.Services.Auth.Handlers;
 using AuthService.Application.Services.Role.Commands;
 using AuthService.Application.Services.Role.Handlers;
@@ -29,6 +30,12 @@ public static class DependencyInjection
         services.AddScoped<ICommandHandler<DeleteRoleCommand, bool>, DeleteRoleHandler>();
         services.AddScoped<ICommandHandler<LoginCommand, UserDto>, LoginHandler>();
         services.AddScoped<ICommandHandler<RegisterCommand, UserDto>, RegisterHandler>();
+        services.AddScoped<ICommandHandler<GoogleLoginCommand, UserDto>, GoogleLoginHandler>();
+        services.AddScoped<ICommandHandler<RefreshTokenCommand, UserDto>, RefreshTokenHandler>();
+        services.AddScoped<ICommandHandler<ForgetPasswordRequestCommand, bool>, ForgetPasswordRequestHandler>();
+        services.AddScoped<ICommandHandler<ResetPasswordCommand, bool>, ResetPasswordHandler>();
+        services.AddScoped<ICommandHandler<ChangePasswordCommand, bool>, ChangePasswordHandler>();
+        services.AddScoped<ICommandHandler<UpdateProfileCommand, UserDto>, UpdateProfileHandler>();
         // Application services
         services.AddScoped<IRoleService, Services.RoleService>();
 

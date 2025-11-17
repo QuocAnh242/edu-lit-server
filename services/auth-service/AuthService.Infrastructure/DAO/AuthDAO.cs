@@ -38,11 +38,36 @@ namespace AuthService.Infrastructure.DAO
         // Register a new user with default role as STUDENT
         public async Task<User> RegisterAsync(string username, string email, string password, string fullName)
         {
+            // Check for existing username
+            var existingByUsername = await _db.Users
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower());
+            if (existingByUsername != null)
+            {
+                throw new AuthService.Application.Exceptions.AuthException(
+                    AuthService.Application.Enums.AuthErrorCode.UserAlreadyExists,
+                    $"Username '{username}' is already taken");
+            }
+
+            // Check for existing email
+            var existingByEmail = await _db.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower());
+            if (existingByEmail != null)
+            {
+                throw new AuthService.Application.Exceptions.AuthException(
+                    AuthService.Application.Enums.AuthErrorCode.UserAlreadyExists,
+                    $"Email '{email}' is already registered");
+            }
+
             var defaultRoleName = RoleType.STUDENT.ToString();
-            var studentRole = await _db.UserRoles.FirstOrDefaultAsync(r => r.Name == defaultRoleName);
+            // Get the first STUDENT role (in case there are duplicates, we'll use the first one)
+            // TODO: Fix duplicate roles issue - should only have one STUDENT role
+            var studentRole = await _db.UserRoles
+                .Where(r => r.Name == defaultRoleName)
+                .OrderBy(r => r.Id) // Use the first created role
+                .FirstOrDefaultAsync();
 
             if (studentRole == null)
-                throw new Exception($"Default role '{defaultRoleName}' not found.");
+                throw new Exception($"Default role '{defaultRoleName}' not found. Please ensure roles are seeded.");
 
             // Hash the password before storing
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(password);
@@ -70,6 +95,20 @@ namespace AuthService.Infrastructure.DAO
             return await _db.Users
                 .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == username);
+        }
+
+        public async Task<Oauthaccount?> GetOAuthAccountAsync(string provider, string providerAccountId)
+        {
+            return await _db.Oauthaccounts
+                .Include(o => o.User)
+                .ThenInclude(u => u!.Role)
+                .FirstOrDefaultAsync(o => o.Provider == provider && o.ProviderAccountId == providerAccountId);
+        }
+
+        public async Task AddOAuthAccountAsync(Oauthaccount oauthAccount)
+        {
+            _db.Oauthaccounts.Add(oauthAccount);
+            await _uow.SaveChangesAsync();
         }
     }
 }

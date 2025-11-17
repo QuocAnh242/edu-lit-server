@@ -12,5 +12,7 @@ namespace AuthService.Infrastructure.DAO.Interfaces
         Task<User?> LoginAsync(string username, string password);
         Task<User?> RegisterAsync(string username, string email, string password, string fullName);
         Task<User?> GetByUsernameAsync(string username);
+        Task<Oauthaccount?> GetOAuthAccountAsync(string provider, string providerAccountId);
+        Task AddOAuthAccountAsync(Oauthaccount oauthAccount);
     }
 }

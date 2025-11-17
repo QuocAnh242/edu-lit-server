@@ -19,13 +19,17 @@ public sealed class UpdateUserHandler(IUserRepository repo, IOutbox outbox) : IC
 
         await repo.UpdateAsync(user);
 
+        // Reload user with role to get role name
+        user = await repo.GetByIdAsync(user.Id);
+
         await outbox.EnqueueAsync("auth.user.updated", new
         {
-            user.Id,
-            user.Username,
-            user.Email,
-            user.FullName,
-            user.RoleId
+            id = user.Id,
+            username = user.Username,
+            email = user.Email,
+            fullName = user.FullName,
+            roleId = user.RoleId,
+            roleName = user.Role?.Name
         }, cancellationToken);
 
         return ApiResponse<bool>.SuccessResponse(true, "Update User Successfully!");
