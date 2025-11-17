@@ -1,47 +1,62 @@
 using LessonService.Application.Abstractions.Messaging;
-using LessonService.Application.IServices;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Activities.DeleteActivity;
 
 public class DeleteActivityCommandHandler : ICommandHandler<DeleteActivityCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IRedisService _redisService;
 
-    public DeleteActivityCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
+    public DeleteActivityCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _redisService = redisService;
     }
 
-    public async Task<ApiResponse> Handle(DeleteActivityCommand command, CancellationToken cancellationToken)
+    public async Task<ApiResponse<object>> Handle(DeleteActivityCommand command, CancellationToken cancellationToken)
     {
         var activity = await _unitOfWork.ActivityRepository.GetByIdAsync(command.Id);
 
         if (activity is null)
         {
-            return ApiResponse.FailureResponse("Activity not found", 404);
+            return ApiResponse<object>.FailureResponse("Activity not found", 404);
         }
 
         _unitOfWork.ActivityRepository.Remove(activity);
 
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "ActivityDeleted",
+            Exchange = "activity-events",
+            RoutingKey = "activity.deleted",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = activity.Id,
+                Title = activity.Title,
+                EventType = "ActivityDeleted",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
+
         try
         {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            // Invalidate cache
-            var cacheKey = $"activity:{command.Id}";
-            await _redisService.RemoveAsync(cacheKey);
         }
         catch (Exception e)
         {
-            return ApiResponse.FailureResponse(e.Message, 500);
+            return ApiResponse<object>.FailureResponse(e.Message, 500);
         }
 
-        return ApiResponse.SuccessResponse("Delete Activity Successfully");
+        return ApiResponse<object>.SuccessResponse("Delete Activity Successfully");
     }
 }
-
 

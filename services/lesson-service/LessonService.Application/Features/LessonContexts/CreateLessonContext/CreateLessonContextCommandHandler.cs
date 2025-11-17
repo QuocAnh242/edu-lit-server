@@ -2,7 +2,9 @@ using AutoMapper;
 using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.LessonContexts.CreateLessonContext;
 
@@ -52,6 +54,33 @@ public class CreateLessonContextCommandHandler : ICommandHandler<CreateLessonCon
         lessonContext.CreatedAt = DateTime.UtcNow;
 
         await _unitOfWork.LessonContextRepository.AddAsync(lessonContext);
+
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "LessonContextCreated",
+            Exchange = "lesson-context-events",
+            RoutingKey = "lessoncontext.created",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = lessonContext.Id,
+                SessionId = lessonContext.SessionId,
+                ParentLessonId = lessonContext.ParentLessonId,
+                LessonTitle = lessonContext.LessonTitle,
+                LessonContent = lessonContext.LessonContent,
+                Position = lessonContext.Position,
+                Level = lessonContext.Level,
+                CreatedAt = lessonContext.CreatedAt,
+                EventType = "LessonContextCreated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
 
         try
         {

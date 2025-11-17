@@ -2,7 +2,9 @@ using AutoMapper;
 using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Activities.CreateActivity;
 
@@ -42,6 +44,35 @@ public class CreateActivityCommandHandler : ICommandHandler<CreateActivityComman
         activity.CreatedAt = DateTime.UtcNow;
 
         await _unitOfWork.ActivityRepository.AddAsync(activity);
+
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "ActivityCreated",
+            Exchange = "activity-events",
+            RoutingKey = "activity.created",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = activity.Id,
+                SessionId = activity.SessionId,
+                Title = activity.Title,
+                Description = activity.Description,
+                ActivityType = activity.ActivityType,
+                Content = activity.Content,
+                Points = activity.Points,
+                Position = activity.Position,
+                IsRequired = activity.IsRequired,
+                CreatedAt = activity.CreatedAt,
+                EventType = "ActivityCreated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
 
         try
         {
