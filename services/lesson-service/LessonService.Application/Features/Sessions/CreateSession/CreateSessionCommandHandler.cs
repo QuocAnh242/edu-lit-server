@@ -2,7 +2,9 @@ using AutoMapper;
 using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Sessions.CreateSession;
 
@@ -42,6 +44,32 @@ public class CreateSessionCommandHandler : ICommandHandler<CreateSessionCommand,
         session.CreatedAt = DateTime.UtcNow;
 
         await _unitOfWork.SessionRepository.AddAsync(session);
+
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "SessionCreated",
+            Exchange = "session-events",
+            RoutingKey = "session.created",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = session.Id,
+                CourseId = session.CourseId,
+                Title = session.Title,
+                Description = session.Description,
+                Position = session.Position,
+                DurationMinutes = session.DurationMinutes,
+                CreatedAt = session.CreatedAt,
+                EventType = "SessionCreated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
 
         try
         {

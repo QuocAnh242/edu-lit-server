@@ -1,28 +1,27 @@
 using LessonService.Application.Abstractions.Messaging;
-using LessonService.Application.IServices;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Courses.UpdateCourse;
 
 public class UpdateCourseCommandHandler : ICommandHandler<UpdateCourseCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IRedisService _redisService;
 
-    public UpdateCourseCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
+    public UpdateCourseCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _redisService = redisService;
     }
 
-    public async Task<ApiResponse> Handle(UpdateCourseCommand command, CancellationToken cancellationToken)
+    public async Task<ApiResponse<object>> Handle(UpdateCourseCommand command, CancellationToken cancellationToken)
     {
         var course = await _unitOfWork.CourseRepository.GetByIdAsync(command.Id);
 
         if (course is null)
         {
-            return ApiResponse.FailureResponse("Course not found", 404);
+            return ApiResponse<object>.FailureResponse("Course not found", 404);
         }
 
         // Update only provided fields
@@ -39,21 +38,41 @@ public class UpdateCourseCommandHandler : ICommandHandler<UpdateCourseCommand>
 
         _unitOfWork.CourseRepository.Update(course);
 
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "CourseUpdated",
+            Exchange = "coursera-events",
+            RoutingKey = "course.updated",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = course.Id,
+                SyllabusId = course.SyllabusId,
+                CourseCode = course.CourseCode,
+                Title = course.Title,
+                Description = course.Description,
+                UpdatedAt = course.UpdatedAt,
+                EventType = "CourseUpdated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
+
         try
         {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            // Invalidate cache
-            var cacheKey = $"course:{command.Id}";
-            await _redisService.RemoveAsync(cacheKey);
         }
         catch (Exception e)
         {
-            return ApiResponse.FailureResponse(e.Message, 500);
+            return ApiResponse<object>.FailureResponse(e.Message, 500);
         }
 
-        return ApiResponse.SuccessResponse("Update Course Successfully");
+        return ApiResponse<object>.SuccessResponse("Update Course Successfully");
     }
 }
-
 
