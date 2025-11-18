@@ -2,7 +2,9 @@ using AutoMapper;
 using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Courses.CreateCourse;
 
@@ -42,6 +44,31 @@ public class CreateCourseCommandHandler : ICommandHandler<CreateCourseCommand, G
         course.CreatedAt = DateTime.UtcNow;
 
         await _unitOfWork.CourseRepository.AddAsync(course);
+
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "CourseCreated",
+            Exchange = "coursera-events",
+            RoutingKey = "course.created",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = course.Id,
+                SyllabusId = course.SyllabusId,
+                CourseCode = course.CourseCode,
+                Title = course.Title,
+                Description = course.Description,
+                CreatedAt = course.CreatedAt,
+                EventType = "CourseCreated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
 
         try
         {

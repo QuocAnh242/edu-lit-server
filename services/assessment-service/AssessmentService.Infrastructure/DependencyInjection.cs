@@ -4,6 +4,7 @@ using AssessmentService.Domain.Interfaces;
 using AssessmentService.Infrastructure.Persistance.DistributedCaches;
 using AssessmentService.Infrastructure.Persistance.Repositories;
 using AssessmentService.Infrastructure.Persistance.DAOs;
+using AssessmentService.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
@@ -37,6 +38,14 @@ namespace AssessmentService.Infrastructure
             {
                 options.Configuration = redisConfig;
                 options.InstanceName = "assessment:";
+            });
+
+            // Register HttpClient for Question Service
+            services.AddHttpClient<IQuestionServiceClient, QuestionServiceClient>(client =>
+            {
+                var baseUrl = configuration["QuestionService:BaseUrl"] ?? "http://localhost:8003";
+                client.BaseAddress = new Uri(baseUrl);
+                client.Timeout = TimeSpan.FromSeconds(30);
             });
             
             return services;

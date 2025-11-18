@@ -14,10 +14,12 @@ namespace AssessmentService.Application.Mappers
         {
             CreateMap<CreateAssessmentAnswerCommand, AssessmentAnswer>()
                 .ForMember(dest => dest.AnswerId, opt => opt.Ignore())
+                .ForMember(dest => dest.SelectedOptionId, opt => opt.MapFrom(src => src.SelectedOptionId.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<UpdateAssessmentAnswerCommand, AssessmentAnswer>()
                 .ForMember(dest => dest.AnswerId, opt => opt.Ignore())
+                .ForMember(dest => dest.SelectedOptionId, opt => opt.MapFrom(src => src.SelectedOptionId.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore());
 
             CreateMap<AssessmentAnswer, GetAllAssessmentAnswerResponse>();

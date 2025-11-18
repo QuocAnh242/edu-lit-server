@@ -2,11 +2,10 @@ using System.Security.Claims;
 using Asp.Versioning;
 using LessonService.Api.Requests;
 using LessonService.Application.Abstractions.Messaging;
+using LessonService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 using LessonService.Application.Features.Syllabus.CreateSyllabus;
 using Microsoft.AspNetCore.Mvc;
-using LessonService.Application.Features.Syllabus.GetSyllabusById;
 using LessonService.Application.Features.Syllabus.DeleteSyllabus;
-using LessonService.Application.Features.Syllabus.GetPaginationSyllabus;
 using LessonService.Application.Features.Syllabus.UpdateSyllabus;
 using LessonService.Domain.Commons;
 using Microsoft.AspNetCore.Authorization;
@@ -21,56 +20,20 @@ namespace LessonService.Api.Controllers;
 public class SyllabusController : ControllerBase
 {
     private readonly ICommandHandler<CreateSyllabusCommand, Guid> _createSyllabusCommandHandler;
-    private readonly IQueryHandler<GetSyllabusByIdQuery, GetSyllabusByIdResponse> _getSyllabusByIdQueryHandler;
     private readonly ICommandHandler<UpdateSyllabusCommand> _updateSyllabusCommandHandler;
     private readonly ICommandHandler<DeleteSyllabusCommand> _deleteSyllabusCommandHandler;
-    private readonly IQueryHandler<GetSyllabusesQuery, PagedResult<GetSyllabusesResponse>> _getSyllabusesQueryHandler;
+    private readonly ICommandDispatcher _dispatcher;
     
     public SyllabusController(
         ICommandHandler<CreateSyllabusCommand, Guid> createSyllabusCommandHandler,  
-        IQueryHandler<GetSyllabusByIdQuery, GetSyllabusByIdResponse> getSyllabusByIdQueryHandler,   
         ICommandHandler<UpdateSyllabusCommand> updateSyllabusCommandHandler,
         ICommandHandler<DeleteSyllabusCommand> deleteSyllabusCommandHandler,
-        IQueryHandler<GetSyllabusesQuery, PagedResult<GetSyllabusesResponse>> getSyllabusesQueryHandler)
+        ICommandDispatcher dispatcher)
     {
         _createSyllabusCommandHandler = createSyllabusCommandHandler;
-        _getSyllabusByIdQueryHandler = getSyllabusByIdQueryHandler;
         _updateSyllabusCommandHandler = updateSyllabusCommandHandler;
         _deleteSyllabusCommandHandler = deleteSyllabusCommandHandler;
-        _getSyllabusesQueryHandler = getSyllabusesQueryHandler;
-    }
-    
-    [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResult<GetSyllabusesResponse>>>> GetAllSyllabuses([FromQuery] GetPaginationSyllabusRequest query)
-    {
-        var command = new GetSyllabusesQuery()
-        {
-            PageNumber = query.PageNumber,
-            PageSize = query.PageSize,
-            SearchTerm = query.SearchTerm,
-            Semester = query.Semester,
-            IsActive = query.IsActive
-        };
-        
-        var result = await _getSyllabusesQueryHandler.Handle(command, CancellationToken.None);
-        if (!result.Success)
-            return BadRequest(result);
-        
-        return Ok(result);
-    }
-    
-    // Stub GET action so CreatedAtAction has a target. Implement retrieval logic later.
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<GetSyllabusByIdResponse>>> GetSyllabusById(Guid id)
-    {
-        var result = await _getSyllabusByIdQueryHandler.Handle(new GetSyllabusByIdQuery(id), CancellationToken.None);
-        if (!result.Success)
-        {
-            if (result.ErrorCode == 404)
-                return NotFound(result);
-            return BadRequest(result);
-        }
-        return Ok(result);
+        _dispatcher = dispatcher;
     }
     
     [HttpPost]
@@ -90,7 +53,7 @@ public class SyllabusController : ControllerBase
             Author = userIdString
         };
     
-        var result = await _createSyllabusCommandHandler.Handle(command, CancellationToken.None);
+        var result = await _dispatcher.Send<CreateSyllabusCommand, Guid>(command, CancellationToken.None);
         if (!result.Success)
         {
             if (result.ErrorCode == 400)
@@ -98,11 +61,11 @@ public class SyllabusController : ControllerBase
             return BadRequest(result);
         }
 
-        return CreatedAtAction(nameof(GetSyllabusById), new { id = result.Data }, result);
+        return Ok(result);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse>> UpdateSyllabus(Guid id, UpdateSyllabusRequest request)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateSyllabus(Guid id, UpdateSyllabusRequest request)
     {
         var command = new UpdateSyllabusCommand()
         {
@@ -113,7 +76,7 @@ public class SyllabusController : ControllerBase
             Description = request.Description,
         };
         
-        var result = await _updateSyllabusCommandHandler.Handle(command, CancellationToken.None);
+        var result = await _dispatcher.Send(command, CancellationToken.None);
         
         if (!result.Success)
         {
@@ -126,9 +89,9 @@ public class SyllabusController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse>> DeleteSyllabus(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteSyllabus(Guid id)
     {
-        var result = await _deleteSyllabusCommandHandler.Handle(new DeleteSyllabusCommand(id), CancellationToken.None);
+        var result = await _dispatcher.Send(new DeleteSyllabusCommand(id), CancellationToken.None);
         
         if (!result.Success)
         {

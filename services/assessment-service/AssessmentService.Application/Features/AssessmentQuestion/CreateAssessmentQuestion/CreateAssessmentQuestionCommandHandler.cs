@@ -49,9 +49,22 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.CreateAssess
             // sẽ có hàm check valid questionId sau khi có service của question
             //
 
-            var createdAssessmentQuestion = _mapper.Map<Domain.Entities.AssessmentQuestion>(assessmentQuestionCommand);
+            // Check if this question already exists in this assessment (unique constraint)
+            var existing = await _unitOfWork.AssessmentQuestionRepository
+                .GetAllByAsync(aq => aq.AssessmentId == assessmentQuestionCommand.AssessmentId 
+                    && aq.QuestionId == assessmentQuestionCommand.QuestionId.ToString());
 
-            createdAssessmentQuestion.IsActive = true;
+            if (existing != null && existing.Any())
+            {
+                return ObjectResponse<int>.Response("400", "Câu hỏi này đã tồn tại trong assessment", 0);
+            }
+
+            var createdAssessmentQuestion = new Domain.Entities.AssessmentQuestion
+            {
+                AssessmentId = assessmentQuestionCommand.AssessmentId,
+                QuestionId = assessmentQuestionCommand.QuestionId.ToString(),
+                IsActive = true
+            };
 
             await _unitOfWork.AssessmentQuestionRepository.AddAsync(createdAssessmentQuestion);
 

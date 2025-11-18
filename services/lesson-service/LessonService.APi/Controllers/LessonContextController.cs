@@ -1,10 +1,9 @@
 using Asp.Versioning;
 using LessonService.Api.Requests.LessonContexts;
-using LessonService.Application.Abstractions.Messaging;
+using LessonService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
+using LessonService.Application.Features.LessonContexts.CreateBulkLessonContexts;
 using LessonService.Application.Features.LessonContexts.CreateLessonContext;
 using LessonService.Application.Features.LessonContexts.DeleteLessonContext;
-using LessonService.Application.Features.LessonContexts.GetLessonContextById;
-using LessonService.Application.Features.LessonContexts.GetPaginationLessonContexts;
 using LessonService.Application.Features.LessonContexts.UpdateLessonContext;
 using LessonService.Domain.Commons;
 using Microsoft.AspNetCore.Authorization;
@@ -18,56 +17,11 @@ namespace LessonService.Api.Controllers;
 [Authorize]
 public class LessonContextController : ControllerBase
 {
-    private readonly ICommandHandler<CreateLessonContextCommand, Guid> _createLessonContextCommandHandler;
-    private readonly IQueryHandler<GetLessonContextByIdQuery, GetLessonContextByIdResponse> _getLessonContextByIdQueryHandler;
-    private readonly ICommandHandler<UpdateLessonContextCommand> _updateLessonContextCommandHandler;
-    private readonly ICommandHandler<DeleteLessonContextCommand> _deleteLessonContextCommandHandler;
-    private readonly IQueryHandler<GetLessonContextsQuery, PagedResult<GetLessonContextsResponse>> _getLessonContextsQueryHandler;
+    private readonly ICommandDispatcher _dispatcher;
 
-    public LessonContextController(
-        ICommandHandler<CreateLessonContextCommand, Guid> createLessonContextCommandHandler,
-        IQueryHandler<GetLessonContextByIdQuery, GetLessonContextByIdResponse> getLessonContextByIdQueryHandler,
-        ICommandHandler<UpdateLessonContextCommand> updateLessonContextCommandHandler,
-        ICommandHandler<DeleteLessonContextCommand> deleteLessonContextCommandHandler,
-        IQueryHandler<GetLessonContextsQuery, PagedResult<GetLessonContextsResponse>> getLessonContextsQueryHandler)
+    public LessonContextController(ICommandDispatcher dispatcher)
     {
-        _createLessonContextCommandHandler = createLessonContextCommandHandler;
-        _getLessonContextByIdQueryHandler = getLessonContextByIdQueryHandler;
-        _updateLessonContextCommandHandler = updateLessonContextCommandHandler;
-        _deleteLessonContextCommandHandler = deleteLessonContextCommandHandler;
-        _getLessonContextsQueryHandler = getLessonContextsQueryHandler;
-    }
-
-    [HttpGet]
-    public async Task<ActionResult<ApiResponse<PagedResult<GetLessonContextsResponse>>>> GetAllLessonContexts([FromQuery] GetPaginationLessonContextsRequest request)
-    {
-        var query = new GetLessonContextsQuery
-        {
-            PageNumber = request.PageNumber,
-            PageSize = request.PageSize,
-            SearchTerm = request.SearchTerm,
-            SessionId = request.SessionId,
-            ParentLessonId = request.ParentLessonId
-        };
-
-        var result = await _getLessonContextsQueryHandler.Handle(query, CancellationToken.None);
-        if (!result.Success)
-            return BadRequest(result);
-
-        return Ok(result);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApiResponse<GetLessonContextByIdResponse>>> GetLessonContextById(Guid id)
-    {
-        var result = await _getLessonContextByIdQueryHandler.Handle(new GetLessonContextByIdQuery(id), CancellationToken.None);
-        if (!result.Success)
-        {
-            if (result.ErrorCode == 404)
-                return NotFound(result);
-            return BadRequest(result);
-        }
-        return Ok(result);
+        _dispatcher = dispatcher;
     }
 
     [HttpPost]
@@ -83,7 +37,7 @@ public class LessonContextController : ControllerBase
             Level = request.Level
         };
 
-        var result = await _createLessonContextCommandHandler.Handle(command, CancellationToken.None);
+        var result = await _dispatcher.Send<CreateLessonContextCommand, Guid>(command, CancellationToken.None);
         if (!result.Success)
         {
             if (result.ErrorCode == 400)
@@ -93,11 +47,40 @@ public class LessonContextController : ControllerBase
             return BadRequest(result);
         }
 
-        return CreatedAtAction(nameof(GetLessonContextById), new { id = result.Data }, result);
+        return Ok(result);
+    }
+
+    [HttpPost("bulk")]
+    public async Task<ActionResult<ApiResponse<List<Guid>>>> CreateBulkLessonContexts(CreateBulkLessonContextsRequest request)
+    {
+        var command = new CreateBulkLessonContextsCommand
+        {
+            SessionId = request.SessionId,
+            LessonContexts = request.LessonContexts.Select(item => new LessonContextItem
+            {
+                ParentLessonId = item.ParentLessonId,
+                LessonTitle = item.LessonTitle,
+                LessonContent = item.LessonContent,
+                Position = item.Position,
+                Level = item.Level
+            }).ToList()
+        };
+
+        var result = await _dispatcher.Send<CreateBulkLessonContextsCommand, List<Guid>>(command, CancellationToken.None);
+        if (!result.Success)
+        {
+            if (result.ErrorCode == 400)
+                return UnprocessableEntity(result);
+            if (result.ErrorCode == 404)
+                return NotFound(result);
+            return BadRequest(result);
+        }
+
+        return Ok(result);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<ApiResponse>> UpdateLessonContext(Guid id, UpdateLessonContextRequest request)
+    public async Task<ActionResult<ApiResponse<object>>> UpdateLessonContext(Guid id, UpdateLessonContextRequest request)
     {
         var command = new UpdateLessonContextCommand
         {
@@ -108,7 +91,7 @@ public class LessonContextController : ControllerBase
             Level = request.Level
         };
 
-        var result = await _updateLessonContextCommandHandler.Handle(command, CancellationToken.None);
+        var result = await _dispatcher.Send(command, CancellationToken.None);
 
         if (!result.Success)
         {
@@ -121,9 +104,9 @@ public class LessonContextController : ControllerBase
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult<ApiResponse>> DeleteLessonContext(Guid id)
+    public async Task<ActionResult<ApiResponse<object>>> DeleteLessonContext(Guid id)
     {
-        var result = await _deleteLessonContextCommandHandler.Handle(new DeleteLessonContextCommand(id), CancellationToken.None);
+        var result = await _dispatcher.Send(new DeleteLessonContextCommand(id), CancellationToken.None);
 
         if (!result.Success)
         {
@@ -135,5 +118,4 @@ public class LessonContextController : ControllerBase
         return Ok(result);
     }
 }
-
 

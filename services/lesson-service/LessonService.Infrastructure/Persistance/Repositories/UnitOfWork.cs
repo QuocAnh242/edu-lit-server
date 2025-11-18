@@ -1,6 +1,7 @@
 ﻿using LessonService.Domain.Entities;
 using LessonService.Domain.IDAOs;
 using LessonService.Domain.Interfaces;
+using LessonService.Domain.IRepositories;
 using LessonService.Infrastructure.Persistance.DAOs;
 using LessonService.Infrastructure.Persistance.DBContext;
 
@@ -22,6 +23,7 @@ namespace LessonService.Infrastructure.Persistance.Repositories
         private IGenericRepository<Session>? _sessionRepository;
         private IGenericRepository<Activity>? _activityRepository;
         private IGenericRepository<LessonContext>? _lessonContextRepository;
+        private IOutboxRepository? _outboxRepository;
 
         public UnitOfWork(LessonDbContext context)
         {
@@ -53,6 +55,10 @@ namespace LessonService.Infrastructure.Persistance.Repositories
             _lessonContextRepository ??= new GenericRepository<LessonContext>(
                 _genericDAOLessonContext ??= new GenericDAO<LessonContext>(_context)
             );
+
+        public IOutboxRepository OutboxRepository =>
+            _outboxRepository ??= new OutboxRepository(_context);
+
 
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {

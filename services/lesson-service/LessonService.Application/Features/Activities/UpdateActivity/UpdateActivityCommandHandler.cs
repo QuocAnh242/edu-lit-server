@@ -1,28 +1,27 @@
 using LessonService.Application.Abstractions.Messaging;
-using LessonService.Application.IServices;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Activities.UpdateActivity;
 
 public class UpdateActivityCommandHandler : ICommandHandler<UpdateActivityCommand>
 {
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IRedisService _redisService;
 
-    public UpdateActivityCommandHandler(IUnitOfWork unitOfWork, IRedisService redisService)
+    public UpdateActivityCommandHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
-        _redisService = redisService;
     }
 
-    public async Task<ApiResponse> Handle(UpdateActivityCommand command, CancellationToken cancellationToken)
+    public async Task<ApiResponse<object>> Handle(UpdateActivityCommand command, CancellationToken cancellationToken)
     {
         var activity = await _unitOfWork.ActivityRepository.GetByIdAsync(command.Id);
 
         if (activity is null)
         {
-            return ApiResponse.FailureResponse("Activity not found", 404);
+            return ApiResponse<object>.FailureResponse("Activity not found", 404);
         }
 
         // Update only provided fields
@@ -51,21 +50,45 @@ public class UpdateActivityCommandHandler : ICommandHandler<UpdateActivityComman
 
         _unitOfWork.ActivityRepository.Update(activity);
 
+        // Create outbox message
+        var outboxMessage = new OutboxMessage
+        {
+            Id = Guid.NewGuid(),
+            Type = "ActivityUpdated",
+            Exchange = "activity-events",
+            RoutingKey = "activity.updated",
+            Payload = JsonSerializer.Serialize(new
+            {
+                Id = activity.Id,
+                SessionId = activity.SessionId,
+                Title = activity.Title,
+                Description = activity.Description,
+                ActivityType = activity.ActivityType,
+                Content = activity.Content,
+                Points = activity.Points,
+                Position = activity.Position,
+                IsRequired = activity.IsRequired,
+                UpdatedAt = activity.UpdatedAt,
+                EventType = "ActivityUpdated",
+                Timestamp = DateTime.UtcNow
+            }),
+            CreatedAt = DateTime.UtcNow,
+            IsProcessed = false,
+            RetryCount = 0
+        };
+
+        await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
+
         try
         {
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            
-            // Invalidate cache
-            var cacheKey = $"activity:{command.Id}";
-            await _redisService.RemoveAsync(cacheKey);
         }
         catch (Exception e)
         {
-            return ApiResponse.FailureResponse(e.Message, 500);
+            return ApiResponse<object>.FailureResponse(e.Message, 500);
         }
 
-        return ApiResponse.SuccessResponse("Update Activity Successfully");
+        return ApiResponse<object>.SuccessResponse("Update Activity Successfully");
     }
 }
-
 

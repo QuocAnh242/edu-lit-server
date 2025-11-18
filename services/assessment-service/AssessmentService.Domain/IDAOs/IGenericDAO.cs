@@ -37,6 +37,12 @@ namespace AssessmentService.Domain.IDAOs
         Task AddAsync(T entity);
 
         /// <summary>
+        /// Thêm nhiều đối tượng mới.
+        /// </summary>
+        /// <param name="entities">Danh sách đối tượng cần thêm.</param>
+        Task AddRangeAsync(IEnumerable<T> entities);
+
+        /// <summary>
         /// Đánh dấu một đối tượng là đã bị thay đổi.
         /// </summary>
         /// <param name="entity">Đối tượng cần cập nhật.</param>

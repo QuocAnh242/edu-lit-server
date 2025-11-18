@@ -1,9 +1,7 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using LessonService.Domain.Entities;
 using LessonService.Domain.Enums;
-using System.Collections.Generic;
-using System.Linq;
+
 
 namespace LessonService.Infrastructure.Persistance.DBContext;
 
@@ -27,6 +25,8 @@ public partial class LessonDbContext : DbContext
     public virtual DbSet<Session> Sessions { get; set; }
 
     public virtual DbSet<Syllabus> Syllabi { get; set; }
+    
+    public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -241,6 +241,45 @@ public partial class LessonDbContext : DbContext
             entity.Property(e => e.UpdatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnName("updated_at");
+        });
+
+        modelBuilder.Entity<OutboxMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("outbox_message_pkey");
+
+            entity.ToTable("outbox_messages");
+
+            entity.HasIndex(e => e.IsProcessed, "idx_outbox_is_processed");
+            entity.HasIndex(e => e.CreatedAt, "idx_outbox_created_at");
+
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("uuid_generate_v4()")
+                .HasColumnName("id");
+            entity.Property(e => e.Type)
+                .HasMaxLength(255)
+                .HasColumnName("type");
+            entity.Property(e => e.Exchange)
+                .HasMaxLength(255)
+                .HasColumnName("exchange");
+            entity.Property(e => e.RoutingKey)
+                .HasMaxLength(255)
+                .HasDefaultValue("")
+                .HasColumnName("routing_key");
+            entity.Property(e => e.Payload)
+                .HasColumnName("payload");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnName("created_at");
+            entity.Property(e => e.ProcessedAt)
+                .HasColumnName("processed_at");
+            entity.Property(e => e.Error)
+                .HasColumnName("error");
+            entity.Property(e => e.RetryCount)
+                .HasDefaultValue(0)
+                .HasColumnName("retry_count");
+            entity.Property(e => e.IsProcessed)
+                .HasDefaultValue(false)
+                .HasColumnName("is_processed");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -56,7 +56,7 @@ namespace AssessmentService.Application.Features.AssignmentAttempt.CreateAssignm
 
                 // Invalidate cache
                 await _redisService.RemoveAsync(CacheKey); //all
-                await _redisService.RemoveAsync($"assignmentAttempts:assessmentId:{assignmentAttempt.AttemptsId}");
+                await _redisService.RemoveAsync($"assignmentAttempts:assessmentId:{assignmentAttempt.AssessmentId}");
                 await _redisService.RemoveAsync($"assignmentAttempt:{assignmentAttempt.AttemptsId}");
                 await _redisService.RemoveAsync($"grading:attempt:{assignmentAttempt.AttemptsId}");
             }

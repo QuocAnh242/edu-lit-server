@@ -9,9 +9,9 @@ public partial class AssessmentAnswer
     public int AttemptsId { get; set; }
 
     /// <summary>
-    /// A, B, C, D mà student chọn
+    /// Reference to QuestionOption in Question Service
     /// </summary>
-    public string SelectedAnswer { get; set; } = null!;
+    public string SelectedOptionId { get; set; } = null!;
 
     public bool IsCorrect { get; set; }
 

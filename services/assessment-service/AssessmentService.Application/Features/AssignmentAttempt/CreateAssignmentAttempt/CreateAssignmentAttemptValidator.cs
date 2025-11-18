@@ -2,9 +2,9 @@
 
 namespace AssessmentService.Application.Features.AssignmentAttempt.CreateAssignmentAttempt
 {
-    public class UpdateAssignmentAttemptValidator : AbstractValidator<CreateAssignmentAttemptCommand>
+    public class CreateAssignmentAttemptValidator : AbstractValidator<CreateAssignmentAttemptCommand>
     {
-        public UpdateAssignmentAttemptValidator()
+        public CreateAssignmentAttemptValidator()
         {
             RuleFor(x => x.AssessmentId)
                 .GreaterThan(0).WithMessage("AssessmentId must be greater than 0.");
