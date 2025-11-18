@@ -3,6 +3,7 @@ using AuthService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
 using AuthService.Application.DTOs;
 using AuthService.Application.Services.Users.Commands;
 using AuthService.Infrastructure.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -10,6 +11,7 @@ namespace AuthService.Api.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize(Roles = "TEACHER,ADMIN")]
     public class UserController : ControllerBase
     {
         // Command Dispatcher (Commands)
@@ -54,8 +56,8 @@ namespace AuthService.Api.Controllers
             };
             await _messageBusPublisher.PublishAsync("auth.user.created", JsonSerializer.Serialize(evt), ct);
 
-            // Return Response 
-            return Ok(res);
+            // Return ApiResponse with Guid data (id only)
+            return StatusCode(StatusCodes.Status201Created, res);
         }
 
         // Update Account Method
@@ -102,17 +104,17 @@ namespace AuthService.Api.Controllers
             
             var res = await _commands.Send<DeleteUserCommand, bool>(cmd, ct);
             
-            if(res.Success)
-            {
-                var evt = new
-                {
-                    id = id,
-                    occurredAt = DateTimeOffset.UtcNow
-                };
-                await _messageBusPublisher.PublishAsync("auth.user.deleted", JsonSerializer.Serialize(evt), ct);
-            }
+            if(!res.Success)
+                return NotFound(res);
 
-            return Ok(res);
+            var evt = new
+            {
+                id = id,
+                occurredAt = DateTimeOffset.UtcNow
+            };
+            await _messageBusPublisher.PublishAsync("auth.user.deleted", JsonSerializer.Serialize(evt), ct);
+
+            return NoContent();
         }
     }
 }

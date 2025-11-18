@@ -6,7 +6,6 @@ using AuthService.Application.DTOs.Response;
 using AuthService.Application.Enums;
 using AuthService.Application.Exceptions;
 using AuthService.Application.Services.Auth.Commands;
-using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -25,18 +24,15 @@ namespace AuthService.Api.Controllers
         //// RabbitMQ Publisher
         private readonly IMessageBusPublisher _messageBusPublisher;
         private readonly IOutbox _outbox;
-        private readonly IUserRepository _userRepository;
 
         public AuthController(
             ICommandDispatcher commands, 
             IMessageBusPublisher messageBusPublisher, 
-            IOutbox outbox,
-            IUserRepository userRepository)
+            IOutbox outbox)
         {
             _commands = commands;
             _messageBusPublisher = messageBusPublisher;
             _outbox = outbox;
-            _userRepository = userRepository;
         }
 
         // api/v1/auth/login
@@ -386,39 +382,6 @@ namespace AuthService.Api.Controllers
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<bool>.FailureResponse("An unexpected error occurred", 500));
-            }
-        }
-
-        // api/v1/auth/profile (GET - View Profile)
-        [HttpGet("profile")]
-        [Microsoft.AspNetCore.Authorization.Authorize]
-        public async Task<IActionResult> GetProfile(CancellationToken ct)
-        {
-            try
-            {
-                // Get user ID from JWT claims
-                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)
-                                  ?? User.FindFirst("sub")
-                                  ?? User.Claims.FirstOrDefault(c => c.Type == "user_id");
-
-                if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                {
-                    return Unauthorized(ApiResponse<UserDto>.FailureResponse("Invalid or missing user token", 401));
-                }
-
-                // Get user from repository
-                var user = await _userRepository.GetByIdAsync(userId);
-                if (user == null)
-                {
-                    return NotFound(ApiResponse<UserDto>.FailureResponse("User not found", 404));
-                }
-
-                var dto = new UserDto(user);
-                return Ok(ApiResponse<UserDto>.SuccessResponse(dto, "Profile retrieved successfully"));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ApiResponse<UserDto>.FailureResponse("An unexpected error occurred", 500));
             }
         }
 
