@@ -27,6 +27,8 @@ namespace AuthService.Infrastructure.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<UserRole> UserRoles { get; set; }
         public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
+        public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+        public virtual DbSet<OtpCode> OtpCodes { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -134,6 +136,94 @@ namespace AuthService.Infrastructure.Data
 
                 entity.Property(e => e.Error)
                     .HasColumnName("error");
+            });
+
+            // RefreshToken table mapping
+            modelBuilder.Entity<RefreshToken>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("refresh_tokens_pkey");
+                entity.ToTable("refresh_tokens");
+
+                entity.HasIndex(e => e.Token, "refresh_tokens_token_key").IsUnique();
+                entity.HasIndex(e => e.UserId, "refresh_tokens_user_id_idx");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("uuid_generate_v4()")
+                    .HasColumnName("id");
+
+                entity.Property(e => e.UserId)
+                    .HasColumnName("user_id");
+
+                entity.Property(e => e.Token)
+                    .IsRequired()
+                    .HasMaxLength(500)
+                    .HasColumnName("token");
+
+                entity.Property(e => e.ExpiresAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("expires_at");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("now() at time zone 'utc'")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at");
+
+                entity.Property(e => e.IsRevoked)
+                    .HasDefaultValue(false)
+                    .HasColumnName("is_revoked");
+
+                entity.Property(e => e.RevokedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("revoked_at");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.RefreshTokens)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.Cascade)
+                    .HasConstraintName("refresh_tokens_user_id_fkey");
+            });
+
+            // OtpCode table mapping
+            modelBuilder.Entity<OtpCode>(entity =>
+            {
+                entity.HasKey(e => e.Id).HasName("otp_codes_pkey");
+                entity.ToTable("otp_codes");
+
+                entity.HasIndex(e => new { e.Email, e.Code, e.Purpose }, "otp_codes_email_code_purpose_idx");
+
+                entity.Property(e => e.Id)
+                    .HasDefaultValueSql("uuid_generate_v4()")
+                    .HasColumnName("id");
+
+                entity.Property(e => e.Email)
+                    .IsRequired()
+                    .HasMaxLength(255)
+                    .HasColumnName("email");
+
+                entity.Property(e => e.Code)
+                    .IsRequired()
+                    .HasMaxLength(10)
+                    .HasColumnName("code");
+
+                entity.Property(e => e.ExpiresAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("expires_at");
+
+                entity.Property(e => e.CreatedAt)
+                    .HasDefaultValueSql("now() at time zone 'utc'")
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("created_at");
+
+                entity.Property(e => e.IsUsed)
+                    .HasDefaultValue(false)
+                    .HasColumnName("is_used");
+
+                entity.Property(e => e.UsedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasColumnName("used_at");
+
+                entity.Property(e => e.Purpose)
+                    .HasColumnName("purpose");
             });
 
             OnModelCreatingPartial(modelBuilder);

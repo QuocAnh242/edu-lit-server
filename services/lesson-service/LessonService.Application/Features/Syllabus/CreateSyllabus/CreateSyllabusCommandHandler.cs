@@ -2,7 +2,9 @@
 using FluentValidation;
 using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
+using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using System.Text.Json;
 
 namespace LessonService.Application.Features.Syllabus.CreateSyllabus
 {
@@ -12,7 +14,10 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
         private readonly IValidator<CreateSyllabusCommand> _createSyllabusCommandValidator;
         private readonly IMapper _mapper;
 
-        public CreateSyllabusCommandHandler(IUnitOfWork unitOfWork, IValidator<CreateSyllabusCommand> createSyllabusCommandValidator, IMapper mapper)
+        public CreateSyllabusCommandHandler(
+            IUnitOfWork unitOfWork, 
+            IValidator<CreateSyllabusCommand> createSyllabusCommandValidator, 
+            IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _createSyllabusCommandValidator = createSyllabusCommandValidator;
@@ -36,18 +41,44 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
             
             await _unitOfWork.SyllabusRepository.AddAsync(createdSyllabus);
 
+            // Create outbox message - will be published by background service
+            var outboxMessage = new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                Type = "SyllabusCreated",
+                Exchange = "syllabus-events",
+                RoutingKey = "syllabus.created", // Routing key for Topic exchange
+                Payload = JsonSerializer.Serialize(new
+                {
+                    Id = createdSyllabus.Id,
+                    Title = createdSyllabus.Title,
+                    AcademicYear = createdSyllabus.AcademicYear,
+                    Semester = createdSyllabus.Semester.ToString(),
+                    Description = createdSyllabus.Description,
+                    OwnerId = createdSyllabus.OwnerId,
+                    IsActive = createdSyllabus.IsActive,
+                    CreatedAt = createdSyllabus.CreatedAt,
+                    EventType = "SyllabusCreated",
+                    Timestamp = DateTime.UtcNow
+                }),
+                CreatedAt = DateTime.UtcNow,
+                IsProcessed = false,
+                RetryCount = 0
+            };
+
+            await _unitOfWork.OutboxRepository.AddAsync(outboxMessage);
+
             try
             {
-                await _unitOfWork.SaveChangesAsync();
-                //sẽ có hàm commit để tự động thêm vào redis sau khi nhận được thông báo của rabbit, chưa làm liền để test thử cái redis cái đã.
+                // Save both Syllabus and OutboxMessage in same transaction
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
             }
             catch (Exception e)
             {
                 return ApiResponse<Guid>.FailureResponse(e.Message, 500);
             }
             
-            return ApiResponse<Guid>.SuccessResponse(createdSyllabus.Id, "Create Syllabus Successfully", 201);
+            return ApiResponse<Guid>.SuccessResponse(createdSyllabus.Id, "Create Syllabus Successfully");
         }
-        
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AssessmentService.Domain.Entities;
+﻿namespace AssessmentService.Domain.Entities;
 
 public partial class GradingFeedback
 {
@@ -34,9 +31,9 @@ public partial class GradingFeedback
     /// </summary>
     public decimal WrongPercentage { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual AssignmentAttempt Attempts { get; set; } = null!;
 }

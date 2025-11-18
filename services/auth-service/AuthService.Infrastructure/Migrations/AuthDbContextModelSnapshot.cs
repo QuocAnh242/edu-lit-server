@@ -53,6 +53,58 @@ namespace AuthService.Infrastructure.Migrations
                     b.ToTable("oauthaccount", (string)null);
                 });
 
+            modelBuilder.Entity("AuthService.Domain.Entities.OtpCode", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)")
+                        .HasColumnName("code");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now() at time zone 'utc'");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsUsed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_used");
+
+                    b.Property<int>("Purpose")
+                        .HasColumnType("integer")
+                        .HasColumnName("purpose");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("Id")
+                        .HasName("otp_codes_pkey");
+
+                    b.HasIndex(new[] { "Email", "Code", "Purpose" }, "otp_codes_email_code_purpose_idx");
+
+                    b.ToTable("otp_codes", (string)null);
+                });
+
             modelBuilder.Entity("AuthService.Domain.Entities.OutboxMessage", b =>
                 {
                     b.Property<Guid>("Id")
@@ -90,6 +142,55 @@ namespace AuthService.Infrastructure.Migrations
                         .HasName("outbox_messages_pkey");
 
                     b.ToTable("outbox_messages", (string)null);
+                });
+
+            modelBuilder.Entity("AuthService.Domain.Entities.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("uuid_generate_v4()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now() at time zone 'utc'");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<bool>("IsRevoked")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_revoked");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("token");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("refresh_tokens_pkey");
+
+                    b.HasIndex(new[] { "Token" }, "refresh_tokens_token_key")
+                        .IsUnique();
+
+                    b.HasIndex(new[] { "UserId" }, "refresh_tokens_user_id_idx");
+
+                    b.ToTable("refresh_tokens", (string)null);
                 });
 
             modelBuilder.Entity("AuthService.Domain.Entities.User", b =>
@@ -176,6 +277,18 @@ namespace AuthService.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AuthService.Domain.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("AuthService.Domain.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("refresh_tokens_user_id_fkey");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("AuthService.Domain.Entities.User", b =>
                 {
                     b.HasOne("AuthService.Domain.Entities.UserRole", "Role")
@@ -189,6 +302,8 @@ namespace AuthService.Infrastructure.Migrations
             modelBuilder.Entity("AuthService.Domain.Entities.User", b =>
                 {
                     b.Navigation("Oauthaccounts");
+
+                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("AuthService.Domain.Entities.UserRole", b =>

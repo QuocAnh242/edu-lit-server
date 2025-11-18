@@ -7,8 +7,11 @@ WORKDIR /app
 ENV ASPNETCORE_URLS="http://+:8080"
 EXPOSE 8080
 
-# Cài đặt postgresql-client để có thể dùng pg_isready nếu cần
-RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client && rm -rf /var/lib/apt/lists/*
+# Cài đặt postgresql-client và netcat để kiểm tra kết nối
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    postgresql-client \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
 
 # ===================================================
 # Stage 2: Build - Môi trường để biên dịch code
@@ -47,8 +50,13 @@ RUN dotnet publish "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/pu
 FROM base AS final
 WORKDIR /app
 
-# Copy publish output into /app (explicit destination directory)
+# Copy publish output into /app
 COPY --from=publish /app/publish /app
 
-# Run the published assembly by absolute path to avoid ambiguity
-ENTRYPOINT ["dotnet", "/app/LessonService.Api.dll"]
+
+# Copy and set permissions for entrypoint script
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# Use entrypoint script to run migrations before starting app
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

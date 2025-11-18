@@ -5,12 +5,30 @@ services:
 # docker-compose.yml
   mongo:
     image: mongo:6
-    container_name: edulit-mongo
+    container_name: edulit-mongo-auth
     restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongodata_auth:/data/db
     networks:
       - edulit-network
+
+  mongo_lesson:
+    image: mongo:6
+    container_name: edulit-mongo-lesson
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongodata_lesson:/data/db
+    networks:
+      - edulit-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   postgres:
     image: postgres:16-alpine
@@ -38,17 +56,20 @@ services:
     restart: always
     ports:
       - "5672:5672"
-      - "15672:15672" # giao diện web để kiểm tra hàng đợi
+      - "15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - edulit-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
-      timeout: 5s
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 10s
       retries: 10
+      start_period: 40s
 
   postgres_lesson:
     image: postgres:17.6-alpine
@@ -140,6 +161,71 @@ services:
     networks:
       - edulit-network
 
+  auth-service-query:
+    build:
+      context: ./services/auth-service-query
+      dockerfile: AuthServiceQuery/Dockerfile
+    container_name: edulit-auth-query-service
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MongoDb: "mongodb://mongo:27017"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672/"
+      Mongo__Database: "auth_query"
+      RabbitMq__HostName: "rabbitmq"
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: "guest"
+      RabbitMq__Password: "guest"
+      RabbitMq__VirtualHost: "/"
+      Jwt__Key: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      Jwt__Issuer: "EduLit.Auth"
+      Jwt__Audience: "EduLit.Users"
+      Jwt__ExpiresInHours: "48"
+    ports:
+      - "8005:8080"
+    networks:
+      - edulit-network
+
+  lesson-service-query:
+    build:
+      context: ./services/lesson-service-query
+      dockerfile: LessonServiceQuery.Api/Dockerfile
+    container_name: edulit-lesson-query-service
+    restart: on-failure
+    depends_on:
+      mongo_lesson:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      MongoDbSettings__ConnectionString: "mongodb://mongo_lesson:27017"
+      MongoDbSettings__DatabaseName: "lesson_service_query_db"
+      MongoDbSettings__LessonsCollectionName: "lessons"
+      MongoDbSettings__LessonContextsCollectionName: "lesson_contexts"
+      MongoDbSettings__ActivitiesCollectionName: "activities"
+      MongoDbSettings__SyllabusesCollectionName: "syllabuses"
+      MongoDbSettings__CoursesCollectionName: "courses"
+      MongoDbSettings__SessionsCollectionName: "sessions"
+      ConnectionStrings__RabbitMq: "amqp://guest:guest@rabbitmq:5672/"
+      RabbitMq__HostName: "rabbitmq"
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: "guest"
+      RabbitMq__Password: "guest"
+      JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      JwtSettings__Issuer: "EduLit.Auth"
+      JwtSettings__Audience: "EduLit.Users"
+      JwtSettings__ExpiresInHours: "48"
+    ports:
+      - "8007:8080"
+    networks:
+      - edulit-network
+
   lesson-service:
     build:
       context: ./services/lesson-service
@@ -152,6 +238,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: "Host=postgres_lesson;Port=5432;Database=lesson_db;Username=postgres;Password=postgres;TrustServerCertificate=True"
+      RabbitMq__HostName: "rabbitmq"
+      RabbitMq__Port: "5672"
+      RabbitMq__UserName: "guest"
+      RabbitMq__Password: "guest"
       JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       JwtSettings__Issuer: "EduLit.Auth"
       JwtSettings__Audience: "EduLit.Users"
@@ -208,6 +298,10 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass;SslMode=None;Connect Timeout=30;"
+      JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
+      JwtSettings__Issuer: "EduLit.Auth"
+      JwtSettings__Audience: "EduLit.Users"
+      JwtSettings__ExpiresInHours: "48"
     ports:
       - "8004:8080"
     networks:
@@ -243,6 +337,9 @@ volumes:
   pgdata_lesson:
   pgdata_question:
   mysqldata:
+  rabbitmq_data:
+  mongodata_auth:
+  mongodata_lesson:
 
 networks:
   edulit-network:

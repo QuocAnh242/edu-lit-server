@@ -1,25 +1,55 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuestionService.Api.Extensions;
+using QuestionService.Application.Abstractions.Messaging;
+using QuestionService.Application.DTOs;
 using QuestionService.Application.DTOs.Request;
-using QuestionService.Application.DTOs.Response;
-using QuestionService.Application.Services.Interfaces;
+using QuestionService.Application.Features.QuestionBank.CreateQuestionBank;
+using QuestionService.Application.Features.QuestionBank.DeleteQuestionBank;
+using QuestionService.Application.Features.QuestionBank.GetAllQuestionBanks;
+using QuestionService.Application.Features.QuestionBank.GetQuestionBankById;
+using QuestionService.Application.Features.QuestionBank.GetQuestionBanksByOwnerId;
+using QuestionService.Application.Features.QuestionBank.GetQuestionBanksBySubject;
+using QuestionService.Application.Features.QuestionBank.UpdateQuestionBank;
 
 namespace QuestionService.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/v1/questionbank")]
+    [Authorize]  // Require authentication for all endpoints in this controller
     public class QuestionBankController : ControllerBase
     {
-        private readonly IQuestionBankService _questionBankService;
+        private readonly ICommandHandler<CreateQuestionBankCommand, Guid> _createCommandHandler;
+        private readonly ICommandHandler<UpdateQuestionBankCommand, Guid> _updateCommandHandler;
+        private readonly ICommandHandler<DeleteQuestionBankCommand, bool> _deleteCommandHandler;
+        private readonly IQueryHandler<GetQuestionBankByIdQuery, QuestionBankDto> _getByIdQueryHandler;
+        private readonly IQueryHandler<GetAllQuestionBanksQuery, IEnumerable<QuestionBankDto>> _getAllQueryHandler;
+        private readonly IQueryHandler<GetQuestionBanksByOwnerIdQuery, IEnumerable<QuestionBankDto>> _getByOwnerIdQueryHandler;
+        private readonly IQueryHandler<GetQuestionBanksBySubjectQuery, IEnumerable<QuestionBankDto>> _getBySubjectQueryHandler;
 
-        public QuestionBankController(IQuestionBankService questionBankService)
+        public QuestionBankController(
+            ICommandHandler<CreateQuestionBankCommand, Guid> createCommandHandler,
+            ICommandHandler<UpdateQuestionBankCommand, Guid> updateCommandHandler,
+            ICommandHandler<DeleteQuestionBankCommand, bool> deleteCommandHandler,
+            IQueryHandler<GetQuestionBankByIdQuery, QuestionBankDto> getByIdQueryHandler,
+            IQueryHandler<GetAllQuestionBanksQuery, IEnumerable<QuestionBankDto>> getAllQueryHandler,
+            IQueryHandler<GetQuestionBanksByOwnerIdQuery, IEnumerable<QuestionBankDto>> getByOwnerIdQueryHandler,
+            IQueryHandler<GetQuestionBanksBySubjectQuery, IEnumerable<QuestionBankDto>> getBySubjectQueryHandler)
         {
-            _questionBankService = questionBankService;
+            _createCommandHandler = createCommandHandler;
+            _updateCommandHandler = updateCommandHandler;
+            _deleteCommandHandler = deleteCommandHandler;
+            _getByIdQueryHandler = getByIdQueryHandler;
+            _getAllQueryHandler = getAllQueryHandler;
+            _getByOwnerIdQueryHandler = getByOwnerIdQueryHandler;
+            _getBySubjectQueryHandler = getBySubjectQueryHandler;
         }
 
-        [HttpGet("{questionBanksId:guid}")]
-        public async Task<IActionResult> GetById(Guid questionBanksId)
+        [HttpGet("{id:guid}")]
+        public async Task<IActionResult> GetById(Guid id)
         {
-            var res = await _questionBankService.GetByIdAsync(questionBanksId);
+            var query = new GetQuestionBankByIdQuery(id);
+            var res = await _getByIdQueryHandler.Handle(query, CancellationToken.None);
             if (!res.Success) return NotFound(res);
             return Ok(res);
         }
@@ -27,43 +57,96 @@ namespace QuestionService.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var res = await _questionBankService.GetAllAsync();
+            var query = new GetAllQuestionBanksQuery();
+            var res = await _getAllQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 
-        [HttpGet("owner/{ownerId:guid}")]
-        public async Task<IActionResult> GetByOwnerId(Guid ownerId)
+        [HttpGet("owner/{id:guid}")]
+        public async Task<IActionResult> GetByOwnerId(Guid id)
         {
-            var res = await _questionBankService.GetByOwnerIdAsync(ownerId);
+            var query = new GetQuestionBanksByOwnerIdQuery(id);
+            var res = await _getByOwnerIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 
         [HttpGet("subject/{subject}")]
         public async Task<IActionResult> GetBySubject(string subject)
         {
-            var res = await _questionBankService.GetBySubjectAsync(subject);
+            var query = new GetQuestionBanksBySubjectQuery(subject);
+            var res = await _getBySubjectQueryHandler.Handle(query, CancellationToken.None);
+            return Ok(res);
+        }
+
+        /// <summary>
+        /// Example: Get current user's question banks using JWT claims
+        /// </summary>
+        [HttpGet("my-question-banks")]
+        public async Task<IActionResult> GetMyQuestionBanks()
+        {
+            // Extract user ID from JWT token
+            var userId = User.GetUserId();
+            
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var query = new GetQuestionBanksByOwnerIdQuery(userId.Value);
+            var res = await _getByOwnerIdQueryHandler.Handle(query, CancellationToken.None);
             return Ok(res);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateQuestionBankRequest request)
         {
-            var res = await _questionBankService.CreateAsync(request);
+            // Extract OwnerId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var command = new CreateQuestionBankCommand
+            {
+                Title = request.Title,
+                Description = request.Description,
+                Subject = request.Subject,
+                OwnerId = userId.Value
+            };
+
+            var res = await _createCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
 
-        [HttpPut("{questionBanksId:guid}")]
-        public async Task<IActionResult> Update(Guid questionBanksId, [FromBody] CreateQuestionBankRequest request)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionBankRequest request)
         {
-            var res = await _questionBankService.UpdateAsync(questionBanksId, request);
+            // Extract OwnerId from JWT token
+            var userId = User.GetUserId();
+            if (userId == null)
+            {
+                return Unauthorized(new { message = "User ID not found in token" });
+            }
+
+            var command = new UpdateQuestionBankCommand
+            {
+                QuestionBankId = id,
+                Title = request.Title,
+                Description = request.Description,
+                Subject = request.Subject,
+                OwnerId = userId.Value
+            };
+            var res = await _updateCommandHandler.Handle(command, CancellationToken.None);
             if (!res.Success) return NotFound(res);
             return Ok(res);
         }
 
-        [HttpDelete("{questionBanksId:guid}")]
-        public async Task<IActionResult> Delete(Guid questionBanksId)
+        [HttpDelete("{id:guid}")]
+        public async Task<IActionResult> Delete(Guid id)
         {
-            var res = await _questionBankService.DeleteAsync(questionBanksId);
+            var command = new DeleteQuestionBankCommand(id);
+            var res = await _deleteCommandHandler.Handle(command, CancellationToken.None);
             return Ok(res);
         }
     }

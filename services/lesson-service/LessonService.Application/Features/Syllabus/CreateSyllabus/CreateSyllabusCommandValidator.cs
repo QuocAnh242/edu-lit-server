@@ -19,7 +19,7 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty().WithMessage("Academic year is required.")
                 // Sử dụng .Matches() để kiểm tra định dạng
-                .Matches(@"^\d{4}-\d{4}$").WithMessage("Academic year must be in the format 'YYYY-YYYY', for example '2010 - 2012'.")
+                .Matches(@"^\d{4}-\d{4}$").WithMessage("Academic year must be in the format 'YYYY-YYYY', for example '2010-2012'.")
                 .Must(BeAValidYearRange).WithMessage("Academic year must be in the format 'YYYY - YYYY', for example 'currentYear-currentYear + 5'.");
             RuleFor(x => x.Semester)
                 .NotNull().WithMessage("Semester is required.")

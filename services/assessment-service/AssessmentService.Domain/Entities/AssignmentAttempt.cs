@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace AssessmentService.Domain.Entities;
+﻿namespace AssessmentService.Domain.Entities;
 
 public partial class AssignmentAttempt
 {
@@ -11,13 +8,13 @@ public partial class AssignmentAttempt
 
     public string UserId { get; set; } = null!;
 
-    public DateTime StartedAt { get; set; }
+    public DateTime? StartedAt { get; set; }
 
     public DateTime? CompletedAt { get; set; }
 
     public int AttemptNumber { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual Assessment Assessment { get; set; } = null!;
 

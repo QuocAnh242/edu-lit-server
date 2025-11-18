@@ -13,7 +13,9 @@ namespace AuthService.Infrastructure.Repositories
 
         public UserRepository(IUserDAO dao) => _dao = dao;
 
-        public Task<User> GetByIdAsync(Guid id) => _dao.GetByIdAsync(id);
+        public Task<User?> GetByIdAsync(Guid id) => _dao.GetByIdAsync(id);
+        public Task<User?> GetByEmailAsync(string email) => _dao.GetByEmailAsync(email);
+        public Task<User?> GetByUsernameAsync(string username) => _dao.GetByUsernameAsync(username);
         public Task<List<User>> GetAllAsync() => _dao.GetAllAsync();
         public Task<(List<User> Items, int TotalCount)> GetPagedAsync(int page, int size) => _dao.GetPagedAsync(page, size);
         public Task AddAsync(User user) => _dao.AddAsync(user);

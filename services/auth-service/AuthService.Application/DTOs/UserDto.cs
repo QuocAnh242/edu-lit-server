@@ -12,7 +12,10 @@ namespace AuthService.Application.DTOs
         public string? FullName { get; set; }
         public Guid? RoleId { get; set; }
         public string? RoleName { get; set; }
-        public string? Token { get; set; } // JWT token property added
+
+        public string? Password { get; set; } // Plaintext password property for creation/update
+        public string? Token { get; set; } // JWT access token property
+        public string? RefreshToken { get; set; } // Refresh token property
         public DateTime? CreatedAt { get; set; }
 
         // Added: parameterless constructor to allow object initializer usage (e.g., new UserDto { ... })
