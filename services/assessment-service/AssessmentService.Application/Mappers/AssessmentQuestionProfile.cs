@@ -12,17 +12,18 @@ namespace AssessmentService.Application.Mappers
     {
         public AssessmentQuestionProfile()
         {
-            // ✅ Command → Entity mappings
+            // ✅ Command → Entity mappings (Note: CreateAssessmentQuestionCommand now only has AssessmentId and QuestionId)
             CreateMap<CreateAssessmentQuestionCommand, AssessmentQuestion>()
                 .ForMember(dest => dest.AssessmentQuestionId, opt => opt.Ignore())
+                .ForMember(dest => dest.QuestionId, opt => opt.MapFrom(src => src.QuestionId.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.Assessment, opt => opt.Ignore())
                 .ForMember(dest => dest.AssessmentAnswers, opt => opt.Ignore());
 
-            // ✅ FIX: Đổi từ UpdateAssessmentAnswerCommand → UpdateAssessmentQuestionCommand
+            // ✅ Update Command → Entity mappings
             CreateMap<UpdateAssessmentQuestionCommand, AssessmentQuestion>()
-                .ForMember(dest => dest.AssessmentQuestionId, opt => opt.Ignore())
+                .ForMember(dest => dest.QuestionId, opt => opt.MapFrom(src => src.QuestionId.ToString()))
                 .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
                 .ForMember(dest => dest.Assessment, opt => opt.Ignore())

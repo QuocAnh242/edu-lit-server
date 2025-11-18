@@ -11,6 +11,7 @@ using AssessmentService.Application.Features.AssessmentAnswer.GetAllAssessmentAn
 using AssessmentService.Application.Features.AssessmentAnswer.GetAssessmentAnswerById;
 using AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessmentAnswer;
 using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestions;
 using AssessmentService.Application.Features.AssessmentQuestion.DeleteAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestionByAssessmentId;
@@ -43,6 +44,7 @@ namespace AssessmentService.Application
             services.AddScoped<ICommandHandler<DeleteAssessmentCommand, bool>, DeleteAssessmentCommandHandler>();
 
             services.AddScoped<ICommandHandler<CreateAssessmentQuestionCommand, int>, CreateAssessmentQuestionCommandHandler>();
+            services.AddScoped<ICommandHandler<CreateAssessmentQuestionsCommand, List<int>>, CreateAssessmentQuestionsCommandHandler>();
             services.AddScoped<ICommandHandler<UpdateAssessmentQuestionCommand, bool>, UpdateAssessmentQuestionCommandHandler>();
             services.AddScoped<ICommandHandler<DeleteAssessmentQuestionCommand, bool>, DeleteAssessmentQuestionCommandHandler>();
 
