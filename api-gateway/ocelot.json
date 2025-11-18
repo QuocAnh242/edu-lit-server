@@ -1,7 +1,8 @@
 {
   "Routes": [
+    // === AUTH COMMANDS ===
     {
-      "DownstreamPathTemplate": "/api/v1/Auth/{everything}",
+      "DownstreamPathTemplate": "/api/v1/auth/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -9,11 +10,27 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/Auth/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/auth/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
+    // === AUTH QUERIES ===
     {
-      "DownstreamPathTemplate": "/api/v1/Role/{everything}",
+      "DownstreamPathTemplate": "/api/v1/user/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "auth-service-query",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/user/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+    },
+
+    // === ROLE COMMANDS ===
+    {
+      "DownstreamPathTemplate": "/api/v1/role/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -21,35 +38,27 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/Role/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/command/role/{everything}",
+      "UpstreamHttpMethod": [ "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
+    // === ROLE QUERIES ===
     {
-      "DownstreamPathTemplate": "/api/v1/User/{everything}",
+      "DownstreamPathTemplate": "/api/v1/role/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
-          "Host": "auth-service",
+          "Host": "auth-service-query",
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/User/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/query/role/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
     },
+
+    // === QUESTION ===
     {
-      "DownstreamPathTemplate": "/api/v1/Question/{everything}",
-      "DownstreamScheme": "http",
-      "DownstreamHostAndPorts": [
-        {
-          "Host": "question-service",
-          "Port": 8080
-        }
-      ],
-      "UpstreamPathTemplate": "/api/v1/Question/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
-    },
-    {
-      "DownstreamPathTemplate": "/api/v1/QuestionBank/{everything}",
+      "DownstreamPathTemplate": "/api/v1/question/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -57,11 +66,12 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/QuestionBank/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/question/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
     },
+
     {
-      "DownstreamPathTemplate": "/api/v1/QuestionOption/{everything}",
+      "DownstreamPathTemplate": "/api/v1/questionbank/{everything}",
       "DownstreamScheme": "http",
       "DownstreamHostAndPorts": [
         {
@@ -69,10 +79,332 @@
           "Port": 8080
         }
       ],
-      "UpstreamPathTemplate": "/api/v1/QuestionOption/{everything}",
-      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE" ]
+      "UpstreamPathTemplate": "/api/v1/questionbank/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    {
+      "DownstreamPathTemplate": "/api/v1/questionoption/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "question-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/questionoption/{everything}",
+      "UpstreamHttpMethod": [ "GET", "POST", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === SYLLABUS ===
+    // Root path for GET with query parameters and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/syllabus",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/syllabus",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "AddQueriesToRequest": true
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/syllabus/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/syllabus/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === COURSE ===
+    // Root path for GET with query parameters and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/course",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/course",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "AddQueriesToRequest": true
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/course/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/course/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === SESSION ===
+    // Root path for GET with query parameters and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/session",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/session",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "AddQueriesToRequest": true
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/session/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/session/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === LESSON CONTEXT ===
+    // Root path for GET with query parameters and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/lessoncontext",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/lessoncontext",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ],
+      "AddQueriesToRequest": true
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/lessoncontext/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "lesson-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/lessoncontext/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === ASSESSMENT ===
+    // Root path for GET and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/assessment",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessment",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ]
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/assessment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === ASSESSMENT QUESTION ===
+    // Specific route for assessment/{assessmentId} (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentquestion/assessment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentquestion/assessment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+    },
+    // Root path for GET and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentquestion",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentquestion",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ]
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentquestion/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentquestion/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === ASSESSMENT ANSWER ===
+    // Specific route for attempt/{attemptId} (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentanswer/attempt/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentanswer/attempt/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+    },
+    // Root path for GET and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentanswer",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentanswer",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ]
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/assessmentanswer/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentanswer/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === ASSIGNMENT ATTEMPT ===
+    // Specific route for invite (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/assignmentattempt/invite",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assignmentattempt/invite",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ]
+    },
+    // Specific route for assessment/{assessmentId} (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/assignmentattempt/assessment/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assignmentattempt/assessment/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+    },
+    // Root path for GET and POST
+    {
+      "DownstreamPathTemplate": "/api/v1/assignmentattempt",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assignmentattempt",
+      "UpstreamHttpMethod": [ "GET", "POST", "OPTIONS" ]
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/assignmentattempt/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assignmentattempt/{everything}",
+      "UpstreamHttpMethod": [ "GET", "PUT", "DELETE", "OPTIONS" ]
+    },
+
+    // === GRADING FEEDBACK ===
+    // Specific route for calculate (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/gradingfeedback/calculate",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/gradingfeedback/calculate",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ]
+    },
+    // Path with ID parameter
+    {
+      "DownstreamPathTemplate": "/api/v1/gradingfeedback/{everything}",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/gradingfeedback/{everything}",
+      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
     }
   ],
+
   "GlobalConfiguration": {
     "BaseUrl": "http://localhost:8000"
   }

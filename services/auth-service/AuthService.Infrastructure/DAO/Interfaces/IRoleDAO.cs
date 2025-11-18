@@ -12,5 +12,8 @@ namespace AuthService.Infrastructure.DAO.Interfaces
         Task<UserRole?> GetByIdAsync(Guid id);
         Task<UserRole?> GetByNameAsync(string name);
         Task<List<UserRole>> GetAllAsync();
+        Task AddAsync(UserRole role);
+        Task UpdateAsync(UserRole role);
+        Task DeleteAsync(UserRole role);
     }
 }

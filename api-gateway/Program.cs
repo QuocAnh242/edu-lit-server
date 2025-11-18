@@ -6,6 +6,18 @@ var builder = WebApplication.CreateBuilder(args);
 // Load Ocelot configuration
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
 // Register Ocelot services
 builder.Services.AddOcelot(builder.Configuration);
 
@@ -25,6 +37,9 @@ if (app.Environment.IsDevelopment())
 
 // Do NOT use HTTPS redirect if you're using HTTP between containers
 // app.UseHttpsRedirection();
+
+// IMPORTANT: UseCors MUST be called BEFORE UseOcelot
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 

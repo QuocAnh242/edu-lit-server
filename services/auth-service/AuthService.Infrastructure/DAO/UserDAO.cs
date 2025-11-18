@@ -21,7 +21,26 @@ namespace AuthService.Infrastructure.DAO
             _db = (AuthDbContext)_uow.Context;
         }
 
-        public async Task<User> GetByIdAsync(Guid id) => await _db.Set<User>().FindAsync(id);
+        public async Task<User?> GetByIdAsync(Guid id) 
+        {
+            return await _db.Set<User>()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            return await _db.Set<User>()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email);
+        }
+
+        public async Task<User?> GetByUsernameAsync(string username)
+        {
+            return await _db.Set<User>()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+        }
 
         public async Task<List<User>> GetAllAsync() => await _db.Set<User>().ToListAsync();
 
