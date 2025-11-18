@@ -8,14 +8,7 @@ public partial class AssessmentQuestion
 
     public string QuestionId { get; set; } = null!;
 
-    public int OrderNum { get; set; }
-
-    /// <summary>
-    /// A, B, C, D
-    /// </summary>
-    public string CorrectAnswer { get; set; } = null!;
-
-    public bool? IsActive { get; set; }
+    public bool? IsActive { get; set; } = true;
 
     public DateTime? CreatedAt { get; set; }
 

@@ -83,6 +83,7 @@ services:
       - "3306:3306"
     volumes:
       - mysqldata:/var/lib/mysql
+      - ./db/edulit_assessment_db.sql:/docker-entrypoint-initdb.d/edulit_assessment_db.sql
     networks:
       - edulit-network
     healthcheck:
@@ -208,6 +209,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__MySqlConnection: "server=mysql_assessment;port=3306;database=edulit_assessment_db;user=developer;password=devpass;SslMode=None;Connect Timeout=30;"
+      QuestionService__BaseUrl: "http://question-service:8080"
       JwtSettings__SecretKey: "THIS_IS_A_MUCH_LONGER_AND_MORE_SECURE_SUPER_SECRET_KEY_123456789"
       JwtSettings__Issuer: "EduLit.Auth"
       JwtSettings__Audience: "EduLit.Users"

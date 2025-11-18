@@ -5,11 +5,6 @@ namespace AssessmentService.Application.Features.AssessmentQuestion.CreateAssess
     public class CreateAssessmentQuestionCommand : ICommand<int>
     {
         public int AssessmentId { get; set; }
-        public string QuestionId { get; set; } = null!;
-        public int OrderNum { get; set; }
-        /// <summary>
-        /// A, B, C, D
-        /// </summary>
-        public string CorrectAnswer { get; set; } = null!;
+        public Guid QuestionId { get; set; }
     }
 }

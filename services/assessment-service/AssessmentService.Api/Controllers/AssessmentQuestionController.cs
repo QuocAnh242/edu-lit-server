@@ -1,5 +1,6 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
 using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestions;
 using AssessmentService.Application.Features.AssessmentQuestion.DeleteAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestionByAssessmentId;
@@ -15,13 +16,16 @@ namespace AssessmentService.Api.Controllers
     public class AssessmentQuestionController : Controller
     {
         private readonly ICommandHandler<CreateAssessmentQuestionCommand, int> _createAssessmentQuestionCommandHandler;
+        private readonly ICommandHandler<CreateAssessmentQuestionsCommand, List<int>> _createAssessmentQuestionsCommandHandler;
         private readonly ICommandHandler<UpdateAssessmentQuestionCommand, bool> _updateAssessmentQuestionCommandHandler;
         private readonly ICommandHandler<DeleteAssessmentQuestionCommand, bool> _deleteAssessmentQuestionCommandHandler;
         private readonly IQueryHandler<GetAssessmentQuestionByIdQuery, GetAssessmentQuestionByIdResponse> _getAssessmentQuestionByIdQueryHandler;
         private readonly IQueryHandler<GetAllAssessmentQuestionQuery, List<GetAllAssessmentQuestionResponse>> _getAllAssessmentQuestionQueryHandler;
         private readonly IQueryHandler<GetAllAssessmentQuestionByAssessmentIdQuery, List<GetAllAssessmentQuestionByAssessmentIdResponse>> _getAllAssessmentQuestionByAssessmentIdQueryHandler;
 
-        public AssessmentQuestionController(ICommandHandler<CreateAssessmentQuestionCommand, int> createAssessmentQuestionCommandHandler,
+        public AssessmentQuestionController(
+            ICommandHandler<CreateAssessmentQuestionCommand, int> createAssessmentQuestionCommandHandler,
+            ICommandHandler<CreateAssessmentQuestionsCommand, List<int>> createAssessmentQuestionsCommandHandler,
             ICommandHandler<UpdateAssessmentQuestionCommand, bool> updateAssessmentQuestionCommandHandler,
             ICommandHandler<DeleteAssessmentQuestionCommand, bool> deleteAssessmentQuestionCommandHandler,
             IQueryHandler<GetAssessmentQuestionByIdQuery, GetAssessmentQuestionByIdResponse> getAssessmentQuestionByIdQueryHandler,
@@ -29,6 +33,7 @@ namespace AssessmentService.Api.Controllers
             IQueryHandler<GetAllAssessmentQuestionByAssessmentIdQuery, List<GetAllAssessmentQuestionByAssessmentIdResponse>> getAllAssessmentQuestionByAssessmentIdQueryHandler)
         {
             _createAssessmentQuestionCommandHandler = createAssessmentQuestionCommandHandler;
+            _createAssessmentQuestionsCommandHandler = createAssessmentQuestionsCommandHandler;
             _updateAssessmentQuestionCommandHandler = updateAssessmentQuestionCommandHandler;
             _deleteAssessmentQuestionCommandHandler = deleteAssessmentQuestionCommandHandler;
             _getAssessmentQuestionByIdQueryHandler = getAssessmentQuestionByIdQueryHandler;
@@ -68,6 +73,17 @@ namespace AssessmentService.Api.Controllers
         {
             var result = await _createAssessmentQuestionCommandHandler.Handle(command, CancellationToken.None);
             return CreatedAtAction(nameof(GetAssessmentQuestionById), new { id = result.Data }, result);
+        }
+
+        [HttpPost("bulk")]
+        public async Task<ActionResult<ObjectResponse<List<int>>>> CreateAssessmentQuestions([FromBody] CreateAssessmentQuestionsCommand command)
+        {
+            var result = await _createAssessmentQuestionsCommandHandler.Handle(command, CancellationToken.None);
+            if (result.Data != null && result.Data.Any())
+            {
+                return CreatedAtAction(nameof(GetAllAssessmentQuestionsByAssessmentId), new { assessmentId = command.AssessmentId }, result);
+            }
+            return BadRequest(result);
         }
 
         [HttpPut("{id}")]

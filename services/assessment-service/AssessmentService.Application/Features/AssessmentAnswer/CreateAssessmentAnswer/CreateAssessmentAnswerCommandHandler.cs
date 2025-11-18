@@ -13,18 +13,21 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
         private readonly IValidator<CreateAssessmentAnswerCommand> _createAssessmentCommandValidator;
         private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
+        private readonly IQuestionServiceClient _questionServiceClient;
         private const string CacheKey = "assessmentAnswer:all";
 
         public CreateAssessmentAnswerCommandHandler(
             IUnitOfWork unitOfWork,
             IValidator<CreateAssessmentAnswerCommand> createAssessmentCommandValidator,
             IMapper mapper,
-            IRedisService redisService)
+            IRedisService redisService,
+            IQuestionServiceClient questionServiceClient)
         {
             _unitOfWork = unitOfWork;
             _createAssessmentCommandValidator = createAssessmentCommandValidator;
             _mapper = mapper;
             _redisService = redisService;
+            _questionServiceClient = questionServiceClient;
         }
 
         public async Task<ObjectResponse<int>> Handle(CreateAssessmentAnswerCommand command, CancellationToken cancellationToken)
@@ -51,10 +54,23 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
                 return ObjectResponse<int>.Response("404", "AssignmentAttempt not found", 0);
             }
 
-            var createdAssessmentAnswer = _mapper.Map<Domain.Entities.AssessmentAnswer>(command);
+            // Validate SelectedOptionId belongs to this question
+            var questionOptions = await _questionServiceClient.GetQuestionOptionsByQuestionIdAsync(
+                Guid.Parse(question.QuestionId), cancellationToken);
 
-            // chek answer for the question in the db to set IsCorrect
-            createdAssessmentAnswer.IsCorrect = (question.CorrectAnswer == command.SelectedAnswer);
+            var selectedOption = questionOptions.FirstOrDefault(opt => opt.QuestionOptionId == command.SelectedOptionId);
+            if (selectedOption == null)
+            {
+                return ObjectResponse<int>.Response("400", "SelectedOptionId does not belong to this question", 0);
+            }
+
+            var createdAssessmentAnswer = new Domain.Entities.AssessmentAnswer
+            {
+                AssessmentQuestionId = command.AssessmentQuestionId,
+                AttemptsId = command.AttemptsId,
+                SelectedOptionId = command.SelectedOptionId.ToString(),
+                IsCorrect = selectedOption.IsCorrect
+            };
 
             await _unitOfWork.AssessmentAnswerRepository.AddAsync(createdAssessmentAnswer);
             try

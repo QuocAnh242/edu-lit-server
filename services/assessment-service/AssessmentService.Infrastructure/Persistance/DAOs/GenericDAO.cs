@@ -23,6 +23,11 @@ namespace AssessmentService.Infrastructure.Persistance.DAOs
             await _dbset.AddAsync(entity);
         }
 
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbset.AddRangeAsync(entities);
+        }
+
         public async Task<List<T>> GetAllAsync()
         {
             return await _dbset.AsNoTracking().ToListAsync();
