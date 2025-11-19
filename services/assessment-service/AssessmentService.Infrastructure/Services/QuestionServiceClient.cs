@@ -37,13 +37,37 @@ namespace AssessmentService.Infrastructure.Services
             if (httpContext != null)
             {
                 var authHeader = httpContext.Request.Headers["Authorization"].FirstOrDefault();
-                if (!string.IsNullOrEmpty(authHeader))
-                {
-                    request.Headers.Authorization = AuthenticationHeaderValue.Parse(authHeader);
-                }
+                SetAuthorizationHeader(request, authHeader);
+            }
+            else
+            {
+                SetAuthorizationHeader(request, null);
             }
             
             return request;
+        }
+
+        private void SetAuthorizationHeader(HttpRequestMessage request, string? headerValue)
+        {
+            var configuredToken = _configuration["QuestionService:ServiceToken"];
+
+            if (!string.IsNullOrWhiteSpace(headerValue))
+            {
+                var trimmed = headerValue.Trim();
+                if (AuthenticationHeaderValue.TryParse(trimmed, out var parsedValue))
+                {
+                    request.Headers.Authorization = parsedValue;
+                    return;
+                }
+
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", trimmed);
+                return;
+            }
+
+            if (!string.IsNullOrWhiteSpace(configuredToken))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", configuredToken);
+            }
         }
 
         public async Task<QuestionDto?> GetQuestionByIdAsync(Guid questionId, CancellationToken cancellationToken = default)
