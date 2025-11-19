@@ -7,11 +7,13 @@ using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessment
 using AssessmentService.Application.Features.AssessmentQuestion.GetAssessmentQuestionById;
 using AssessmentService.Application.Features.AssessmentQuestion.UpdateAssessmentQuestion;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "TEACHER,ADMIN")]
     [Route("api/v1/[controller]")]
     public class AssessmentQuestionController : Controller
     {

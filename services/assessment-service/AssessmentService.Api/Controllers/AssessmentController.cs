@@ -5,11 +5,13 @@ using AssessmentService.Application.Features.Assessment.GetAllAssessment;
 using AssessmentService.Application.Features.Assessment.GetAssessmentById;
 using AssessmentService.Application.Features.Assessment.UpdateAssessment;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
 {
     [ApiController]
+    [Authorize(Roles = "TEACHER,ADMIN")]
     [Route("api/v1/[controller]")]
     public class AssessmentController : ControllerBase
     {
