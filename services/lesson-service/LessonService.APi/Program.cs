@@ -59,7 +59,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero,
 
             // Chỉ định claim chứa thông tin về vai trò (Role)
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+
         };
     });
 builder.Services.AddAuthorization();
