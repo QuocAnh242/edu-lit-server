@@ -121,6 +121,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Create([FromBody] CreateQuestionRequest request)
         {
             // Extract AuthorId from JWT token
@@ -148,6 +149,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionRequest request)
         {
             // Extract AuthorId from JWT token
@@ -176,6 +178,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var command = new DeleteQuestionCommand(id);
