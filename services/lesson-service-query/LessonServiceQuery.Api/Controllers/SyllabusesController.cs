@@ -9,7 +9,7 @@ namespace LessonServiceQuery.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "Admin,Teacher")]
+[Authorize(Roles = "ADMIN,TEACHER")]
 public class SyllabusesController : ControllerBase
 {
     private readonly IQueryDispatcher _queryDispatcher;
