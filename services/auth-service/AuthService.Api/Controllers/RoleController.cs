@@ -5,6 +5,7 @@ using AuthService.Application.Services.Role.Commands;
 using AuthService.Application.Services.Role.Interfaces;
 using AuthService.Domain.Interfaces;
 using AuthService.Infrastructure.Messaging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,6 +13,7 @@ namespace AuthService.Api.Controllers
 {
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize(Roles = "TEACHER,ADMIN")]
     public class RoleController : ControllerBase
     {
         // Command Dispatcher (Commands)
@@ -40,7 +42,7 @@ namespace AuthService.Api.Controllers
             var res = await _commands.Send<CreateRoleCommand, Guid>(cmd, ct);
             if (!res.Success) return BadRequest(res);
 
-            return Ok(res);
+            return StatusCode(StatusCodes.Status201Created, res);
         }
 
         // Update Role
@@ -66,7 +68,9 @@ namespace AuthService.Api.Controllers
         {
             var cmd = new DeleteRoleCommand(id);
             var res = await _commands.Send<DeleteRoleCommand, bool>(cmd, ct);
-            return Ok(res);
+            if (!res.Success) return NotFound(res);
+
+            return NoContent();
         }
 
         // Sync Roles to Query Service
