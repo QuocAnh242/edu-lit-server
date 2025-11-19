@@ -24,7 +24,7 @@ public partial class LessonDbContext : DbContext
 
     public virtual DbSet<Session> Sessions { get; set; }
 
-    public virtual DbSet<Syllabus> Syllabi { get; set; }
+    public virtual DbSet<Syllabus> Syllabus { get; set; }
     
     public virtual DbSet<OutboxMessage> OutboxMessages { get; set; }
     
