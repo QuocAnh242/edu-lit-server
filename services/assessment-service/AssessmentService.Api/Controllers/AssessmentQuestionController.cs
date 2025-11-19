@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace AssessmentService.Api.Controllers
 {
     [ApiController]
-    [Authorize(Roles = "TEACHER,ADMIN")]
     [Route("api/v1/[controller]")]
     public class AssessmentQuestionController : Controller
     {
@@ -43,6 +42,7 @@ namespace AssessmentService.Api.Controllers
             _getAllAssessmentQuestionByAssessmentIdQueryHandler = getAllAssessmentQuestionByAssessmentIdQueryHandler;
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ObjectResponse<GetAssessmentQuestionByIdResponse>>> GetAssessmentQuestionById(int id)
         {
@@ -56,6 +56,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentQuestionResponse>>>> GetAllAssessmentQuestions()
         {
@@ -63,12 +64,15 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpGet("assessment/{assessmentId}")]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentQuestionByAssessmentIdResponse>>>> GetAllAssessmentQuestionsByAssessmentId(int assessmentId)
         {
             var result = await _getAllAssessmentQuestionByAssessmentIdQueryHandler.Handle(new GetAllAssessmentQuestionByAssessmentIdQuery(assessmentId), CancellationToken.None);
             return Ok(result);
         }
+
+        [Authorize(Roles = "TEACHER,ADMIN")]
 
         [HttpPost]
         public async Task<ActionResult<ObjectResponse<int>>> CreateAssessmentQuestion([FromBody] CreateAssessmentQuestionCommand command)
@@ -77,6 +81,7 @@ namespace AssessmentService.Api.Controllers
             return CreatedAtAction(nameof(GetAssessmentQuestionById), new { id = result.Data }, result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpPost("bulk")]
         public async Task<ActionResult<ObjectResponse<List<int>>>> CreateAssessmentQuestions([FromBody] CreateAssessmentQuestionsCommand command)
         {
@@ -88,6 +93,7 @@ namespace AssessmentService.Api.Controllers
             return BadRequest(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ObjectResponse<bool>>> UpdateAssessmentQuestion(int id, [FromBody] UpdateAssessmentQuestionCommand command)
         {
@@ -99,6 +105,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ObjectResponse<bool>>> DeleteAssessmentQuestion(int id)
         {
@@ -106,6 +113,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpGet]
         [Route("health")]
         public IActionResult HealthCheck()
