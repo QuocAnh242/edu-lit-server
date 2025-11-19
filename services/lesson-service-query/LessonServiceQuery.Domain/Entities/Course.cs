@@ -1,9 +1,14 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace LessonServiceQuery.Domain.Entities;
 
 public class Course
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
+    
     [BsonElement("course_id")]
     public Guid CourseId { get; set; }
     
@@ -16,6 +21,9 @@ public class Course
     [BsonElement("description")]
     public string Description { get; set; } = string.Empty;
     
+    [BsonElement("course_code")]
+    public string CourseCode { get; set; } = string.Empty;
+    
     [BsonElement("order_index")]
     public int OrderIndex { get; set; }
     
@@ -25,9 +33,6 @@ public class Course
     [BsonElement("objectives")]
     public List<string> Objectives { get; set; } = new();
     
-    [BsonElement("sessions")]
-    public List<Session> Sessions { get; set; } = new();
-    
     [BsonElement("is_active")]
     public bool IsActive { get; set; } = true;
     
@@ -36,5 +41,9 @@ public class Course
     
     [BsonElement("updated_at")]
     public DateTime UpdatedAt { get; set; }
+    
+    // Not stored in MongoDB - populated by repository from Session collection
+    [BsonIgnore]
+    public List<Session> Sessions { get; set; } = new();
 }
 

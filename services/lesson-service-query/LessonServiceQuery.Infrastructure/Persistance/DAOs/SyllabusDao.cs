@@ -51,7 +51,8 @@ public class SyllabusDao : ISyllabusDao
     }
     public async Task DeleteAsync(Guid syllabusId)
     {
-        await _syllabuses.DeleteOneAsync(x => x.SyllabusId == syllabusId);
+        // Soft delete: set all versions of this syllabus to IsActive = false
+        await DeactivateAllByIdAsync(syllabusId);
     }
     public async Task<bool> ExistsAsync(Guid syllabusId)
     {
