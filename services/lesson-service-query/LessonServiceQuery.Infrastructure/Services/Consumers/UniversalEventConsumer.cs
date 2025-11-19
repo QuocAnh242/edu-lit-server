@@ -90,64 +90,85 @@ public class UniversalEventConsumer : BackgroundService
         };
     }
 
-    public override Task StartAsync(CancellationToken cancellationToken)
+    public override async Task StartAsync(CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting Universal Event Consumer...");
-        InitializeRabbitMq();
-        return base.StartAsync(cancellationToken);
+        await InitializeRabbitMqAsync(cancellationToken);
+        await base.StartAsync(cancellationToken);
     }
 
-    private void InitializeRabbitMq()
+    private async Task InitializeRabbitMqAsync(CancellationToken cancellationToken)
     {
-        try
+        const int maxRetries = 10;
+        const int initialDelayMs = 1000;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            var factory = new ConnectionFactory
+            try
             {
-                HostName = _rabbitMqSettings.HostName,
-                Port = _rabbitMqSettings.Port,
-                UserName = _rabbitMqSettings.UserName,
-                Password = _rabbitMqSettings.Password,
-                VirtualHost = _rabbitMqSettings.VirtualHost
-            };
+                _logger.LogInformation("Attempting to connect to RabbitMQ (attempt {Attempt}/{MaxRetries})...", attempt, maxRetries);
 
-            _connection = factory.CreateConnectionAsync().Result;
-            _channel = _connection.CreateChannelAsync().Result;
-
-            // Setup exchanges, queues and bindings for all entities
-            foreach (var (entityType, config) in _entityConfigurations)
-            {
-                _logger.LogInformation("Setting up RabbitMQ for {EntityType}", entityType);
-
-                // Declare exchange
-                _channel.ExchangeDeclareAsync(
-                    exchange: config.Exchange,
-                    type: ExchangeType.Topic,
-                    durable: true,
-                    autoDelete: false).Wait();
-
-                // Declare and bind queues
-                for (int i = 0; i < config.Queues.Length; i++)
+                var factory = new ConnectionFactory
                 {
-                    _channel.QueueDeclareAsync(
-                        queue: config.Queues[i],
-                        durable: true,
-                        exclusive: false,
-                        autoDelete: false,
-                        arguments: null).Wait();
+                    HostName = _rabbitMqSettings.HostName,
+                    Port = _rabbitMqSettings.Port,
+                    UserName = _rabbitMqSettings.UserName,
+                    Password = _rabbitMqSettings.Password,
+                    VirtualHost = _rabbitMqSettings.VirtualHost
+                };
 
-                    _channel.QueueBindAsync(
-                        queue: config.Queues[i],
+                _connection = await factory.CreateConnectionAsync(cancellationToken);
+                _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
+                // Setup exchanges, queues and bindings for all entities
+                foreach (var (entityType, config) in _entityConfigurations)
+                {
+                    _logger.LogInformation("Setting up RabbitMQ for {EntityType}", entityType);
+
+                    // Declare exchange
+                    await _channel.ExchangeDeclareAsync(
                         exchange: config.Exchange,
-                        routingKey: config.RoutingKeys[i]).Wait();
-                }
-            }
+                        type: ExchangeType.Topic,
+                        durable: true,
+                        autoDelete: false,
+                        cancellationToken: cancellationToken);
 
-            _logger.LogInformation("RabbitMQ connection established for Universal Event Consumer");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error initializing RabbitMQ connection");
-            throw;
+                    // Declare and bind queues
+                    for (int i = 0; i < config.Queues.Length; i++)
+                    {
+                        await _channel.QueueDeclareAsync(
+                            queue: config.Queues[i],
+                            durable: true,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null,
+                            cancellationToken: cancellationToken);
+
+                        await _channel.QueueBindAsync(
+                            queue: config.Queues[i],
+                            exchange: config.Exchange,
+                            routingKey: config.RoutingKeys[i],
+                            cancellationToken: cancellationToken);
+                    }
+                }
+
+                _logger.LogInformation("RabbitMQ connection established for Universal Event Consumer");
+                return; // Success - exit retry loop
+            }
+            catch (Exception ex)
+            {
+                if (attempt == maxRetries)
+                {
+                    _logger.LogError(ex, "Failed to connect to RabbitMQ after {MaxRetries} attempts", maxRetries);
+                    throw;
+                }
+
+                int delayMs = initialDelayMs * (int)Math.Pow(2, attempt - 1); // Exponential backoff
+                _logger.LogWarning(ex, "Failed to connect to RabbitMQ (attempt {Attempt}/{MaxRetries}). Retrying in {DelayMs}ms...", 
+                    attempt, maxRetries, delayMs);
+                
+                await Task.Delay(delayMs, cancellationToken);
+            }
         }
     }
 

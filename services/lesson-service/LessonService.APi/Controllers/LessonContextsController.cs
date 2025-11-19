@@ -1,7 +1,8 @@
 using Asp.Versioning;
 using LessonService.Api.Requests.LessonContexts;
 using LessonService.Application.Abstractions.Messaging.Dispatcher.Interfaces;
-using LessonService.Application.Features.LessonContexts.CreateBulkLessonContexts;
+using LessonService.Application.Features.LessonContexts.BulkUpdateLessonContext;
+using LessonService.Application.Features.LessonContexts.CreateBulkLessonContext;
 using LessonService.Application.Features.LessonContexts.CreateLessonContext;
 using LessonService.Application.Features.LessonContexts.DeleteLessonContext;
 using LessonService.Application.Features.LessonContexts.UpdateLessonContext;
@@ -14,12 +15,12 @@ namespace LessonService.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Authorize]
-public class LessonContextController : ControllerBase
+[Authorize(Roles = "Admin,Teacher")]
+public class LessonContextsController : ControllerBase
 {
     private readonly ICommandDispatcher _dispatcher;
 
-    public LessonContextController(ICommandDispatcher dispatcher)
+    public LessonContextsController(ICommandDispatcher dispatcher)
     {
         _dispatcher = dispatcher;
     }
@@ -49,34 +50,33 @@ public class LessonContextController : ControllerBase
 
         return Ok(result);
     }
-
+    
+    /// <summary>
+    /// Create multiple lesson contexts with automatic parent detection based on level and position.
+    /// This is the recommended endpoint for document-style content creation.
+    /// </summary>
     [HttpPost("bulk")]
-    public async Task<ActionResult<ApiResponse<List<Guid>>>> CreateBulkLessonContexts(CreateBulkLessonContextsRequest request)
+    public async Task<IActionResult> CreateBulkLessonContextDocument(CreateBulkLessonContextRequest request)
     {
-        var command = new CreateBulkLessonContextsCommand
-        {
-            SessionId = request.SessionId,
-            LessonContexts = request.LessonContexts.Select(item => new LessonContextItem
+        var command = new CreateBulkLessonContextCommand(
+            request.SessionId,
+            request.LessonContexts.Select(x => new LessonContextItemDto
             {
-                ParentLessonId = item.ParentLessonId,
-                LessonTitle = item.LessonTitle,
-                LessonContent = item.LessonContent,
-                Position = item.Position,
-                Level = item.Level
+                LessonTitle = x.LessonTitle,
+                LessonContent = x.LessonContent,
+                Position = x.Position,
+                Level = x.Level
             }).ToList()
-        };
+        );
 
-        var result = await _dispatcher.Send<CreateBulkLessonContextsCommand, List<Guid>>(command, CancellationToken.None);
+        var result = await _dispatcher.Send<CreateBulkLessonContextCommand, CreateBulkLessonContextResponse>(command, CancellationToken.None);
+
         if (!result.Success)
         {
-            if (result.ErrorCode == 400)
-                return UnprocessableEntity(result);
-            if (result.ErrorCode == 404)
-                return NotFound(result);
-            return BadRequest(result);
+            return StatusCode(result.ErrorCode ?? 500, result);
         }
 
-        return Ok(result);
+        return StatusCode(result.ErrorCode ?? 200, result);
     }
 
     [HttpPut("{id}")]
@@ -98,6 +98,38 @@ public class LessonContextController : ControllerBase
             if (result.ErrorCode == 404)
                 return NotFound(result);
             return BadRequest(result);
+        }
+
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Bulk update multiple lesson contexts at once.
+    /// Supports partial updates - only provide fields you want to change.
+    /// Useful for re-ordering, re-leveling, or batch content updates.
+    /// </summary>
+    [HttpPut("bulk-update")]
+    public async Task<IActionResult> BulkUpdateLessonContexts(BulkUpdateLessonContextRequest request)
+    {
+        var command = new BulkUpdateLessonContextCommand(
+            request.Items.Select(x => new LessonContextUpdateItemDto
+            {
+                Id = x.Id,
+                LessonTitle = x.LessonTitle,
+                LessonContent = x.LessonContent,
+                Position = x.Position,
+                Level = x.Level
+            }).ToList()
+        );
+
+        var result = await _dispatcher.Send<BulkUpdateLessonContextCommand, BulkUpdateLessonContextResponse>(
+            command, 
+            CancellationToken.None
+        );
+
+        if (!result.Success)
+        {
+            return StatusCode(result.ErrorCode ?? 500, result);
         }
 
         return Ok(result);

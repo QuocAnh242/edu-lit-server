@@ -10,35 +10,104 @@ namespace LessonServiceQuery.Infrastructure.Persistance.DAOs;
 public class LessonDao : ILessonDao
 {
     private readonly IMongoCollection<Lesson> _lessons;
+    private readonly ILessonContextDao _lessonContextDao;
+    private readonly IActivityDao _activityDao;
     
-    public LessonDao(IMongoDbContext context, IOptions<MongoDbSettings> settings)
+    public LessonDao(
+        IMongoDbContext context, 
+        IOptions<MongoDbSettings> settings,
+        ILessonContextDao lessonContextDao,
+        IActivityDao activityDao)
     {
         _lessons = context.GetCollection<Lesson>(settings.Value.LessonsCollectionName);
+        _lessonContextDao = lessonContextDao;
+        _activityDao = activityDao;
     }
     
     public async Task<Lesson?> GetByIdAsync(Guid lessonId)
     {
-        return await _lessons.Find(x => x.LessonId == lessonId && x.IsActive).FirstOrDefaultAsync();
+        var lesson = await _lessons.Find(x => x.LessonId == lessonId && x.IsActive).FirstOrDefaultAsync();
+        
+        if (lesson != null)
+        {
+            // Populate LessonContexts and Activities from separate collections
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lessonId);
+        }
+        
+        return lesson;
     }
     
     public async Task<List<Lesson>> GetAllAsync()
     {
-        return await _lessons.Find(x => x.IsActive).ToListAsync();
+        var lessons = await _lessons.Find(x => x.IsActive).ToListAsync();
+        
+        // Populate each lesson with its contexts and activities
+        foreach (var lesson in lessons)
+        {
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lesson.LessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lesson.LessonId);
+        }
+        
+        return lessons;
+    }
+    
+    public async Task<List<Lesson>> GetBySessionIdAsync(Guid sessionId)
+    {
+        var lessons = await _lessons.Find(x => x.SessionId == sessionId && x.IsActive)
+            .SortBy(x => x.Position)
+            .ToListAsync();
+        
+        // Populate each lesson with its contexts and activities
+        foreach (var lesson in lessons)
+        {
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lesson.LessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lesson.LessonId);
+        }
+        
+        return lessons;
     }
     
     public async Task<List<Lesson>> GetByTeacherIdAsync(Guid teacherId)
     {
-        return await _lessons.Find(x => x.TeacherId == teacherId && x.IsActive).ToListAsync();
+        var lessons = await _lessons.Find(x => x.IsActive).ToListAsync();
+        
+        // Populate each lesson with its contexts and activities
+        foreach (var lesson in lessons)
+        {
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lesson.LessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lesson.LessonId);
+        }
+        
+        return lessons;
     }
     
     public async Task<List<Lesson>> GetBySubjectAsync(string subject)
     {
-        return await _lessons.Find(x => x.Subject == subject && x.IsActive).ToListAsync();
+        var lessons = await _lessons.Find(x => x.IsActive).ToListAsync();
+        
+        // Populate each lesson with its contexts and activities
+        foreach (var lesson in lessons)
+        {
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lesson.LessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lesson.LessonId);
+        }
+        
+        return lessons;
     }
     
     public async Task<List<Lesson>> GetByGradeLevelAsync(string gradeLevel)
     {
-        return await _lessons.Find(x => x.GradeLevel == gradeLevel && x.IsActive).ToListAsync();
+        var lessons = await _lessons.Find(x => x.IsActive).ToListAsync();
+        
+        // Populate each lesson with its contexts and activities
+        foreach (var lesson in lessons)
+        {
+            lesson.LessonContexts = await _lessonContextDao.GetByLessonIdAsync(lesson.LessonId);
+            lesson.Activities = await _activityDao.GetByLessonIdAsync(lesson.LessonId);
+        }
+        
+        return lessons;
     }
     
     public async Task<Lesson> CreateAsync(Lesson lesson)
@@ -58,7 +127,8 @@ public class LessonDao : ILessonDao
     
     public async Task DeleteAsync(Guid lessonId)
     {
-        await _lessons.DeleteOneAsync(x => x.LessonId == lessonId);
+        // Soft delete: set all versions of this lesson to IsActive = false
+        await DeactivateAllByIdAsync(lessonId);
     }
     
     public async Task<bool> ExistsAsync(Guid lessonId)
