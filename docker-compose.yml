@@ -96,10 +96,10 @@ services:
     container_name: edulit-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_ROOT_PASSWORD: 12345678
       MYSQL_DATABASE: edulit_assessment_db
       MYSQL_USER: developer
-      MYSQL_PASSWORD: devpass
+      MYSQL_PASSWORD: 12345678
     ports:
       - "3306:3306"
     volumes:

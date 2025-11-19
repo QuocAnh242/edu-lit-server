@@ -66,7 +66,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero,
 
             // role claim type
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+
         };
     });
 
