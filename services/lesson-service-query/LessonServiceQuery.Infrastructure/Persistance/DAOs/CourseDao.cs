@@ -3,107 +3,62 @@ using LessonServiceQuery.Domain.IDAOs;
 using LessonServiceQuery.Infrastructure.Configuration;
 using LessonServiceQuery.Infrastructure.Services;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
+
 namespace LessonServiceQuery.Infrastructure.Persistance.DAOs;
+
 public class CourseDao : ICourseDao
 {
-    private readonly IMongoCollection<Syllabus> _syllabuses;
+    private readonly IMongoCollection<Course> _courses;
+    
     public CourseDao(IMongoDbContext context, IOptions<MongoDbSettings> settings)
     {
-        _syllabuses = context.GetCollection<Syllabus>(settings.Value.SyllabusesCollectionName);
+        _courses = context.GetCollection<Course>(settings.Value.CoursesCollectionName);
     }
+    
     public async Task<Course?> GetByIdAsync(Guid courseId)
     {
-        var syllabus = await _syllabuses
-            .Find(s => s.IsActive && s.Courses.Any(c => c.CourseId == courseId && c.IsActive))
-            .FirstOrDefaultAsync();
-        return syllabus?.Courses.FirstOrDefault(c => c.CourseId == courseId && c.IsActive);
+        return await _courses.Find(x => x.CourseId == courseId && x.IsActive).FirstOrDefaultAsync();
     }
+    
     public async Task<List<Course>> GetBySyllabusIdAsync(Guid syllabusId)
     {
-        var syllabus = await _syllabuses
-            .Find(s => s.SyllabusId == syllabusId && s.IsActive)
-            .FirstOrDefaultAsync();
-        return syllabus?.Courses.Where(c => c.IsActive).ToList() ?? new List<Course>();
+        return await _courses.Find(x => x.SyllabusId == syllabusId && x.IsActive).ToListAsync();
     }
+    
     public async Task<Course> CreateAsync(Guid syllabusId, Course course)
     {
+        course.SyllabusId = syllabusId;
         course.CreatedAt = DateTime.UtcNow;
         course.UpdatedAt = DateTime.UtcNow;
         course.IsActive = true;
-        course.SyllabusId = syllabusId;
         
-        // Check if syllabus exists
-        var existingSyllabus = await _syllabuses
-            .Find(s => s.SyllabusId == syllabusId)
-            .FirstOrDefaultAsync();
-        
-        if (existingSyllabus == null)
-        {
-            // Auto-create Syllabus if not exists (for CQRS event handling)
-            var newSyllabus = new Syllabus
-            {
-                SyllabusId = syllabusId,
-                Title = "[Auto-generated] Syllabus for Course",
-                Description = "This syllabus was auto-generated when receiving CourseCreated event",
-                GradeLevel = "Unknown",
-                Subject = "Unknown",
-                Version = "1.0",
-                Status = "Active",
-                CreatedBy = Guid.Empty,
-                IsActive = true,
-                Courses = new List<Course> { course },
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
-            
-            await _syllabuses.InsertOneAsync(newSyllabus);
-            return course;
-        }
-        
-        // Syllabus exists, push course to it
-        var filter = Builders<Syllabus>.Filter.And(
-            Builders<Syllabus>.Filter.Eq(s => s.SyllabusId, syllabusId),
-            Builders<Syllabus>.Filter.Eq(s => s.IsActive, true)
-        );
-        var update = Builders<Syllabus>.Update.Push("courses", course);
-        
-        var result = await _syllabuses.UpdateOneAsync(filter, update);
-        
-        if (result.MatchedCount == 0)
-        {
-            throw new InvalidOperationException($"Failed to add Course to Syllabus with ID {syllabusId}");
-        }
-        
+        await _courses.InsertOneAsync(course);
         return course;
     }
-    public Task<Course> UpdateAsync(Course course)
+    
+    public async Task<Course> UpdateAsync(Course course)
     {
         course.UpdatedAt = DateTime.UtcNow;
-        return Task.FromResult(course);
+        await _courses.ReplaceOneAsync(x => x.CourseId == course.CourseId, course);
+        return course;
     }
-    public Task DeleteAsync(Guid courseId)
+    
+    public async Task DeleteAsync(Guid courseId)
     {
-        return Task.CompletedTask;
+        // Soft delete: set all versions of this course to IsActive = false
+        await DeactivateAllByIdAsync(courseId);
     }
+    
     public async Task<bool> ExistsAsync(Guid courseId)
     {
-        var count = await _syllabuses
-            .CountDocumentsAsync(s => s.Courses.Any(c => c.CourseId == courseId));
-        return count > 0;
+        return await _courses.CountDocumentsAsync(x => x.CourseId == courseId) > 0;
     }
 
     public async Task DeactivateAllByIdAsync(Guid courseId)
     {
-        var filter = Builders<Syllabus>.Filter.ElemMatch(x => x.Courses, c => c.CourseId == courseId);
-        var update = Builders<Syllabus>.Update.Set("courses.$[elem].is_active", false);
-        var arrayFilters = new[] { 
-            new BsonDocumentArrayFilterDefinition<BsonDocument>(
-                new BsonDocument("elem.course_id", new BsonBinaryData(courseId, GuidRepresentation.Standard))
-            ) 
-        };
-        var updateOptions = new UpdateOptions { ArrayFilters = arrayFilters };
-        await _syllabuses.UpdateManyAsync(filter, update, updateOptions);
+        var filter = Builders<Course>.Filter.Eq(x => x.CourseId, courseId);
+        var update = Builders<Course>.Update.Set(x => x.IsActive, false);
+        await _courses.UpdateManyAsync(filter, update);
     }
 }

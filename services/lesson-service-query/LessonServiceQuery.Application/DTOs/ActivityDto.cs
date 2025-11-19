@@ -1,4 +1,5 @@
-﻿namespace LessonServiceQuery.Application.DTOs;
+﻿﻿namespace LessonServiceQuery.Application.DTOs;
+
 public class ActivityDto
 {
     public Guid ActivityId { get; set; }
@@ -7,7 +8,7 @@ public class ActivityDto
     public string ActivityType { get; set; } = string.Empty;
     public string Instructions { get; set; } = string.Empty;
     public int EstimatedTimeMinutes { get; set; }
-    public int OrderIndex { get; set; }
+    public int Position { get; set; }
     public List<string> Materials { get; set; } = new();
     public List<string> Objectives { get; set; } = new();
     public DateTime CreatedAt { get; set; }

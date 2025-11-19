@@ -10,6 +10,8 @@ using LessonService.Application.Features.Activities.UpdateActivity;
 using LessonService.Application.Features.Courses.CreateCourse;
 using LessonService.Application.Features.Courses.DeleteCourse;
 using LessonService.Application.Features.Courses.UpdateCourse;
+using LessonService.Application.Features.LessonContexts.BulkUpdateLessonContext;
+using LessonService.Application.Features.LessonContexts.CreateBulkLessonContext;
 using LessonService.Application.Features.LessonContexts.CreateBulkLessonContexts;
 using LessonService.Application.Features.LessonContexts.CreateLessonContext;
 using LessonService.Application.Features.LessonContexts.DeleteLessonContext;
@@ -54,7 +56,9 @@ namespace LessonService.Application
             // LessonContext Handlers
             services.AddScoped<ICommandHandler<CreateLessonContextCommand, Guid>, CreateLessonContextCommandHandler>();
             services.AddScoped<ICommandHandler<CreateBulkLessonContextsCommand, List<Guid>>, CreateBulkLessonContextsCommandHandler>();
+            services.AddScoped<ICommandHandler<CreateBulkLessonContextCommand, CreateBulkLessonContextResponse>, CreateBulkLessonContextCommandHandler>();
             services.AddScoped<ICommandHandler<UpdateLessonContextCommand>, UpdateLessonContextCommandHandler>();
+            services.AddScoped<ICommandHandler<BulkUpdateLessonContextCommand, BulkUpdateLessonContextResponse>, BulkUpdateLessonContextCommandHandler>();
             services.AddScoped<ICommandHandler<DeleteLessonContextCommand>, DeleteLessonContextCommandHandler>();
             
             // Register all validators and AutoMapper profiles from the assembly
