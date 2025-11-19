@@ -5,6 +5,7 @@ using AssessmentService.Application.Features.AssessmentAnswer.GetAllAssessmentAn
 using AssessmentService.Application.Features.AssessmentAnswer.GetAllAssessmentAnswerByAttemptId;
 using AssessmentService.Application.Features.AssessmentAnswer.GetAssessmentAnswerById;
 using AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessmentAnswer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
@@ -37,6 +38,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<GetAssessmentAnswerByIdResponse>> GetAssessmentAnswerById(int id)
         {
             var result = await _getById.Handle(new GetAssessmentAnswerByIdQuery(id), CancellationToken.None);
@@ -48,6 +50,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<List<GetAllAssessmentAnswerResponse>>> GetAllAssessmentAnswers()
         {
             var result = await _getAll.Handle(new GetAllAssessmentAnswerQuery(), CancellationToken.None);
@@ -55,6 +58,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet("attempt/{attemptId}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<List<GetAllAssessmentAnswerByAttemptIdResponse>>> GetAllAssessmentAnswersByAttemptId(int attemptId)
         {
             var result = await _getAllByAttemptId.Handle(new GetAllAssessmentAnswerByAttemptIdQuery(attemptId), CancellationToken.None);
@@ -62,6 +66,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<int>> CreateAssessmentAnswer([FromBody] CreateAssessmentAnswerCommand command)
         {
             var result = await _create.Handle(command, CancellationToken.None);
@@ -69,6 +74,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<ActionResult<bool>> UpdateAssessmentAnswer(int id, [FromBody] UpdateAssessmentAnswerCommand command)
         {
             if (id != command.AnswerId)
@@ -80,6 +86,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<ActionResult<bool>> DeleteAssessmentAnswer(int id)
         {
             var result = await _delete.Handle(new DeleteAssessmentAnswerCommand(id), CancellationToken.None);
@@ -88,6 +95,7 @@ namespace AssessmentService.Api.Controllers
 
         [HttpGet]
         [Route("health")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public IActionResult HealthCheck()
         {
             return Ok("Assessment Question Service is healthy.");
