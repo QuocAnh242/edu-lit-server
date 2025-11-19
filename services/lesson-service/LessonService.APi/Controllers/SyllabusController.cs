@@ -15,7 +15,7 @@ namespace LessonService.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Authorize(Roles = "Admin,Teacher")]
+[Authorize(Roles = "ADMIN,TEACHER")]
 public class SyllabusController : ControllerBase
 {
     private readonly ICommandHandler<CreateSyllabusCommand, Guid> _createSyllabusCommandHandler;
