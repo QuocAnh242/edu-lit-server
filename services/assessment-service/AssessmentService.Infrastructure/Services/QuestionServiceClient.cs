@@ -99,6 +99,48 @@ namespace AssessmentService.Infrastructure.Services
             }
         }
 
+        public async Task<QuestionOptionDto?> GetQuestionOptionByIdAsync(Guid optionId, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                var request = CreateRequestWithAuth(HttpMethod.Get, $"/api/v1/questionoption/{optionId}");
+                var response = await _httpClient.SendAsync(request, cancellationToken);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync(cancellationToken);
+                
+                // Question Service might return QuestionOptionDto directly or wrapped in ApiResponse
+                try
+                {
+                    var apiResponse = JsonSerializer.Deserialize<QuestionServiceResponse<QuestionOptionDto>>(content, _jsonOptions);
+                    if (apiResponse?.Success == true && apiResponse.Data != null)
+                    {
+                        return apiResponse.Data;
+                    }
+                }
+                catch
+                {
+                    // Try direct deserialization
+                    var directDto = JsonSerializer.Deserialize<QuestionOptionDto>(content, _jsonOptions);
+                    if (directDto != null)
+                    {
+                        return directDto;
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                // Log error if needed
+                return null;
+            }
+        }
+
         public async Task<List<QuestionOptionDto>> GetQuestionOptionsByQuestionIdAsync(Guid questionId, CancellationToken cancellationToken = default)
         {
             try
