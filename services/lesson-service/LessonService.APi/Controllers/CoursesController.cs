@@ -13,12 +13,12 @@ namespace LessonService.Api.Controllers;
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
 [ApiController]
-[Authorize]
-public class CourseController : ControllerBase
+[Authorize(Roles = "ADMIN,TEACHER")]
+public class CoursesController : ControllerBase
 {
     private readonly ICommandDispatcher _dispatcher;
 
-    public CourseController(ICommandDispatcher dispatcher)
+    public CoursesController(ICommandDispatcher dispatcher)
     {
         _dispatcher = dispatcher;
     }

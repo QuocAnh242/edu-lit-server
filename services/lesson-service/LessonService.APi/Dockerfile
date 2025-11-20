@@ -21,19 +21,20 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src 
 
-COPY LessonService.Api/LessonService.Api.csproj LessonService.Api/
+# Copy project files
+COPY LessonService.Api/LessonService.APi.csproj LessonService.Api/
 COPY LessonService.Application/LessonService.Application.csproj LessonService.Application/
 COPY LessonService.Domain/LessonService.Domain.csproj LessonService.Domain/
 COPY LessonService.Infrastructure/LessonService.Infrastructure.csproj LessonService.Infrastructure/
 
-RUN dotnet restore "LessonService.Api/LessonService.Api.csproj"
+RUN dotnet restore "LessonService.Api/LessonService.APi.csproj"
 
 # Copy toàn bộ mã nguồn
 COPY . .
 
 # Build project
 WORKDIR "/src/LessonService.Api"
-RUN dotnet build "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "LessonService.APi.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # ===================================================
 # Stage 3: Publish - Tách biệt bước publish cho rõ ràng
@@ -41,7 +42,7 @@ RUN dotnet build "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/buil
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 WORKDIR "/src/LessonService.Api"
-RUN dotnet publish "LessonService.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "LessonService.APi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # ===================================================
 # Stage 4: Final - Tạo image cuối cùng để chạy

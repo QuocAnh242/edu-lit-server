@@ -8,7 +8,7 @@ namespace LessonServiceQuery.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize]
+[Authorize(Roles = "ADMIN,TEACHER")]
 public class LessonsController : ControllerBase
 {
     private readonly IQueryDispatcher _queryDispatcher;

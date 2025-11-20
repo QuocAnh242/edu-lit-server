@@ -36,13 +36,14 @@ public class Syllabus
     [BsonElement("is_active")]
     public bool IsActive { get; set; } = true;
     
-    [BsonElement("courses")]
-    public List<Course> Courses { get; set; } = new();
-    
     [BsonElement("created_at")]
     public DateTime CreatedAt { get; set; }
     
     [BsonElement("updated_at")]
     public DateTime UpdatedAt { get; set; }
+    
+    // Not stored in MongoDB - populated by repository from Course collection
+    [BsonIgnore]
+    public List<Course> Courses { get; set; } = new();
 }
 

@@ -1,11 +1,19 @@
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace LessonServiceQuery.Domain.Entities;
 
 public class Session
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
+    
     [BsonElement("session_id")]
     public Guid SessionId { get; set; }
+    
+    [BsonElement("course_id")]
+    public Guid CourseId { get; set; }
     
     [BsonElement("title")]
     public string Title { get; set; } = string.Empty;
@@ -13,20 +21,11 @@ public class Session
     [BsonElement("description")]
     public string Description { get; set; } = string.Empty;
     
-    [BsonElement("order_index")]
-    public int OrderIndex { get; set; }
+    [BsonElement("position")]
+    public int Position { get; set; }
     
     [BsonElement("duration_minutes")]
     public int DurationMinutes { get; set; }
-    
-    [BsonElement("lesson_id")]
-    public Guid? LessonId { get; set; }
-    
-    [BsonElement("objectives")]
-    public List<string> Objectives { get; set; } = new();
-    
-    [BsonElement("materials")]
-    public List<string> Materials { get; set; } = new();
     
     [BsonElement("is_active")]
     public bool IsActive { get; set; } = true;

@@ -71,6 +71,22 @@ namespace QuestionService.Api.Extensions
         {
             return user.HasRole("STUDENT");
         }
+
+        /// <summary>
+        /// Checks if the user is an admin
+        /// </summary>
+        public static bool IsAdmin(this ClaimsPrincipal user)
+        {
+            return user.HasRole("ADMIN");
+        }
+
+        /// <summary>
+        /// Checks if the user can manage questions (TEACHER or ADMIN)
+        /// </summary>
+        public static bool CanManageQuestions(this ClaimsPrincipal user)
+        {
+            return user.IsTeacher() || user.IsAdmin();
+        }
     }
 }
 

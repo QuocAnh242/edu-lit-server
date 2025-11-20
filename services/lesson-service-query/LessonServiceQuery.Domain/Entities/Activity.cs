@@ -5,8 +5,15 @@ namespace LessonServiceQuery.Domain.Entities;
 
 public class Activity
 {
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; } = string.Empty;
+    
     [BsonElement("activity_id")]
     public Guid ActivityId { get; set; }
+    
+    [BsonElement("lesson_id")]
+    public Guid LessonId { get; set; }
     
     [BsonElement("title")]
     public string Title { get; set; } = string.Empty;
@@ -23,8 +30,8 @@ public class Activity
     [BsonElement("estimated_time_minutes")]
     public int EstimatedTimeMinutes { get; set; }
     
-    [BsonElement("order_index")]
-    public int OrderIndex { get; set; }
+    [BsonElement("position")]
+    public int Position { get; set; }
     
     [BsonElement("materials")]
     public List<string> Materials { get; set; } = new();
