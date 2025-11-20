@@ -26,6 +26,11 @@ public class CourseDao : ICourseDao
         return await _courses.Find(x => x.SyllabusId == syllabusId && x.IsActive).ToListAsync();
     }
     
+    public async Task<List<Course>> GetAllAsync()
+    {
+        return await _courses.Find(x => x.IsActive).ToListAsync();
+    }
+    
     public async Task<Course> CreateAsync(Guid syllabusId, Course course)
     {
         course.SyllabusId = syllabusId;

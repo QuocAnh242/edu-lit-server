@@ -4,6 +4,7 @@ public interface ICourseRepository
 {
     Task<Course?> GetByIdAsync(Guid courseId);
     Task<List<Course>> GetBySyllabusIdAsync(Guid syllabusId);
+    Task<List<Course>> GetAllAsync();
     Task<Course> CreateAsync(Course course);
     Task<Course> UpdateAsync(Course course);
     Task DeleteAsync(Guid courseId);

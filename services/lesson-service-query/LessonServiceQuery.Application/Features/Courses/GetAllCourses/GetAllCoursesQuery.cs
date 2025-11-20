@@ -1,0 +1,5 @@
+using LessonServiceQuery.Application.Abstractions.Messaging;
+using LessonServiceQuery.Application.DTOs;
+namespace LessonServiceQuery.Application.Features.Courses.GetAllCourses;
+public record GetAllCoursesQuery : IQuery<List<CourseDto>>;
+
