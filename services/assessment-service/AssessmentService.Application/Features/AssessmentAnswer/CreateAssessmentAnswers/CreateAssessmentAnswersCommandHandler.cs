@@ -33,7 +33,7 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
             if (!validationResult.IsValid)
             {
                 var errors = validationResult.Errors
-                    .Select(e => new Error("AssessmentAnswers.Create.Validation", e.Message))
+                    .Select(e => new Error("AssessmentAnswers.Create.Validation", e.ErrorMessage))
                     .ToList();
                 return ObjectResponse<List<int>>.Response("400", errors.First().Message, new List<int>());
             }
@@ -62,8 +62,10 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
             var existingAnswers = await _unitOfWork.AssessmentAnswerRepository
                 .GetAllByAsync(aa => aa.AttemptsId == command.AttemptsId);
 
+            // Check duplicate based on (AttemptsId, AssessmentQuestionId, SelectedOptionId)
+            // This allows multiple answers for the same question (for multiple choice with multiple selections)
             var existingKeys = existingAnswers
-                .Select(aa => (aa.AttemptsId, aa.AssessmentQuestionId))
+                .Select(aa => (aa.AttemptsId, aa.AssessmentQuestionId, aa.SelectedOptionId))
                 .ToHashSet();
 
             var assessmentAnswers = new List<Domain.Entities.AssessmentAnswer>();
@@ -85,9 +87,10 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.CreateAssessme
                     return ObjectResponse<List<int>>.Response("400", $"Question với id {questionOption.QuestionId} không thuộc assessment này", new List<int>());
                 }
 
-                var key = (command.AttemptsId, assessmentQuestionId);
+                var selectedOptionIdStr = selectedOptionId.ToString();
+                var key = (command.AttemptsId, assessmentQuestionId, selectedOptionIdStr);
 
-                // Skip if already exists
+                // Skip if already exists (same attempt, question, and option)
                 if (existingKeys.Contains(key))
                 {
                     continue;
