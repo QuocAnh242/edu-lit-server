@@ -8,11 +8,13 @@ public class SyllabusRepository : ISyllabusRepository
 {
     private readonly ISyllabusDao _syllabusDao;
     private readonly ICourseDao _courseDao;
+    private readonly ISessionDao _sessionDao;
 
-    public SyllabusRepository(ISyllabusDao syllabusDao, ICourseDao courseDao)
+    public SyllabusRepository(ISyllabusDao syllabusDao, ICourseDao courseDao, ISessionDao sessionDao)
     {
         _syllabusDao = syllabusDao;
         _courseDao = courseDao;
+        _sessionDao = sessionDao;
     }
 
     public async Task<Syllabus?> GetByIdAsync(Guid syllabusId)
@@ -30,70 +32,78 @@ public class SyllabusRepository : ISyllabusRepository
     public async Task<List<Syllabus>> GetAllAsync()
     {
         var syllabuses = await _syllabusDao.GetAllAsync();
-        
+
         // Populate courses for each syllabus
         foreach (var syllabus in syllabuses)
         {
             var courses = await _courseDao.GetBySyllabusIdAsync(syllabus.SyllabusId);
+
+            // Populate sessions for each course
+            foreach (var course in courses)
+            {
+                var sessions = await _sessionDao.GetByCourseIdAsync(course.CourseId);
+                course.Sessions = sessions;
+            }
+
             syllabus.Courses = courses;
         }
-        
+
         return syllabuses;
     }
 
     public async Task<List<Syllabus>> GetByCreatorIdAsync(Guid creatorId)
     {
         var syllabuses = await _syllabusDao.GetByCreatorIdAsync(creatorId);
-        
+
         // Populate courses for each syllabus
         foreach (var syllabus in syllabuses)
         {
             var courses = await _courseDao.GetBySyllabusIdAsync(syllabus.SyllabusId);
             syllabus.Courses = courses;
         }
-        
+
         return syllabuses;
     }
 
     public async Task<List<Syllabus>> GetBySubjectAsync(string subject)
     {
         var syllabuses = await _syllabusDao.GetBySubjectAsync(subject);
-        
+
         // Populate courses for each syllabus
         foreach (var syllabus in syllabuses)
         {
             var courses = await _courseDao.GetBySyllabusIdAsync(syllabus.SyllabusId);
             syllabus.Courses = courses;
         }
-        
+
         return syllabuses;
     }
 
     public async Task<List<Syllabus>> GetByGradeLevelAsync(string gradeLevel)
     {
         var syllabuses = await _syllabusDao.GetByGradeLevelAsync(gradeLevel);
-        
+
         // Populate courses for each syllabus
         foreach (var syllabus in syllabuses)
         {
             var courses = await _courseDao.GetBySyllabusIdAsync(syllabus.SyllabusId);
             syllabus.Courses = courses;
         }
-        
+
         return syllabuses;
     }
 
     public async Task<List<Syllabus>> GetByStatusAsync(string status)
     {
         var syllabuses = await _syllabusDao.GetByStatusAsync(status);
-        
+
         // Populate courses for each syllabus
         foreach (var syllabus in syllabuses)
         {
             var courses = await _courseDao.GetBySyllabusIdAsync(syllabus.SyllabusId);
             syllabus.Courses = courses;
         }
-        
+
         return syllabuses;
     }
 
