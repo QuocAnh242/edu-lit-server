@@ -60,10 +60,37 @@ namespace AssessmentService.Application.Features.GradingFeedback.CalculateGradin
                 var assessmentAnswers = await _unitOfWork.AssessmentAnswerRepository
                     .GetAllByAsync(a => a.AttemptsId == command.AttemptId);
 
-                // 5. Tính toán điểm
-                var correctCount = assessmentAnswers.Count(a => a.IsCorrect);
-                var wrongCount = assessmentAnswers.Count(a => !a.IsCorrect);
-                var unansweredCount = totalQuestions - assessmentAnswers.Count;
+                // 5. Group answers by question to avoid counting duplicates
+                // For each question, check if it has at least one correct answer
+                var answersByQuestion = assessmentAnswers
+                    .GroupBy(a => a.AssessmentQuestionId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Count correct and wrong questions (not answers)
+                // A question is correct if it has at least one correct answer
+                // A question is wrong if it has answers but none are correct
+                var answeredQuestionIds = answersByQuestion.Keys.ToHashSet();
+                var correctQuestionCount = 0;
+                var wrongQuestionCount = 0;
+
+                foreach (var questionId in answeredQuestionIds)
+                {
+                    var questionAnswers = answersByQuestion[questionId];
+                    // If at least one answer is correct, the question is correct
+                    if (questionAnswers.Any(a => a.IsCorrect))
+                    {
+                        correctQuestionCount++;
+                    }
+                    else
+                    {
+                        // Has answers but none are correct
+                        wrongQuestionCount++;
+                    }
+                }
+
+                var unansweredCount = totalQuestions - answeredQuestionIds.Count;
+                var correctCount = correctQuestionCount;
+                var wrongCount = wrongQuestionCount;
 
                 // Tính phần trăm trên tổng số câu (câu chưa trả lời được tính là sai)
                 var correctPercentage = Math.Round((decimal)correctCount / totalQuestions * 100, 2);
