@@ -241,6 +241,19 @@
     },
 
     // === ASSESSMENT QUESTION ===
+    // Specific route for bulk (must come before {everything})
+    {
+      "DownstreamPathTemplate": "/api/v1/AssessmentQuestion/bulk",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "assessment-service",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/api/v1/assessmentquestion/bulk",
+      "UpstreamHttpMethod": [ "POST", "OPTIONS" ]
+    },
     // Specific route for assessment/{assessmentId} (must come before {everything})
     {
       "DownstreamPathTemplate": "/api/v1/assessmentquestion/assessment/{everything}",
