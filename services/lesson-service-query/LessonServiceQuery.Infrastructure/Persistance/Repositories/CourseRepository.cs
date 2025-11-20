@@ -41,6 +41,20 @@ public class CourseRepository : ICourseRepository
         return courses;
     }
 
+    public async Task<List<Course>> GetAllAsync()
+    {
+        var courses = await _courseDao.GetAllAsync();
+        
+        // Populate sessions for each course
+        foreach (var course in courses)
+        {
+            var sessions = await _sessionDao.GetByCourseIdAsync(course.CourseId);
+            course.Sessions = sessions;
+        }
+        
+        return courses;
+    }
+
     public Task<Course> CreateAsync(Course course)
     {
         // Note: Repository pattern doesn't have SyllabusId context
