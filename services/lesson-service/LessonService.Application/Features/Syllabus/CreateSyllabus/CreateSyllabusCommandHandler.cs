@@ -4,6 +4,7 @@ using LessonService.Application.Abstractions.Messaging;
 using LessonService.Domain.Commons;
 using LessonService.Domain.Entities;
 using LessonService.Domain.Interfaces;
+using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
 namespace LessonService.Application.Features.Syllabus.CreateSyllabus
@@ -33,6 +34,17 @@ namespace LessonService.Application.Features.Syllabus.CreateSyllabus
                     .Select(e => new Error("Syllabus.Create.Validation", e.ErrorMessage))
                     .ToList();
                 return ApiResponse<Guid>.FailureResponse(errors.First().Message, 400);
+            }
+
+            var duplicateExists = await _unitOfWork.SyllabusRepository.ExistsAsync(
+                s => s.AcademicYear == syllabusCommand.AcademicYear &&
+                     s.Semester == syllabusCommand.Semester);
+
+            if (duplicateExists)
+            {
+                return ApiResponse<Guid>.FailureResponse(
+                    $"Syllabus for {syllabusCommand.AcademicYear} - {syllabusCommand.Semester} already exists.",
+                    StatusCodes.Status409Conflict);
             }
 
             var createdSyllabus = _mapper.Map<Domain.Entities.Syllabus>(syllabusCommand);

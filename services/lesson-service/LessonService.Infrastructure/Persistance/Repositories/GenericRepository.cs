@@ -37,6 +37,11 @@ namespace LessonService.Infrastructure.Persistance.Repositories
             return await _genericDAO.GetPagedAsync(pageIndex, pageSize, filter);
         }
 
+        public async Task<bool> ExistsAsync(System.Linq.Expressions.Expression<Func<T, bool>> predicate)
+        {
+            return await _genericDAO.ExistsAsync(predicate);
+        }
+
         public void Remove(T entity)
         {
             _genericDAO.Remove(entity);

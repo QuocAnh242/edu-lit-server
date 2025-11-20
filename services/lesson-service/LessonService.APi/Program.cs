@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using LessonService.Api.HostedServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,50 +113,9 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+builder.Services.AddHostedService<DatabaseMigratorHostedService>();
 
 var app = builder.Build();
-
-// Apply database migrations automatically on startup
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    
-    try
-    {
-        var context = services.GetRequiredService<LessonService.Infrastructure.Persistance.DBContext.LessonDbContext>();
-        
-        logger.LogInformation("Checking database connection...");
-        
-        // Test connection first
-        if (context.Database.CanConnect())
-        {
-            logger.LogInformation("✅ Database connection successful");
-            logger.LogInformation("Applying database migrations...");
-            context.Database.Migrate();
-            logger.LogInformation("✅ Database migrations applied successfully");
-        }
-        else
-        {
-            logger.LogWarning("⚠️  Cannot connect to database. Migrations skipped.");
-            logger.LogWarning("Make sure PostgreSQL is running:");
-            logger.LogWarning("  - Local: docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=lesson_db --name postgres postgres:16");
-            logger.LogWarning("  - Or: docker-compose up -d postgres_lesson");
-        }
-    }
-    catch (System.Net.Sockets.SocketException ex)
-    {
-        logger.LogWarning(ex, "⚠️  Database host not reachable. Check your connection string:");
-        logger.LogWarning("  - Development: Host should be 'localhost' (check appsettings.Development.json)");
-        logger.LogWarning("  - Docker: Host should be 'postgres_lesson' (check appsettings.json)");
-        logger.LogWarning("Application will start without migrations.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "❌ An error occurred while applying migrations");
-        logger.LogWarning("Application will start without migrations.");
-    }
-}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -71,6 +71,11 @@ namespace LessonService.Infrastructure.Persistance.DAOs
             };
         }
 
+        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbset.AsNoTracking().AnyAsync(predicate);
+        }
+
         public void Remove(T entity)
         {
             // if (entity is ISoftDeletable softDeletableEntity)

@@ -1,20 +1,56 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using LessonService.Infrastructure.Persistance.DBContext;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-#nullable disable
+namespace LessonService.Api.HostedServices;
 
-namespace LessonService.Infrastructure.Persistance.Migrations
+public sealed class DatabaseMigratorHostedService : BackgroundService
 {
-    /// <inheritdoc />
-    public partial class FixSyllabus : Migration
+    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<DatabaseMigratorHostedService> _logger;
+
+    public DatabaseMigratorHostedService(
+        IServiceProvider serviceProvider,
+        ILogger<DatabaseMigratorHostedService> logger)
     {
-        /// <inheritdoc />
-        protected override void Up(MigrationBuilder migrationBuilder)
+        _serviceProvider = serviceProvider;
+        _logger = logger;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var delaySeconds = 5;
+
+        while (!stoppingToken.IsCancellationRequested)
         {
-            // Ensure syllabus table exists for environments where the baseline SQL scripts were not executed
-            migrationBuilder.Sql(@"
+            try
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<LessonDbContext>();
+
+                _logger.LogInformation("Applying LessonService migrations...");
+                await context.Database.MigrateAsync(stoppingToken);
+                _logger.LogInformation("LessonService migrations completed.");
+
+                await EnsureCoreTablesAsync(context, stoppingToken);
+
+                break;
+            }
+            catch (Exception ex) when (!stoppingToken.IsCancellationRequested)
+            {
+                _logger.LogError(ex, "Database migration failed. Retrying in {Delay}s...", delaySeconds);
+                await Task.Delay(TimeSpan.FromSeconds(delaySeconds), stoppingToken);
+                delaySeconds = Math.Min(delaySeconds * 2, 60);
+            }
+        }
+    }
+
+    private async Task EnsureCoreTablesAsync(LessonDbContext context, CancellationToken cancellationToken)
+    {
+        const string ensureTablesSql = @"
 DO $$
 BEGIN
-    -- SYLLABUS TABLE --------------------------------------------------------
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'syllabus'
@@ -30,30 +66,11 @@ BEGIN
             created_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'unique_program_per_semester'
-    ) THEN
         CREATE UNIQUE INDEX unique_program_per_semester ON public.syllabus (academic_year, semester);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_syllabus_owner_id'
-    ) THEN
         CREATE INDEX idx_syllabus_owner_id ON public.syllabus (owner_id);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_syllabus_is_active'
-    ) THEN
         CREATE INDEX idx_syllabus_is_active ON public.syllabus (is_active);
     END IF;
 
-    -- COURSES TABLE ---------------------------------------------------------
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'courses'
@@ -68,23 +85,10 @@ BEGIN
             updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_course_syllabus FOREIGN KEY (syllabus_id) REFERENCES public.syllabus (id) ON DELETE CASCADE
         );
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_courses_syllabus_id'
-    ) THEN
         CREATE INDEX idx_courses_syllabus_id ON public.courses (syllabus_id);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'unique_course_in_syllabus'
-    ) THEN
         CREATE UNIQUE INDEX unique_course_in_syllabus ON public.courses (syllabus_id, course_code);
     END IF;
 
-    -- SESSIONS TABLE --------------------------------------------------------
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'sessions'
@@ -100,23 +104,10 @@ BEGIN
             updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_sessions_course FOREIGN KEY (course_id) REFERENCES public.courses (id) ON DELETE CASCADE
         );
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_sessions_course_id'
-    ) THEN
         CREATE INDEX idx_sessions_course_id ON public.sessions (course_id);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_sessions_position'
-    ) THEN
         CREATE INDEX idx_sessions_position ON public.sessions (course_id, position);
     END IF;
 
-    -- LESSON_CONTEXT TABLE --------------------------------------------------
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'lesson_context'
@@ -134,23 +125,10 @@ BEGIN
             CONSTRAINT fk_lesson_session FOREIGN KEY (session_id) REFERENCES public.sessions (id) ON DELETE CASCADE,
             CONSTRAINT fk_lesson_parent FOREIGN KEY (parent_lesson_id) REFERENCES public.lesson_context (id) ON DELETE CASCADE
         );
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_lesson_context_session_id'
-    ) THEN
         CREATE INDEX idx_lesson_context_session_id ON public.lesson_context (session_id);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_lesson_context_parent_id'
-    ) THEN
         CREATE INDEX idx_lesson_context_parent_id ON public.lesson_context (parent_lesson_id);
     END IF;
 
-    -- ACTIVITY TABLE --------------------------------------------------------
     IF NOT EXISTS (
         SELECT 1 FROM information_schema.tables 
         WHERE table_schema = 'public' AND table_name = 'activity'
@@ -169,67 +147,22 @@ BEGIN
             updated_at timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
             CONSTRAINT fk_activity_session FOREIGN KEY (session_id) REFERENCES public.sessions (id) ON DELETE CASCADE
         );
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_activity_session_id'
-    ) THEN
         CREATE INDEX idx_activity_session_id ON public.activity (session_id);
-    END IF;
-
-    IF NOT EXISTS (
-        SELECT 1 FROM pg_indexes 
-        WHERE schemaname = 'public' AND indexname = 'idx_activity_type'
-    ) THEN
         CREATE INDEX idx_activity_type ON public.activity (activity_type);
     END IF;
-END $$;
-");
-        }
+END $$;";
 
-        /// <inheritdoc />
-        protected override void Down(MigrationBuilder migrationBuilder)
+        try
         {
-            migrationBuilder.Sql(@"
-DO $$
-BEGIN
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'public' AND table_name = 'activity'
-    ) THEN
-        DROP TABLE public.activity;
-    END IF;
-
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'public' AND table_name = 'lesson_context'
-    ) THEN
-        DROP TABLE public.lesson_context;
-    END IF;
-
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'public' AND table_name = 'sessions'
-    ) THEN
-        DROP TABLE public.sessions;
-    END IF;
-
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'public' AND table_name = 'courses'
-    ) THEN
-        DROP TABLE public.courses;
-    END IF;
-
-    IF EXISTS (
-        SELECT 1 FROM information_schema.tables 
-        WHERE table_schema = 'public' AND table_name = 'syllabus'
-    ) THEN
-        DROP TABLE public.syllabus;
-    END IF;
-END $$;
-");
+            _logger.LogInformation("Ensuring core lesson tables exist...");
+            await context.Database.ExecuteSqlRawAsync(ensureTablesSql, cancellationToken);
+            _logger.LogInformation("Core lesson tables verified.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to ensure core lesson tables.");
+            throw;
         }
     }
 }
+

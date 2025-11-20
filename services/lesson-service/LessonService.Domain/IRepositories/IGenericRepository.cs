@@ -28,6 +28,8 @@ namespace LessonService.Domain.Interfaces
         /// <returns>Kết quả phân trang chứa danh sách các mục và thông tin phân trang.</returns>
         Task<PagedResult<T>> GetPagedAsync(int pageIndex, int pageSize, Expression<Func<T, bool>>? filter = null);
 
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+
         /// <summary>
         /// Thêm một đối tượng mới.
         /// </summary>
