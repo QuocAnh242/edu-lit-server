@@ -88,7 +88,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "TEACHER,ADMIN")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<bool>>> UpdateAssignmentAttempt(int id, [FromBody] UpdateAssignmentAttemptCommand command)
         {
             if (id != command.AttemptsId)
@@ -104,7 +104,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "TEACHER,ADMIN")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<bool>>> DeleteAssignmentAttempt(int id)
         {
             var result = await _delete.Handle(new DeleteAssignmentAttemptCommand(id), CancellationToken.None);

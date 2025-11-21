@@ -9,7 +9,7 @@ namespace LessonServiceQuery.Api.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Roles = "ADMIN,TEACHER")]
+[Authorize]
 public class SyllabusesController : ControllerBase
 {
     private readonly IQueryDispatcher _queryDispatcher;
@@ -18,6 +18,7 @@ public class SyllabusesController : ControllerBase
         _queryDispatcher = queryDispatcher;
     }
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN,TEACHER,STUDENT")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _queryDispatcher.Query(new GetSyllabusByIdQuery(id), cancellationToken);
@@ -26,12 +27,14 @@ public class SyllabusesController : ControllerBase
         return Ok(result);
     }
     [HttpGet]
+    [Authorize(Roles = "ADMIN,TEACHER,STUDENT")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
     {
         var result = await _queryDispatcher.Query(new GetAllSyllabusesQuery(), cancellationToken);
         return Ok(result);
     }
     [HttpGet("by-subject/{subject}")]
+    [Authorize(Roles = "ADMIN,TEACHER")]
     public async Task<IActionResult> GetBySubject(string subject, CancellationToken cancellationToken)
     {
         var result = await _queryDispatcher.Query(new GetSyllabusesBySubjectQuery(subject), cancellationToken);

@@ -64,7 +64,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
-        [Authorize(Roles = "TEACHER,ADMIN")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet("assessment/{assessmentId}")]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentQuestionByAssessmentIdResponse>>>> GetAllAssessmentQuestionsByAssessmentId(int assessmentId)
         {
