@@ -7,9 +7,8 @@ namespace AssessmentService.Infrastructure.Persistance.DBContext;
 public partial class AssessmentDbContext : DbContext
 {
     private readonly IConfiguration _configuration;
-    public AssessmentDbContext()
-    {
-    }
+
+    public AssessmentDbContext() { }
 
     public AssessmentDbContext(DbContextOptions<AssessmentDbContext> options, IConfiguration configuration)
         : base(options)
@@ -18,13 +17,9 @@ public partial class AssessmentDbContext : DbContext
     }
 
     public virtual DbSet<Assessment> Assessments { get; set; }
-
     public virtual DbSet<AssessmentAnswer> AssessmentAnswers { get; set; }
-
     public virtual DbSet<AssessmentQuestion> AssessmentQuestions { get; set; }
-
     public virtual DbSet<AssignmentAttempt> AssignmentAttempts { get; set; }
-
     public virtual DbSet<GradingFeedback> GradingFeedbacks { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -41,14 +36,12 @@ public partial class AssessmentDbContext : DbContext
 
             if (string.IsNullOrWhiteSpace(connectionString))
             {
-                throw new InvalidOperationException("Connection string 'MySqlConnection' not found. Set it in appsettings.json or environment variables.");
+                throw new InvalidOperationException("Connection string 'MySqlConnection' not found.");
             }
 
-            // Use Pomelo MySQL provider; AutoDetect will infer server version from the connection string
             optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
         }
     }
-        //=> optionsBuilder.UseMySql("server=localhost;port=3306;database=edulit_assessment_db;user=developer;password=devpass", Microsoft.EntityFrameworkCore.ServerVersion.Parse("5.7.43-mysql"));
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -56,10 +49,10 @@ public partial class AssessmentDbContext : DbContext
             .UseCollation("latin1_swedish_ci")
             .HasCharSet("latin1");
 
+        // ✅ Assessment - GIỮ NGUYÊN
         modelBuilder.Entity<Assessment>(entity =>
         {
             entity.HasKey(e => e.AssessmentId).HasName("PRIMARY");
-
             entity.ToTable("assessments");
 
             entity.Property(e => e.AssessmentId)
@@ -98,15 +91,15 @@ public partial class AssessmentDbContext : DbContext
                 .HasColumnName("updated_at");
         });
 
+        // ✅ AssessmentAnswer - ĐÃ SỬA
         modelBuilder.Entity<AssessmentAnswer>(entity =>
         {
             entity.HasKey(e => e.AnswerId).HasName("PRIMARY");
-
             entity.ToTable("assessment_answer");
 
             entity.HasIndex(e => e.AssessmentQuestionId, "assessment_question_id");
-
             entity.HasIndex(e => e.AttemptsId, "attempts_id");
+            entity.HasIndex(e => e.SelectedOptionId, "idx_selected_option");
 
             entity.Property(e => e.AnswerId)
                 .HasColumnType("int(11)")
@@ -117,33 +110,35 @@ public partial class AssessmentDbContext : DbContext
             entity.Property(e => e.AttemptsId)
                 .HasColumnType("int(11)")
                 .HasColumnName("attempts_id");
+            entity.Property(e => e.SelectedOptionId)
+                .HasMaxLength(36)
+                .IsRequired()
+                .HasComment("Reference to QuestionOption in Question Service")
+                .HasColumnName("selected_option_id");
+            entity.Property(e => e.IsCorrect)
+                .HasColumnName("is_correct");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("created_at");
-            entity.Property(e => e.IsCorrect).HasColumnName("is_correct");
-            entity.Property(e => e.SelectedAnswer)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("A, B, C, D mà student chọn")
-                .HasColumnName("selected_answer");
 
             entity.HasOne(d => d.AssessmentQuestion).WithMany(p => p.AssessmentAnswers)
                 .HasForeignKey(d => d.AssessmentQuestionId)
                 .HasConstraintName("assessment_answer_ibfk_1");
-
             entity.HasOne(d => d.Attempts).WithMany(p => p.AssessmentAnswers)
                 .HasForeignKey(d => d.AttemptsId)
                 .HasConstraintName("assessment_answer_ibfk_2");
         });
 
+        // ✅ AssessmentQuestion - ĐÃ SỬA
         modelBuilder.Entity<AssessmentQuestion>(entity =>
         {
             entity.HasKey(e => e.AssessmentQuestionId).HasName("PRIMARY");
-
             entity.ToTable("assessment_question");
 
             entity.HasIndex(e => e.AssessmentId, "assessment_id");
+            entity.HasIndex(e => new { e.AssessmentId, e.QuestionId }, "idx_assessment_question")
+                .IsUnique();
 
             entity.Property(e => e.AssessmentQuestionId)
                 .HasColumnType("int(11)")
@@ -151,24 +146,18 @@ public partial class AssessmentDbContext : DbContext
             entity.Property(e => e.AssessmentId)
                 .HasColumnType("int(11)")
                 .HasColumnName("assessment_id");
-            entity.Property(e => e.CorrectAnswer)
-                .HasMaxLength(1)
-                .IsFixedLength()
-                .HasComment("A, B, C, D")
-                .HasColumnName("correct_answer");
+            entity.Property(e => e.QuestionId)
+                .HasMaxLength(36)
+                .IsRequired()
+                .HasComment("Reference to Question Service")
+                .HasColumnName("question_id");
+            entity.Property(e => e.IsActive)
+                .HasDefaultValueSql("'1'")
+                .HasColumnName("is_active");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
                 .HasColumnType("timestamp")
                 .HasColumnName("created_at");
-            entity.Property(e => e.IsActive)
-                .HasDefaultValueSql("'1'")
-                .HasColumnName("is_active");
-            entity.Property(e => e.OrderNum)
-                .HasColumnType("int(11)")
-                .HasColumnName("order_num");
-            entity.Property(e => e.QuestionId)
-                .HasMaxLength(255)
-                .HasColumnName("question_id");
             entity.Property(e => e.UpdatedAt)
                 .ValueGeneratedOnAddOrUpdate()
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -180,10 +169,10 @@ public partial class AssessmentDbContext : DbContext
                 .HasConstraintName("assessment_question_ibfk_1");
         });
 
+        // ✅ AssignmentAttempt - GIỮ NGUYÊN
         modelBuilder.Entity<AssignmentAttempt>(entity =>
         {
             entity.HasKey(e => e.AttemptsId).HasName("PRIMARY");
-
             entity.ToTable("assignment_attempts");
 
             entity.HasIndex(e => e.AssessmentId, "assessment_id");
@@ -219,10 +208,10 @@ public partial class AssessmentDbContext : DbContext
                 .HasConstraintName("assignment_attempts_ibfk_1");
         });
 
+        // ✅ GradingFeedback - GIỮ NGUYÊN
         modelBuilder.Entity<GradingFeedback>(entity =>
         {
             entity.HasKey(e => e.FeedbackId).HasName("PRIMARY");
-
             entity.ToTable("grading_feedback");
 
             entity.HasIndex(e => e.AttemptsId, "attempts_id").IsUnique();

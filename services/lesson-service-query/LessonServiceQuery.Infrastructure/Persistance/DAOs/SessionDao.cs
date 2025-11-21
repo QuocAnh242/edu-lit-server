@@ -3,116 +3,71 @@ using LessonServiceQuery.Domain.IDAOs;
 using LessonServiceQuery.Infrastructure.Configuration;
 using LessonServiceQuery.Infrastructure.Services;
 using Microsoft.Extensions.Options;
-using MongoDB.Bson;
 using MongoDB.Driver;
+
 namespace LessonServiceQuery.Infrastructure.Persistance.DAOs;
+
 public class SessionDao : ISessionDao
 {
-    private readonly IMongoCollection<Syllabus> _syllabuses;
+    private readonly IMongoCollection<Session> _sessions;
+    
     public SessionDao(IMongoDbContext context, IOptions<MongoDbSettings> settings)
     {
-        _syllabuses = context.GetCollection<Syllabus>(settings.Value.SyllabusesCollectionName);
+        _sessions = context.GetCollection<Session>(settings.Value.SessionsCollectionName);
     }
+    
     public async Task<Session?> GetByIdAsync(Guid sessionId)
     {
-        var syllabus = await _syllabuses
-            .Find(s => s.IsActive && s.Courses.Any(c => c.IsActive && c.Sessions.Any(sess => sess.SessionId == sessionId && sess.IsActive)))
-            .FirstOrDefaultAsync();
-        if (syllabus == null) return null;
-        foreach (var course in syllabus.Courses.Where(c => c.IsActive))
-        {
-            var session = course.Sessions.FirstOrDefault(s => s.SessionId == sessionId && s.IsActive);
-            if (session != null) return session;
-        }
-        return null;
+        return await _sessions.Find(x => x.SessionId == sessionId && x.IsActive).FirstOrDefaultAsync();
     }
+    
     public async Task<List<Session>> GetByCourseIdAsync(Guid courseId)
     {
-        var syllabus = await _syllabuses
-            .Find(s => s.IsActive && s.Courses.Any(c => c.CourseId == courseId && c.IsActive))
-            .FirstOrDefaultAsync();
-        if (syllabus == null) return new List<Session>();
-        var course = syllabus.Courses.FirstOrDefault(c => c.CourseId == courseId && c.IsActive);
-        return course?.Sessions.Where(s => s.IsActive).ToList() ?? new List<Session>();
+        return await _sessions.Find(x => x.CourseId == courseId && x.IsActive)
+            .SortBy(x => x.Position)
+            .ToListAsync();
     }
+    
     public async Task<List<Session>> GetByLessonIdAsync(Guid lessonId)
     {
-        var syllabuses = await _syllabuses
-            .Find(s => s.IsActive && s.Courses.Any(c => c.IsActive && c.Sessions.Any(sess => sess.LessonId == lessonId && sess.IsActive)))
-            .ToListAsync();
-        var sessions = new List<Session>();
-        foreach (var syllabus in syllabuses)
-        {
-            foreach (var course in syllabus.Courses.Where(c => c.IsActive))
-            {
-                sessions.AddRange(course.Sessions.Where(s => s.LessonId == lessonId && s.IsActive));
-            }
-        }
-        return sessions;
+        // Note: This method may need to be updated based on your data model
+        // Since Session doesn't have LessonId directly, you might need to query Lesson collection
+        return new List<Session>();
     }
+    
     public async Task<Session> CreateAsync(Guid courseId, Session session)
     {
+        session.CourseId = courseId;
         session.CreatedAt = DateTime.UtcNow;
         session.UpdatedAt = DateTime.UtcNow;
         session.IsActive = true;
         
-        // Check if course exists in any syllabus
-        var syllabusWithCourse = await _syllabuses
-            .Find(s => s.IsActive && s.Courses.Any(c => c.CourseId == courseId && c.IsActive))
-            .FirstOrDefaultAsync();
-            
-        if (syllabusWithCourse == null)
-        {
-            throw new InvalidOperationException($"Course with ID {courseId} not found or not active");
-        }
-        
-        // Log for debugging
-        Console.WriteLine($"Found Syllabus: {syllabusWithCourse.SyllabusId}, CourseId to add: {courseId}");
-        
-        // Add the session to the course's sessions array using positional operator
-        var filter = Builders<Syllabus>.Filter.And(
-            Builders<Syllabus>.Filter.Eq(s => s.SyllabusId, syllabusWithCourse.SyllabusId),
-            Builders<Syllabus>.Filter.ElemMatch(s => s.Courses, c => c.CourseId == courseId)
-        );
-        var update = Builders<Syllabus>.Update.Push("courses.$.sessions", session);
-        
-        var result = await _syllabuses.UpdateOneAsync(filter, update);
-        
-        Console.WriteLine($"Update result - MatchedCount: {result.MatchedCount}, ModifiedCount: {result.ModifiedCount}");
-        
-        if (result.MatchedCount == 0)
-        {
-            throw new InvalidOperationException($"Failed to add Session to Course with ID {courseId}. Syllabus: {syllabusWithCourse.SyllabusId}");
-        }
-        
+        await _sessions.InsertOneAsync(session);
         return session;
     }
-    public Task<Session> UpdateAsync(Session session)
+    
+    public async Task<Session> UpdateAsync(Session session)
     {
         session.UpdatedAt = DateTime.UtcNow;
-        return Task.FromResult(session);
+        await _sessions.ReplaceOneAsync(x => x.SessionId == session.SessionId, session);
+        return session;
     }
-    public Task DeleteAsync(Guid sessionId)
+    
+    public async Task DeleteAsync(Guid sessionId)
     {
-        return Task.CompletedTask;
+        // Soft delete: set all versions of this session to IsActive = false
+        await DeactivateAllByIdAsync(sessionId);
     }
+    
     public async Task<bool> ExistsAsync(Guid sessionId)
     {
-        var count = await _syllabuses
-            .CountDocumentsAsync(s => s.Courses.Any(c => c.Sessions.Any(sess => sess.SessionId == sessionId)));
-        return count > 0;
+        return await _sessions.CountDocumentsAsync(x => x.SessionId == sessionId) > 0;
     }
 
     public async Task DeactivateAllByIdAsync(Guid sessionId)
     {
-        var filter = Builders<Syllabus>.Filter.ElemMatch(x => x.Courses, c => c.Sessions.Any(s => s.SessionId == sessionId));
-        var update = Builders<Syllabus>.Update.Set("courses.$[].sessions.$[elem].is_active", false);
-        var arrayFilters = new[] { 
-            new BsonDocumentArrayFilterDefinition<BsonDocument>(
-                new BsonDocument("elem.session_id", new BsonBinaryData(sessionId, GuidRepresentation.Standard))
-            ) 
-        };
-        var updateOptions = new UpdateOptions { ArrayFilters = arrayFilters };
-        await _syllabuses.UpdateManyAsync(filter, update, updateOptions);
+        var filter = Builders<Session>.Filter.Eq(x => x.SessionId, sessionId);
+        var update = Builders<Session>.Update.Set(x => x.IsActive, false);
+        await _sessions.UpdateManyAsync(filter, update);
     }
 }

@@ -6,6 +6,7 @@ public interface ILessonDao
 {
     Task<Lesson?> GetByIdAsync(Guid lessonId);
     Task<List<Lesson>> GetAllAsync();
+    Task<List<Lesson>> GetBySessionIdAsync(Guid sessionId);
     Task<List<Lesson>> GetByTeacherIdAsync(Guid teacherId);
     Task<List<Lesson>> GetBySubjectAsync(string subject);
     Task<List<Lesson>> GetByGradeLevelAsync(string gradeLevel);

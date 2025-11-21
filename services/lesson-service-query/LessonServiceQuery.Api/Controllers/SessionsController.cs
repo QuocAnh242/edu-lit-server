@@ -17,6 +17,7 @@ public class SessionsController : ControllerBase
         _queryDispatcher = queryDispatcher;
     }
     [HttpGet("{id:guid}")]
+    [Authorize(Roles = "ADMIN,TEACHER,STUDENT")]
     public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
     {
         var result = await _queryDispatcher.Query(new GetSessionByIdQuery(id), cancellationToken);
@@ -25,6 +26,7 @@ public class SessionsController : ControllerBase
         return Ok(result);
     }
     [HttpGet("by-course/{courseId:guid}")]
+    [Authorize(Roles = "ADMIN,TEACHER,STUDENT")]
     public async Task<IActionResult> GetByCourseId(Guid courseId, CancellationToken cancellationToken)
     {
         var result = await _queryDispatcher.Query(new GetSessionsByCourseIdQuery(courseId), cancellationToken);

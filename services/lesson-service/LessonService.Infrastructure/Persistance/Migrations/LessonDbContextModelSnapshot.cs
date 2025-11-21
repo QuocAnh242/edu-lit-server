@@ -251,6 +251,14 @@ namespace LessonService.Infrastructure.Persistance.Migrations
                         .HasDefaultValue(0)
                         .HasColumnName("retry_count");
 
+                    b.Property<string>("RoutingKey")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasDefaultValue("")
+                        .HasColumnName("routing_key");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(255)

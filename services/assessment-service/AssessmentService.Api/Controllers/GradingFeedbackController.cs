@@ -3,6 +3,7 @@ using AssessmentService.Application.Features.AssignmentAttempt.CreateAssignmentA
 using AssessmentService.Application.Features.GradingFeedback.CalculateGrading;
 using AssessmentService.Application.Features.GradingFeedback.GetGradingFeedback;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
@@ -23,6 +24,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPost("calculate")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult> CalculateGrading([FromBody] CalculateGradingCommand command)
         {
             var result = await _calculate.Handle(command, CancellationToken.None);
@@ -34,6 +36,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<GetGradingFeedbackResponse>>> GetGradingFeedback(int id)
         {
             var result = await _get.Handle(new GetGradingFeedbackQuery(id), CancellationToken.None);

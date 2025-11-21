@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace LessonServiceQuery.Domain.Entities;
 
+[BsonIgnoreExtraElements]
 public class Lesson
 {
     [BsonId]
@@ -12,26 +13,20 @@ public class Lesson
     [BsonElement("lesson_id")]
     public Guid LessonId { get; set; }
     
+    [BsonElement("session_id")]
+    public Guid SessionId { get; set; }
+    
     [BsonElement("title")]
     public string Title { get; set; } = string.Empty;
     
     [BsonElement("description")]
     public string Description { get; set; } = string.Empty;
     
-    [BsonElement("grade_level")]
-    public string GradeLevel { get; set; } = string.Empty;
-    
-    [BsonElement("subject")]
-    public string Subject { get; set; } = string.Empty;
-    
     [BsonElement("duration_minutes")]
     public int DurationMinutes { get; set; }
     
-    [BsonElement("teacher_id")]
-    public Guid TeacherId { get; set; }
-    
-    [BsonElement("lesson_contexts")]
-    public List<LessonContext> LessonContexts { get; set; } = new();
+    [BsonElement("position")]
+    public int Position { get; set; }
     
     [BsonElement("is_active")]
     public bool IsActive { get; set; } = true;
@@ -41,4 +36,12 @@ public class Lesson
     
     [BsonElement("updated_at")]
     public DateTime UpdatedAt { get; set; }
+    
+    // References to separate collections (not embedded)
+    // These will be populated when querying through DAOs
+    [BsonIgnore]
+    public List<LessonContext> LessonContexts { get; set; } = new();
+    
+    [BsonIgnore]
+    public List<Activity> Activities { get; set; } = new();
 }

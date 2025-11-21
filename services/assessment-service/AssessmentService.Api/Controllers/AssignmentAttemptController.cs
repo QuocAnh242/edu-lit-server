@@ -8,6 +8,7 @@ using AssessmentService.Application.Features.AssignmentAttempt.GetAssignmentAtte
 using AssessmentService.Application.Features.AssignmentAttempt.InviteUserToAssignmentAttempt;
 using AssessmentService.Application.Features.AssignmentAttempt.UpdateAssignmentAttempt;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
@@ -44,6 +45,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPost("invite")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult> InviteUserToAssignmentAttempt([FromBody] InviteUserToAssignmentAttemptCommand command)
         {
             var result = await _invite.Handle(command, CancellationToken.None);
@@ -56,6 +58,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<GetAssignmentAttemptByIdResponse>>> GetAssignmentAttemptById(int id)
         {
             var result = await _getById.Handle(new GetAssignmentAttemptByIdQuery(id), CancellationToken.None);
@@ -69,6 +72,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssignmentAttemptResponse>>>> GetAllAssignmentAttempts()
         {
             var result = await _getAll.Handle(new GetAllAssignmentAttemptQuery(), CancellationToken.None);
@@ -76,6 +80,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<int>>> CreateAssignmentAttempt([FromBody] CreateAssignmentAttemptCommand command)
         {
             var result = await _create.Handle(command, CancellationToken.None);
@@ -83,6 +88,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<bool>>> UpdateAssignmentAttempt(int id, [FromBody] UpdateAssignmentAttemptCommand command)
         {
             if (id != command.AttemptsId)
@@ -98,6 +104,7 @@ namespace AssessmentService.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public async Task<ActionResult<ObjectResponse<bool>>> DeleteAssignmentAttempt(int id)
         {
             var result = await _delete.Handle(new DeleteAssignmentAttemptCommand(id), CancellationToken.None);
@@ -111,6 +118,7 @@ namespace AssessmentService.Api.Controllers
 
         [HttpGet]
         [Route("health")]
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         public IActionResult HealthCheck()
         {
             return Ok("Assessment Question Service is healthy.");

@@ -2,6 +2,10 @@
 public class CourseDto
 {
     public Guid CourseId { get; set; }
+
+    // Course code (e.g., PRN111-01). This is stored in Mongo as "course_code".
+    public string CourseCode { get; set; } = string.Empty;
+
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public int OrderIndex { get; set; }

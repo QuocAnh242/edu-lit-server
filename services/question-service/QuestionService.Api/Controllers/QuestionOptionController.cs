@@ -57,6 +57,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Create([FromBody] CreateQuestionOptionCommand command)
         {
             var res = await _createCommandHandler.Handle(command, CancellationToken.None);
@@ -64,6 +65,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpPut("{id:guid}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Update(Guid id, [FromBody] CreateQuestionOptionCommand request)
         {
             var command = new UpdateQuestionOptionCommand
@@ -79,6 +81,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpDelete("{id:guid}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> Delete(Guid id)
         {
             var command = new DeleteQuestionOptionCommand(id);
@@ -87,6 +90,7 @@ namespace QuestionService.Api.Controllers
         }
 
         [HttpDelete("question/{id:guid}")]
+        [Authorize(Roles = "TEACHER,ADMIN")]
         public async Task<IActionResult> DeleteByQuestionId(Guid id)
         {
             var command = new DeleteQuestionOptionsByQuestionIdCommand(id);

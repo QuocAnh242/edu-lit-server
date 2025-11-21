@@ -1,11 +1,13 @@
 ﻿using AssessmentService.Application.Abstractions.Messaging;
 using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestions;
 using AssessmentService.Application.Features.AssessmentQuestion.DeleteAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestionByAssessmentId;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAssessmentQuestionById;
 using AssessmentService.Application.Features.AssessmentQuestion.UpdateAssessmentQuestion;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
@@ -15,13 +17,16 @@ namespace AssessmentService.Api.Controllers
     public class AssessmentQuestionController : Controller
     {
         private readonly ICommandHandler<CreateAssessmentQuestionCommand, int> _createAssessmentQuestionCommandHandler;
+        private readonly ICommandHandler<CreateAssessmentQuestionsCommand, List<int>> _createAssessmentQuestionsCommandHandler;
         private readonly ICommandHandler<UpdateAssessmentQuestionCommand, bool> _updateAssessmentQuestionCommandHandler;
         private readonly ICommandHandler<DeleteAssessmentQuestionCommand, bool> _deleteAssessmentQuestionCommandHandler;
         private readonly IQueryHandler<GetAssessmentQuestionByIdQuery, GetAssessmentQuestionByIdResponse> _getAssessmentQuestionByIdQueryHandler;
         private readonly IQueryHandler<GetAllAssessmentQuestionQuery, List<GetAllAssessmentQuestionResponse>> _getAllAssessmentQuestionQueryHandler;
         private readonly IQueryHandler<GetAllAssessmentQuestionByAssessmentIdQuery, List<GetAllAssessmentQuestionByAssessmentIdResponse>> _getAllAssessmentQuestionByAssessmentIdQueryHandler;
 
-        public AssessmentQuestionController(ICommandHandler<CreateAssessmentQuestionCommand, int> createAssessmentQuestionCommandHandler,
+        public AssessmentQuestionController(
+            ICommandHandler<CreateAssessmentQuestionCommand, int> createAssessmentQuestionCommandHandler,
+            ICommandHandler<CreateAssessmentQuestionsCommand, List<int>> createAssessmentQuestionsCommandHandler,
             ICommandHandler<UpdateAssessmentQuestionCommand, bool> updateAssessmentQuestionCommandHandler,
             ICommandHandler<DeleteAssessmentQuestionCommand, bool> deleteAssessmentQuestionCommandHandler,
             IQueryHandler<GetAssessmentQuestionByIdQuery, GetAssessmentQuestionByIdResponse> getAssessmentQuestionByIdQueryHandler,
@@ -29,6 +34,7 @@ namespace AssessmentService.Api.Controllers
             IQueryHandler<GetAllAssessmentQuestionByAssessmentIdQuery, List<GetAllAssessmentQuestionByAssessmentIdResponse>> getAllAssessmentQuestionByAssessmentIdQueryHandler)
         {
             _createAssessmentQuestionCommandHandler = createAssessmentQuestionCommandHandler;
+            _createAssessmentQuestionsCommandHandler = createAssessmentQuestionsCommandHandler;
             _updateAssessmentQuestionCommandHandler = updateAssessmentQuestionCommandHandler;
             _deleteAssessmentQuestionCommandHandler = deleteAssessmentQuestionCommandHandler;
             _getAssessmentQuestionByIdQueryHandler = getAssessmentQuestionByIdQueryHandler;
@@ -36,6 +42,7 @@ namespace AssessmentService.Api.Controllers
             _getAllAssessmentQuestionByAssessmentIdQueryHandler = getAllAssessmentQuestionByAssessmentIdQueryHandler;
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet("{id}")]
         public async Task<ActionResult<ObjectResponse<GetAssessmentQuestionByIdResponse>>> GetAssessmentQuestionById(int id)
         {
@@ -49,6 +56,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentQuestionResponse>>>> GetAllAssessmentQuestions()
         {
@@ -56,12 +64,15 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN,STUDENT")]
         [HttpGet("assessment/{assessmentId}")]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentQuestionByAssessmentIdResponse>>>> GetAllAssessmentQuestionsByAssessmentId(int assessmentId)
         {
             var result = await _getAllAssessmentQuestionByAssessmentIdQueryHandler.Handle(new GetAllAssessmentQuestionByAssessmentIdQuery(assessmentId), CancellationToken.None);
             return Ok(result);
         }
+
+        [Authorize(Roles = "TEACHER,ADMIN")]
 
         [HttpPost]
         public async Task<ActionResult<ObjectResponse<int>>> CreateAssessmentQuestion([FromBody] CreateAssessmentQuestionCommand command)
@@ -70,6 +81,19 @@ namespace AssessmentService.Api.Controllers
             return CreatedAtAction(nameof(GetAssessmentQuestionById), new { id = result.Data }, result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
+        [HttpPost("bulk")]
+        public async Task<ActionResult<ObjectResponse<List<int>>>> CreateAssessmentQuestions([FromBody] CreateAssessmentQuestionsCommand command)
+        {
+            var result = await _createAssessmentQuestionsCommandHandler.Handle(command, CancellationToken.None);
+            if (result.Data != null && result.Data.Any())
+            {
+                return CreatedAtAction(nameof(GetAllAssessmentQuestionsByAssessmentId), new { assessmentId = command.AssessmentId }, result);
+            }
+            return BadRequest(result);
+        }
+
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpPut("{id}")]
         public async Task<ActionResult<ObjectResponse<bool>>> UpdateAssessmentQuestion(int id, [FromBody] UpdateAssessmentQuestionCommand command)
         {
@@ -81,6 +105,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ObjectResponse<bool>>> DeleteAssessmentQuestion(int id)
         {
@@ -88,6 +113,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpGet]
         [Route("health")]
         public IActionResult HealthCheck()

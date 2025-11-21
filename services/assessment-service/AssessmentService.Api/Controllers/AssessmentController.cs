@@ -5,6 +5,7 @@ using AssessmentService.Application.Features.Assessment.GetAllAssessment;
 using AssessmentService.Application.Features.Assessment.GetAssessmentById;
 using AssessmentService.Application.Features.Assessment.UpdateAssessment;
 using AssessmentService.Domain.Commons;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AssessmentService.Api.Controllers
@@ -29,6 +30,8 @@ namespace AssessmentService.Api.Controllers
         }
 
         // Stub GET action so CreatedAtAction has a target. Implement retrieval logic later.
+        [Authorize(Roles = "STUDENT,TEACHER,ADMIN")]
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ObjectResponse<GetAssessmentByIdResponse>>> GetAssessmentById(int id)
         {
@@ -42,6 +45,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpPost]
         public async Task<ActionResult<ObjectResponse<int>>> CreateAssessment([FromBody] CreateAssessmentCommand command)
         {
@@ -60,6 +64,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "STUDENT,TEACHER,ADMIN")]
         [HttpGet]
         public async Task<ActionResult<ObjectResponse<List<GetAllAssessmentResponse>>>> GetAllAssessments()
         {
@@ -67,6 +72,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "TEACHER,ADMIN")]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ObjectResponse<bool>>> DeleteAssessment(int id)
         {
@@ -74,6 +80,7 @@ namespace AssessmentService.Api.Controllers
             return Ok(result);
         }
 
+        [Authorize(Roles = "STUDENT,TEACHER,ADMIN")]
         [HttpGet]
         [Route("health")]
         public IActionResult HealthCheck()

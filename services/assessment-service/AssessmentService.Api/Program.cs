@@ -26,7 +26,11 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AssessmentDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("MySqlConnection"),
-        new MySqlServerVersion(new Version(5, 7, 43))
+        new MySqlServerVersion(new Version(5, 7, 43)),
+        mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null)
     ));
 
 // Configure Email Options
@@ -34,6 +38,7 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 
@@ -61,7 +66,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ClockSkew = TimeSpan.Zero,
 
             // role claim type
-            RoleClaimType = ClaimTypes.Role
+            RoleClaimType = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+
         };
     });
 
@@ -76,11 +82,11 @@ builder.Services.AddSwaggerGen(options =>
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
-        Description = "Please enter a valid token",
+        Description = "Enter JWT token only (no 'Bearer' prefix required)",
         Name = "Authorization",
         Type = SecuritySchemeType.Http,
         BearerFormat = "JWT",
-        Scheme = "Bearer"
+        Scheme = "bearer"
     });
 
     // 2. Security Scheme to all endpoint need

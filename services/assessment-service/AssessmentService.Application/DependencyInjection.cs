@@ -5,12 +5,14 @@ using AssessmentService.Application.Features.Assessment.GetAllAssessment;
 using AssessmentService.Application.Features.Assessment.GetAssessmentById;
 using AssessmentService.Application.Features.Assessment.UpdateAssessment;
 using AssessmentService.Application.Features.AssessmentAnswer.CreateAssessmentAnswer;
+using AssessmentService.Application.Features.AssessmentAnswer.CreateAssessmentAnswers;
 using AssessmentService.Application.Features.AssessmentAnswer.DeleteAssessmentAnswer;
 using AssessmentService.Application.Features.AssessmentAnswer.GetAllAssessmentAnswer;
 using AssessmentService.Application.Features.AssessmentAnswer.GetAllAssessmentAnswerByAttemptId;
 using AssessmentService.Application.Features.AssessmentAnswer.GetAssessmentAnswerById;
 using AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessmentAnswer;
 using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestion;
+using AssessmentService.Application.Features.AssessmentQuestion.CreateAssessmentQuestions;
 using AssessmentService.Application.Features.AssessmentQuestion.DeleteAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestion;
 using AssessmentService.Application.Features.AssessmentQuestion.GetAllAssessmentQuestionByAssessmentId;
@@ -43,10 +45,12 @@ namespace AssessmentService.Application
             services.AddScoped<ICommandHandler<DeleteAssessmentCommand, bool>, DeleteAssessmentCommandHandler>();
 
             services.AddScoped<ICommandHandler<CreateAssessmentQuestionCommand, int>, CreateAssessmentQuestionCommandHandler>();
+            services.AddScoped<ICommandHandler<CreateAssessmentQuestionsCommand, List<int>>, CreateAssessmentQuestionsCommandHandler>();
             services.AddScoped<ICommandHandler<UpdateAssessmentQuestionCommand, bool>, UpdateAssessmentQuestionCommandHandler>();
             services.AddScoped<ICommandHandler<DeleteAssessmentQuestionCommand, bool>, DeleteAssessmentQuestionCommandHandler>();
 
             services.AddScoped<ICommandHandler<CreateAssessmentAnswerCommand, int>, CreateAssessmentAnswerCommandHandler>();
+            services.AddScoped<ICommandHandler<CreateAssessmentAnswersCommand, List<int>>, CreateAssessmentAnswersCommandHandler>();
             services.AddScoped<ICommandHandler<UpdateAssessmentAnswerCommand, bool>, UpdateAssessmentAnswerCommandHandler>();
             services.AddScoped<ICommandHandler<DeleteAssessmentAnswerCommand, bool>, DeleteAssessmentAnswerCommandHandler>();
 

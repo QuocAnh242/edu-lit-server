@@ -39,24 +39,64 @@ namespace AssessmentService.Application.Features.GradingFeedback.CalculateGradin
                     return ObjectResponse<CalculateGradingResponse>.Response("404", "Attempt not completed yet", null);
                 }
 
-                // 2. Lấy tất cả answers của attempt này
+                // 2. Lấy assessment để biết tổng số câu hỏi
+                var assessment = await _unitOfWork.AssessmentRepository.GetByIdAsync(attempt.AssessmentId);
+                if (assessment == null)
+                {
+                    return ObjectResponse<CalculateGradingResponse>.Response("404", "Assessment not found", null);
+                }
+
+                // 3. Lấy tất cả câu hỏi trong assessment
+                var assessmentQuestions = await _unitOfWork.AssessmentQuestionRepository
+                    .GetAllByAsync(aq => aq.AssessmentId == attempt.AssessmentId && aq.IsActive == true);
+                
+                var totalQuestions = assessmentQuestions.Count;
+                if (totalQuestions == 0)
+                {
+                    return ObjectResponse<CalculateGradingResponse>.Response("404", "No questions found in assessment", null);
+                }
+
+                // 4. Lấy tất cả answers của attempt này
                 var assessmentAnswers = await _unitOfWork.AssessmentAnswerRepository
                     .GetAllByAsync(a => a.AttemptsId == command.AttemptId);
 
-                // 3. Tính toán điểm
-                var totalQuestions = assessmentAnswers.Count;
-                if (totalQuestions == 0)
+                // 5. Group answers by question to avoid counting duplicates
+                // For each question, check if it has at least one correct answer
+                var answersByQuestion = assessmentAnswers
+                    .GroupBy(a => a.AssessmentQuestionId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Count correct and wrong questions (not answers)
+                // A question is correct if it has at least one correct answer
+                // A question is wrong if it has answers but none are correct
+                var answeredQuestionIds = answersByQuestion.Keys.ToHashSet();
+                var correctQuestionCount = 0;
+                var wrongQuestionCount = 0;
+
+                foreach (var questionId in answeredQuestionIds)
                 {
-                    return ObjectResponse<CalculateGradingResponse>.Response("404", "No answers found", null);
+                    var questionAnswers = answersByQuestion[questionId];
+                    // If at least one answer is correct, the question is correct
+                    if (questionAnswers.Any(a => a.IsCorrect))
+                    {
+                        correctQuestionCount++;
+                    }
+                    else
+                    {
+                        // Has answers but none are correct
+                        wrongQuestionCount++;
+                    }
                 }
 
-                var correctCount = assessmentAnswers.Count(a => a.IsCorrect);
-                var wrongCount = totalQuestions - correctCount;
+                var unansweredCount = totalQuestions - answeredQuestionIds.Count;
+                var correctCount = correctQuestionCount;
+                var wrongCount = wrongQuestionCount;
 
+                // Tính phần trăm trên tổng số câu (câu chưa trả lời được tính là sai)
                 var correctPercentage = Math.Round((decimal)correctCount / totalQuestions * 100, 2);
-                var wrongPercentage = Math.Round((decimal)wrongCount / totalQuestions * 100, 2);
+                var wrongPercentage = Math.Round((decimal)(wrongCount + unansweredCount) / totalQuestions * 100, 2);
 
-                // Tính điểm trên thang 10
+                // Tính điểm trên thang 10 (câu chưa trả lời = 0 điểm, tức là sai)
                 var totalScore = Math.Round((decimal)correctCount / totalQuestions * 10, 2);
 
                 // Xác định grade

@@ -12,7 +12,7 @@ public partial class AssignmentAttempt
 
     public DateTime? CompletedAt { get; set; }
 
-    public int AttemptNumber { get; set; }
+    public int AttemptNumber { get; set; } = 1;
 
     public DateTime? UpdatedAt { get; set; }
 

@@ -4,6 +4,7 @@ public interface ICourseDao
 {
     Task<Course?> GetByIdAsync(Guid courseId);
     Task<List<Course>> GetBySyllabusIdAsync(Guid syllabusId);
+    Task<List<Course>> GetAllAsync();
     Task<Course> CreateAsync(Guid syllabusId, Course course);
     Task<Course> UpdateAsync(Course course);
     Task DeleteAsync(Guid courseId);

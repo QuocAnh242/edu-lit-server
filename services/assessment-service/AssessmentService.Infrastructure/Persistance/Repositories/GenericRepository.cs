@@ -18,6 +18,11 @@ namespace AssessmentService.Infrastructure.Persistance.Repositories
             await _genericDAO.AddAsync(entity);
         }
 
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _genericDAO.AddRangeAsync(entities);
+        }
+
         public async Task<List<T>> GetAllAsync()
         {
             return await _genericDAO.GetAllAsync();

@@ -13,17 +13,20 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessme
         private readonly IValidator<UpdateAssessmentAnswerCommand> _validator;
         private readonly IMapper _mapper;
         private readonly IRedisService _redisService;
+        private readonly IQuestionServiceClient _questionServiceClient;
         private const string CacheKey = "assessmentAnswer:all";
 
         public UpdateAssessmentAnswerCommandHandler(IUnitOfWork unitOfWork,
             IValidator<UpdateAssessmentAnswerCommand> validator,
             IMapper mapper,
-            IRedisService redisService)
+            IRedisService redisService,
+            IQuestionServiceClient questionServiceClient)
         {
             _unitOfWork = unitOfWork;
             _validator = validator;
             _mapper = mapper;
             _redisService = redisService;
+            _questionServiceClient = questionServiceClient;
         }
 
         public async Task<ObjectResponse<bool>> Handle(UpdateAssessmentAnswerCommand command, CancellationToken cancellationToken)
@@ -57,11 +60,22 @@ namespace AssessmentService.Application.Features.AssessmentAnswer.UpdateAssessme
                 {
                     return ObjectResponse<bool>.Response("404", "Assessment answer not found", false);
                 }
-                
-                _mapper.Map(command, existingAnswer);
 
-                // chek answer for the question in the db to set IsCorrect
-                existingAnswer.IsCorrect = (question.CorrectAnswer == command.SelectedAnswer);
+                // Validate SelectedOptionId belongs to this question
+                var questionOptions = await _questionServiceClient.GetQuestionOptionsByQuestionIdAsync(
+                    Guid.Parse(question.QuestionId), cancellationToken);
+
+                var selectedOption = questionOptions.FirstOrDefault(opt => opt.QuestionOptionId == command.SelectedOptionId);
+                if (selectedOption == null)
+                {
+                    return ObjectResponse<bool>.Response("400", "SelectedOptionId does not belong to this question", false);
+                }
+
+                // Update answer
+                existingAnswer.AssessmentQuestionId = command.AssessmentQuestionId;
+                existingAnswer.AttemptsId = command.AttemptsId;
+                existingAnswer.SelectedOptionId = command.SelectedOptionId.ToString();
+                existingAnswer.IsCorrect = selectedOption.IsCorrect;
 
                 _unitOfWork.AssessmentAnswerRepository.Update(existingAnswer);
                 await _unitOfWork.SaveChangesAsync();
